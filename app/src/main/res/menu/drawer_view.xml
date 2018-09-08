@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_log_in"
+            android:icon="@drawable/ic_send_it"
+            android:title="@string/log_in" />
+        <item
+            android:id="@+id/nav_gallery"
+            android:icon="@drawable/ic_send_it"
+            android:title="BOAT" />
+        <item
+            android:id="@+id/nav_slideshow"
+            android:icon="@drawable/ic_send_it"
+            android:title="SLIDESHOW" />
+        <item
+            android:id="@+id/nav_menu_goto_subreddit"
+            android:icon="@drawable/ic_send_it"
+            android:title="@string/menu_goto_subreddit" />
+    </group>
+</menu>

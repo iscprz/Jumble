@@ -1,0 +1,32 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppThemeDark" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorThemeDarkPrimary</item>
+        <item name="colorPrimaryDark">@color/colorThemeDarkPrimaryDark</item>
+        <item name="colorAccent">@color/colorDarkThemeAccent</item>
+    </style>
+
+    <style name="AppThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorThemeDarkPrimary</item>
+        <item name="colorPrimaryDark">@color/colorThemeDarkPrimaryDark</item>
+        <item name="colorAccent">@color/colorDarkThemeAccent</item>
+    </style>
+
+    <style name="AppCompatAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/colorDarkThemeAccent</item>
+        <item name="android:textColorPrimary">@color/colorWhite</item>
+        <item name="android:background">@color/colorThemeDarkPrimary</item>
+    </style>
+
+    <style name="DialogAsActivityTheme" parent="@android:style/Theme.Holo.Dialog">
+    </style>
+
+    <style name="MediaViewerTitleTextTheme" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+</resources>

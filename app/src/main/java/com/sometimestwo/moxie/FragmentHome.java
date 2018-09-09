@@ -150,6 +150,8 @@ public class FragmentHome extends Fragment {
         }
     }
 
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -285,10 +287,10 @@ public class FragmentHome extends Fragment {
 
     }
 
-    private static DiffUtil.ItemCallback<net.dean.jraw.models.Submission> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<net.dean.jraw.models.Submission>() {
+    private static DiffUtil.ItemCallback<Submission> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<Submission>() {
                 @Override
-                public boolean areItemsTheSame(net.dean.jraw.models.Submission oldItem, net.dean.jraw.models.Submission newItem) {
+                public boolean areItemsTheSame(Submission oldItem, Submission newItem) {
                     return oldItem.getId().equals(newItem.getId());
                 }
 
@@ -384,32 +386,31 @@ public class FragmentHome extends Fragment {
                     /*Note:
                         onTouch is nested here to prevent it getting called twice
                     */
-                    @SuppressLint("ClickableViewAccessibility")
                     @Override
                     public boolean onLongClick(View pView) {
-                        holder.thumbnailImageView.setOnTouchListener(new View.OnTouchListener() {
-                            @Override
-                            public boolean onTouch(View pView, MotionEvent pEvent) {
-                                pView.onTouchEvent(pEvent);
-                                if (pEvent.getAction() == MotionEvent.ACTION_UP) {
-                                    // hide hoverView on click release
-                                    if (isImageViewPressed) {
-                                        // done with hoverview, allow recyclerview to handle touch events
-                                        mRecyclerMain.setHandleTouchEvents(true);
-                                        isImageViewPressed = false;
-                                        mHoverView.setVisibility(View.GONE);
-                                    }
-                                }
-                                return false;
-                            }
-                        });
-
                         // prevent recyclerview from handling touch events, otherwise bad things happen
                         mRecyclerMain.setHandleTouchEvents(false);
                         isImageViewPressed = true;
                         GlideApp.load(item.getUrl()).into(mHoverView);
                         mHoverView.setVisibility(View.VISIBLE);
                         return true;
+                    }
+                });
+
+                holder.thumbnailImageView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View pView, MotionEvent pEvent) {
+                        pView.onTouchEvent(pEvent);
+                        if (pEvent.getAction() == MotionEvent.ACTION_UP) {
+                            // hide hoverView on click release
+                            if (isImageViewPressed) {
+                                // done with hoverview, allow recyclerview to handle touch events
+                                mRecyclerMain.setHandleTouchEvents(true);
+                                isImageViewPressed = false;
+                                mHoverView.setVisibility(View.GONE);
+                            }
+                        }
+                        return false;
                     }
                 });
 

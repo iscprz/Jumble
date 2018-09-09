@@ -8,14 +8,6 @@ import android.view.MotionEvent;
 public class MultiClickRecyclerView extends RecyclerView {
     boolean handleTouchEvents = true;
 
-    public boolean isHandleTouchEvents() {
-        return handleTouchEvents;
-    }
-
-    public void setHandleTouchEvents(boolean handleTouchEvents) {
-        this.handleTouchEvents = handleTouchEvents;
-    }
-
     public MultiClickRecyclerView(Context context) {
         super(context);
     }
@@ -26,6 +18,14 @@ public class MultiClickRecyclerView extends RecyclerView {
 
     public MultiClickRecyclerView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+    }
+
+    public boolean isHandleTouchEvents() {
+        return handleTouchEvents;
+    }
+
+    public void setHandleTouchEvents(boolean handleTouchEvents) {
+        this.handleTouchEvents = handleTouchEvents;
     }
 
     /*

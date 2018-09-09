@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import com.sometimestwo.moxie.Utils.Constants;
@@ -29,11 +30,15 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
 
     private static final String TAG = "MainActivity";
 
+    // indicates whether user has clicked a submissions to browse
+    private boolean isViewingSubmission = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.drawer_layout);
         setContentView(R.layout.activity_fragment);
+
         Log.d(TAG, "onCreate: starting.");
         init();
     }
@@ -76,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //getMenuInflater().inflate(R.menu.navigation_menu, menu);
+        getMenuInflater().inflate(R.menu.menu_subreddit_view, menu);
         return true;
     }
 
@@ -85,19 +91,23 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
 
     @Override
     public void openMediaViewer(Submission submission) {
-        FragmentManager fm = getSupportFragmentManager();
-        Fragment mediaDisplayerFragment = (FragmentMediaDisplayer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
-        FragmentTransaction ft = fm.beginTransaction();
-        Bundle args = new Bundle();
-        args.putSerializable(Constants.EXTRA_POST, submission);
-        if(mediaDisplayerFragment != null){
-            ft.remove(mediaDisplayerFragment);
+        // prevent opening two media viewers (happens on quick double click)
+        if(!isViewingSubmission) {
+            FragmentManager fm = getSupportFragmentManager();
+            Fragment mediaDisplayerFragment = (FragmentMediaDisplayer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
+            FragmentTransaction ft = fm.beginTransaction();
+            Bundle args = new Bundle();
+            args.putSerializable(Constants.EXTRA_POST, submission);
+            if (mediaDisplayerFragment != null) {
+                ft.remove(mediaDisplayerFragment);
+            }
+            mediaDisplayerFragment = FragmentMediaDisplayer.newInstance();
+            mediaDisplayerFragment.setArguments(args);
+            ft.add(R.id.fragment_container, mediaDisplayerFragment, Constants.TAG_FRAG_MEDIA_DISPLAY);
+            ft.addToBackStack(null);
+            ft.commit();
+            isViewingSubmission = true;
         }
-        mediaDisplayerFragment = FragmentMediaDisplayer.newInstance();
-        mediaDisplayerFragment.setArguments(args);
-        ft.add(R.id.fragment_container,mediaDisplayerFragment,Constants.TAG_FRAG_MEDIA_DISPLAY);
-        ft.addToBackStack(null);
-        ft.commit();
     }
 
 
@@ -110,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
             // before adding this, pressing Back would re-open previously closed images
             fm.popBackStack();
         }
+        isViewingSubmission = false;
     }
 
     @Override

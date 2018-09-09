@@ -16,10 +16,11 @@ public class SubmissionsViewModel extends ViewModel {
     LiveData<PagedList<Submission>> postsPagedList;
     LiveData<ItemKeyedDataSource<String, Submission>> liveDataSource;
     SubmissionsDataSourceFactory submissionsDataSourceFactory;
+
     //constructor
     public SubmissionsViewModel() {
         //getting our data source factory
-         submissionsDataSourceFactory = new SubmissionsDataSourceFactory();
+         submissionsDataSourceFactory = new SubmissionsDataSourceFactory(App.getCurrSubredditObj());
 
         //getting the live data source from data source factory
         liveDataSource = submissionsDataSourceFactory.getItemLiveDataSource();

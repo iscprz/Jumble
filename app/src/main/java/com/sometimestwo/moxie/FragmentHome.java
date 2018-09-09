@@ -1,5 +1,6 @@
 package com.sometimestwo.moxie;
 
+import android.annotation.SuppressLint;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.arch.paging.PagedList;
@@ -26,6 +27,7 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -37,7 +39,9 @@ import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Helpers;
 
+import net.dean.jraw.RedditClient;
 import net.dean.jraw.models.Submission;
 
 import static android.app.Activity.RESULT_OK;
@@ -48,14 +52,15 @@ public class FragmentHome extends Fragment {
     private final static int INTENT_LOG_IN = 1;
 
     private SwipeRefreshLayout mRefreshLayout;
-    private RecyclerView mRecyclerMain;
+    private MultiClickRecyclerView mRecyclerMain;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
     private int mNumDisplayColumns;
     private String mCurrSubreddit;
-
+    private RedditClient mRedditClient;
+    private boolean isImageViewPressed = false;
+    private ImageView mHoverView;
     private HomeEventListener mHomeEventListener;
-
 
     public interface HomeEventListener {
         public void openMediaViewer(Submission submission);
@@ -70,10 +75,8 @@ public class FragmentHome extends Fragment {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-      //  mRedditClient = RedditClient.getInstance();
-        //mCurrRedditDataObj = (RedditRequestDataObj) this.getArguments().get(Constants.ARGS_REDDIT_STATE_OBJ);
         unpackArgs();
-
+        //  mRedditClient = App.getAccountHelper().isAuthenticated() ? App.getAccountHelper().getReddit() : App.getAccountHelper().switchToUserless();
         setHasOptionsMenu(true);
     }
 
@@ -100,9 +103,10 @@ public class FragmentHome extends Fragment {
         });
 
         /* Recycler view setup*/
-        mRecyclerMain = (RecyclerView) v.findViewById(R.id.recycler_zoomie_view);
+        mRecyclerMain = (MultiClickRecyclerView) v.findViewById(R.id.recycler_zoomie_view);
         mRecyclerMain.setLayoutManager(new GridLayoutManager(getContext(), mNumDisplayColumns));
         mRecyclerMain.setHasFixedSize(true);
+      //  disabler = new RecyclerViewDisabler();
 
         /* RecyclerView adapter stuff */
         final RecyclerAdapter adapter = new RecyclerAdapter(getContext(), Glide.with(this));
@@ -119,6 +123,8 @@ public class FragmentHome extends Fragment {
 
         mRecyclerMain.setAdapter(adapter);
 
+        /* hover view*/
+        mHoverView = (ImageView) v.findViewById(R.id.hover_view);
         return v;
     }
 
@@ -164,26 +170,26 @@ public class FragmentHome extends Fragment {
         }
     }
 
-    private void unpackArgs(){
-       // SharedPreferencesTokenStore tokenStore = App.getTokenStore();
+    private void unpackArgs() {
+        // SharedPreferencesTokenStore tokenStore = App.getTokenStore();
         try {
-            mNumDisplayColumns =  (Integer) this.getArguments().get(ARGS_NUM_DISPLAY_COLS);
-          //  mCurrSubreddit = mRedditClient.getmRedditDataRequestObj().getmSubreddit();
-        }catch (NullPointerException npe){
+            mNumDisplayColumns = (Integer) this.getArguments().get(ARGS_NUM_DISPLAY_COLS);
+            //  mCurrSubreddit = mRedditClient.getmRedditDataRequestObj().getmSubreddit();
+        } catch (NullPointerException npe) {
             throw new NullPointerException("Null ptr exception trying to unpack arguments in " + TAG);
         }
         // default to 3 if at 0. //TODO: revisit default here
-        if( mNumDisplayColumns < 1){
+        if (mNumDisplayColumns < 1) {
             mNumDisplayColumns = Constants.DEFAULT_NUM_DISPLAY_COLS;
         }
         // default to /r/pics as failsafe if nothing was passed to us
-        if(mCurrSubreddit == null ||"".equals(mCurrSubreddit)){
+        if (mCurrSubreddit == null || "".equals(mCurrSubreddit)) {
             mCurrSubreddit = Constants.DEFAULT_SUBREDDIT;
         }
     }
 
     /* Hamburger menu*/
-    private void setupHamburgerMenu(View v){
+    private void setupHamburgerMenu(View v) {
         mDrawerLayout = v.findViewById(R.id.drawer_layout);
 
         NavigationView navigationView = v.findViewById(R.id.nav_view);
@@ -251,8 +257,7 @@ public class FragmentHome extends Fragment {
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        String newSubreddit = input.getText().toString();
-                       // mRedditClient.getmRedditDataRequestObj().setmSubreddit(newSubreddit);
+                        App.getCurrSubredditObj().setSubreddit(input.getText().toString());
                         SubmissionsViewModel submissionsViewModel = ViewModelProviders.of(FragmentHome.this).get(SubmissionsViewModel.class);
                         submissionsViewModel.invalidate();
                         mHomeEventListener.refreshFeed(TAG);
@@ -268,7 +273,7 @@ public class FragmentHome extends Fragment {
                 return;
 
             default:
-                Log.e(TAG,"Nav item selection not found! Entered default case!");
+                Log.e(TAG, "Nav item selection not found! Entered default case!");
         }
     }
 
@@ -288,13 +293,13 @@ public class FragmentHome extends Fragment {
                 }
 
                 @Override
-                public boolean areContentsTheSame(net.dean.jraw.models.Submission oldItem, net.dean.jraw.models.Submission newItem) {
+                public boolean areContentsTheSame(Submission oldItem, Submission newItem) {
                     return oldItem.equals(newItem);
                 }
             };
 
 
-    public class RecyclerAdapter extends PagedListAdapter<net.dean.jraw.models.Submission, RecyclerAdapter.ItemViewHolder> {
+    public class RecyclerAdapter extends PagedListAdapter<Submission, RecyclerAdapter.ItemViewHolder> {
         private Context mContext;
         private final RequestManager GlideApp;
 
@@ -314,19 +319,58 @@ public class FragmentHome extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull final ItemViewHolder holder, int position) {
-            net.dean.jraw.models.Submission item = getItem(position);
+            Submission item = getItem(position);
+            //ignore any items that do not have thumbnail do display
+            if (item != null && !item.isSelfPost()) {
+                // check if ok to display NSFW
+                if (true/*item.isNsfw() && Filters.nsfwOK*/)
 
-            if (item != null) {
-                GlideApp
-                        .load(item.getThumbnail())
-                        .apply(new RequestOptions()
-                        .centerCrop()
-                        .diskCacheStrategy(DiskCacheStrategy.ALL))
-                        .into(holder.thumbnailImageView);
+                    /* GIF */
+                    if (Helpers.getMediaType(item) == Helpers.MediaType.GIF) {
+                        /*if(*//* sharedPrefs.playGifs*//*true){
+                            Log.e(TAG,"Attempting to play GIF with URL: " + item.getUrl());
+                            GlideApp
+                                    .load(item.getUrl())
+                                    .apply(new RequestOptions()
+                                            .centerCrop()
+                                            .diskCacheStrategy(DiskCacheStrategy.ALL))
+                                    .into(holder.thumbnailImageView);
+                        }*/
+                        // do not play gifs, display thumbnail instead
 
-                        Log.e("VIDEO_URL", "Submission name: " + item.getTitle()
-                                                        + ", Submission url: " + item.getUrl()
-                                                        + ", Submission thumbnail: " + item.getThumbnail());
+                        GlideApp
+                                .load(item.getThumbnail())
+                                .apply(new RequestOptions()
+                                        .centerCrop()
+                                        .diskCacheStrategy(DiskCacheStrategy.ALL))
+                                .into(holder.thumbnailImageView);
+
+                        //TODO: Overlay a "GIF" icon
+                    }
+                    /* youtube */
+                    else if (Helpers.getMediaType(item) == Helpers.MediaType.YOUTUBE) {
+
+                    }
+
+                    /* jpg, jpeg, png */
+                    else if (Helpers.getMediaType(item) == Helpers.MediaType.IMAGE) {
+                        GlideApp
+                                .load(item.getThumbnail())
+                                .apply(new RequestOptions()
+                                        .centerCrop()
+                                        .diskCacheStrategy(DiskCacheStrategy.ALL))
+                                .into(holder.thumbnailImageView);
+                    }
+                    /* ??? */
+                    else {
+                        Log.e(TAG, "Attempted to display thumbnail of invalid submission URL: "
+                                + item.getUrl());
+                    }
+
+
+           /*     Log.e("VIDEO_URL", "Submission name: " + item.getTitle()
+                        + ", Submission url: " + item.getUrl()
+                        + ", Submission thumbnail: " + item.getThumbnail());*/
 
                 holder.thumbnailImageView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -335,13 +379,45 @@ public class FragmentHome extends Fragment {
                     }
                 });
 
-            } else {
-                Toast.makeText(mContext, "Item is null", Toast.LENGTH_LONG).show();
+                /* Long press will trigger hover previewer */
+                holder.thumbnailImageView.setOnLongClickListener(new View.OnLongClickListener() {
+                    /*Note:
+                        onTouch is nested here to prevent it getting called twice
+                    */
+                    @SuppressLint("ClickableViewAccessibility")
+                    @Override
+                    public boolean onLongClick(View pView) {
+                        holder.thumbnailImageView.setOnTouchListener(new View.OnTouchListener() {
+                            @Override
+                            public boolean onTouch(View pView, MotionEvent pEvent) {
+                                pView.onTouchEvent(pEvent);
+                                if (pEvent.getAction() == MotionEvent.ACTION_UP) {
+                                    // hide hoverView on click release
+                                    if (isImageViewPressed) {
+                                        // done with hoverview, allow recyclerview to handle touch events
+                                        mRecyclerMain.setHandleTouchEvents(true);
+                                        isImageViewPressed = false;
+                                        mHoverView.setVisibility(View.GONE);
+                                    }
+                                }
+                                return false;
+                            }
+                        });
+
+                        // prevent recyclerview from handling touch events, otherwise bad things happen
+                        mRecyclerMain.setHandleTouchEvents(false);
+                        isImageViewPressed = true;
+                        GlideApp.load(item.getUrl()).into(mHoverView);
+                        mHoverView.setVisibility(View.VISIBLE);
+                        return true;
+                    }
+                });
+
+
             }
         }
 
         public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
             //TextView textView;
             ImageView thumbnailImageView;
 
@@ -353,7 +429,7 @@ public class FragmentHome extends Fragment {
 
             @Override
             public void onClick(View view) {
-                net.dean.jraw.models.Submission submission = getItem(getLayoutPosition());
+                Submission submission = getItem(getLayoutPosition());
                 mHomeEventListener.openMediaViewer(submission);
             }
         }

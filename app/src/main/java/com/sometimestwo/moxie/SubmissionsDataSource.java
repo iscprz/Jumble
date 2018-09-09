@@ -5,7 +5,9 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.sometimestwo.moxie.Model.SubredditInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Helpers;
 
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.models.Listing;
@@ -21,10 +23,11 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     private final String TAG = SubmissionsDataSource.class.getSimpleName();
 
     // For paging through Reddit submission Listings
-    DefaultPaginator<Submission> paginator;
+    DefaultPaginator<Submission> mPaginator;
+    SubredditInfoObj mSubredditInfoObj;
 
-    public SubmissionsDataSource() {
-
+    public SubmissionsDataSource(SubredditInfoObj subredditInfoObj) {
+        this.mSubredditInfoObj = subredditInfoObj;
     }
 
     @Override
@@ -32,12 +35,12 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         App.getAccountHelper().switchToUserless();
         RedditClient redditClient = App.getAccountHelper().getReddit();
 
-        paginator = redditClient
-                .subreddit("pics")
+        mPaginator = redditClient
+                .subreddit(mSubredditInfoObj.getSubreddit())
                 .posts()
                 .limit(Constants.QUERY_PAGE_SIZE) // 50 posts per page
-                .sorting(SubredditSort.HOT) // top posts
-                .timePeriod(TimePeriod.DAY) // of all time
+                .sorting(mSubredditInfoObj.getmSortBy()) // top posts
+                .timePeriod(mSubredditInfoObj.getmTimePeriod()) // of all time
                 .build();
         new FetchInitialSubmissionsTask(callback).execute();
     }
@@ -74,7 +77,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         protected List<Submission> doInBackground(Void... voids) {
             Listing<Submission> submissions = null;
             try {
-                submissions = paginator.next();
+                submissions = mPaginator.next();
             } catch (Exception e) {
                 Log.e(SubmissionsDataSource.class.getSimpleName(),
                         " Failed to request initial submissions from reddit: " + e.getMessage());
@@ -106,7 +109,17 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         protected List<Submission> doInBackground(Void... voids) {
             Listing<Submission> submissions = null;
             try {
-                submissions = paginator.next();
+                // get the next few submissions
+                submissions = mPaginator.next();
+
+                // download any videos if user has selected to play GIF files through settings
+                if(true/* sharedprefs.playGifs*/){
+                    for (Submission s : submissions){
+                        if(Helpers.getMediaType(s) == Helpers.MediaType.GIF){
+
+                        }
+                    }
+                }
             } catch (Exception e) {
                 Log.e(SubmissionsDataSource.class.getSimpleName(),
                         " Failed to request non-initial submissions from reddit: " + e.getMessage());

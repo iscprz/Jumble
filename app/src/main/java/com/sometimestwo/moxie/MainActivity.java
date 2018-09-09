@@ -40,14 +40,13 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
 
     private void init(){
         //TODO: Read this information from sharedprefs. Hardcoded for now
-        //redditClient.setmRedditDataRequestObj(currRedditStateObj);
+        App.getCurrSubredditObj().setSubreddit("pics");
         int numDisplayCols = 3;
 
         FragmentManager fm = getSupportFragmentManager();
         Fragment fragment = (FragmentHome) fm.findFragmentByTag(Constants.TAG_FRAG_HOME);
         FragmentTransaction ft = fm.beginTransaction();
         Bundle args = new Bundle();
-        //args.putSerializable(Constants.ARGS_REDDIT_STATE_OBJ,currRedditStateObj);
         args.putInt(Constants.ARGS_NUM_DISPLAY_COLS,numDisplayCols);
         if (fragment != null) {
             //fragment.setArguments(args);
@@ -69,9 +68,9 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
             ft.commit();
         }catch (NullPointerException e){
             throw new NullPointerException(this.toString()
-                    + ". Could not refreshFeed fragment! Probably provided incorrect fragment tag");
+                    + ". Could not refresh fragment! Probably provided incorrect fragment tag. " +
+                    " Fragment tag provided: " + fragmentTag);
         }
-
     }
 
     @Override
@@ -79,8 +78,6 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
         //getMenuInflater().inflate(R.menu.navigation_menu, menu);
         return true;
     }
-
-
 
     /*
         Interface implementations

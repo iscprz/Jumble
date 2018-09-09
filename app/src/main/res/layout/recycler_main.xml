@@ -3,9 +3,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.RecyclerView
+    <com.sometimestwo.moxie.MultiClickRecyclerView
         android:id="@+id/recycler_zoomie_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <ImageView
+        android:id="@+id/hover_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorThemeDarkPrimary"
+        android:visibility="gone"
+        android:layout_marginTop="50dp"
+        android:layout_gravity="center|top"/>
 </FrameLayout>

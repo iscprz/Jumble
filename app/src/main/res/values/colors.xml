@@ -7,7 +7,7 @@
     <color name="colorWhite">#ffffff</color>
     <color name="transparent">#00000000</color>
     <color name="colorBgBlackTint">#aa000000</color>
-
+    <color name="colorBlack">#000000</color>
 
     <color name="redic">#60ff6dd1</color>
     <color name="test_media_viewer_comments">#8949ff00</color>

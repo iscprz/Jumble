@@ -1,42 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:background="@color/colorThemeDarkPrimary">
+    android:background="@color/colorThemeDarkPrimary"
+    android:orientation="vertical">
 
     <Button
         android:id="@+id/settings_back"
         android:layout_width="50dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/ic_white_back"
-        />
+        android:background="@drawable/ic_white_back" />
 
-    <!-- Allow NSFW-->
+    <!-- Section Title: NSFW -->
+    <TextView
+        android:id="@+id/settings_section_title_nsfw"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:background="@color/colorBlack"
+        android:text="Allow NSFW"
+        android:textColor="@color/colorWhite" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dp">
 
         <TextView
-            android:id="@+id/settings_nsfw"
+            android:id="@+id/settings_textview_nsfw"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="Allow NSFW posts"
             android:layout_marginTop="10dp"
+            android:text="Allow NSFW posts"
             android:textColor="@color/colorWhite"
-            android:textSize="16sp"
-        />
+            android:textSize="16sp" />
 
         <CheckBox
+            android:id="@+id/settings_checkbox_nsfw"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:id="@+id/settings_checkbox_nsfw"
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
-            android:gravity="center|end"
-            android:buttonTint="@color/colorWhite"/>
+            android:buttonTint="@color/colorWhite"
+            android:gravity="center|end" />
     </RelativeLayout>
+
+    <!-- Section Title: Previews -->
+    <TextView
+        android:id="@+id/settings_section_title_previews"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:background="@color/colorBlack"
+        android:text="Image Previewing"
+        android:textColor="@color/colorWhite" />
 
     <!-- Allow Gif hover play-->
     <RelativeLayout
@@ -44,26 +59,25 @@
         android:layout_height="50dp">
 
         <TextView
-            android:id="@+id/settings_gif_play_hover"
+            android:id="@+id/settings_textview_gif_preview"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="Preview GIFs on long press"
             android:layout_marginTop="10dp"
+            android:text="Preview GIFs on long press"
             android:textColor="@color/colorWhite"
-            android:textSize="16sp"
-            />
+            android:textSize="16sp" />
 
         <CheckBox
+            android:id="@+id/settings_checkbox_gif_hover_preview"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:id="@+id/settings_checkbox_gif_hover_preview"
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
-            android:gravity="center|end"
-            android:buttonTint="@color/colorWhite"/>
+            android:buttonTint="@color/colorWhite"
+            android:gravity="center|end" />
     </RelativeLayout>
 
-
+    <!-- Display large hover??-->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dp">
@@ -72,20 +86,19 @@
             android:id="@+id/settings_1"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="TEST settings_1"
             android:layout_marginTop="10dp"
+            android:text="TEST settings_1"
             android:textColor="@color/colorWhite"
-            android:textSize="16sp"
-            />
+            android:textSize="16sp" />
 
         <CheckBox
+            android:id="@+id/settings_checkbox_settings1"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:id="@+id/settings_checkbox_settings1"
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
-            android:gravity="center|end"
-            android:buttonTint="@color/colorWhite"/>
+            android:buttonTint="@color/colorWhite"
+            android:gravity="center|end" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -96,19 +109,18 @@
             android:id="@+id/settings_2"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="TEST settings_2"
             android:layout_marginTop="10dp"
+            android:text="TEST settings_2"
             android:textColor="@color/colorWhite"
-            android:textSize="16sp"
-            />
+            android:textSize="16sp" />
 
         <CheckBox
+            android:id="@+id/settings_checkbox_settings2"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:id="@+id/settings_checkbox_settings2"
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
-            android:gravity="center|end"
-            android:buttonTint="@color/colorWhite"/>
+            android:buttonTint="@color/colorWhite"
+            android:gravity="center|end" />
     </RelativeLayout>
 </LinearLayout>

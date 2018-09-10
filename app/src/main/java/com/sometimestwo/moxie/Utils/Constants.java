@@ -8,6 +8,7 @@ public class Constants {
     public final static String TEST_SUBREDDIT_GIFS = "gifs";
 
     /* Intents */
+    public final static int INTENT_SETTINGS = 1;
 
     /* Fragment tags */
     public final static String TAG_FRAG_HOME = "TAG_FRAGMENT_HOME";
@@ -37,7 +38,8 @@ public class Constants {
     /*SharedPrefs */
     public final static String KEY_GETPREFS_SETTINGS = "KEY_GETPREFS_SETTINGS";
     public final static String KEY_ALLOW_NSFW = "KEY_ALLOW_NSFW";
-    public final static String KEY_GIF_PLAY_HOVER = "KEY_GIF_PLAY_HOVER";
+    public final static String KEY_GIF_PREVIEW = "KEY_GIF_PREVIEW";
+    public final static String KEY_IMAGE_PREVIEW = "KEY_IMAGE_PREVIEW";
     public final static String SETTINGS_NO = "SETTINGS_NO";
     public final static String SETTINGS_YES = "SETTINGS_YES";
 

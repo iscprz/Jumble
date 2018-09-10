@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
+import android.widget.Toast;
+
 import com.sometimestwo.moxie.Utils.Constants;
 import net.dean.jraw.models.Submission;
 
@@ -91,6 +93,19 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
         isViewingSubmission = false;
         super.onBackPressed();
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.INTENT_SETTINGS) {
+            if (resultCode == RESULT_OK) {
+                Log.e(TAG,"Returned from settings activity");
+                /*if ((int) data.getExtras().get(Constants.NUM_GALLERIE_DIRS_CHOSEN) < 1) {
+                } */
+            }
+        }
+
+    }
     /*
         Interface implementations
      */
@@ -133,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
     public void openSettings(){
         Intent settingsIntent = new Intent(this,ActivitySettings.class);
         //settingsIntent.putExtra()
-        startActivity(settingsIntent);
+        startActivityForResult(settingsIntent,Constants.INTENT_SETTINGS);
     }
 
     @Override

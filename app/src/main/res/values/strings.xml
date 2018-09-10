@@ -2,4 +2,7 @@
     <string name="app_name">Moxie</string>
     <string name="menu_goto_subreddit">Go to subreddit...</string>
     <string name="log_in">Log in</string>
+
+    <!-- Toasts-->
+    <string name="toast_settings_saved">Settings saved</string>
 </resources>

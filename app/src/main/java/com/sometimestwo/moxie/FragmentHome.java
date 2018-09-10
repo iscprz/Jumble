@@ -32,6 +32,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -43,6 +45,8 @@ import com.sometimestwo.moxie.Utils.Helpers;
 
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.models.Submission;
+
+import org.w3c.dom.Text;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -59,7 +63,13 @@ public class FragmentHome extends Fragment {
     private String mCurrSubreddit;
     private RedditClient mRedditClient;
     private boolean isImageViewPressed = false;
+
+    // hover view
     private ImageView mHoverView;
+    private RelativeLayout mHoverViewContainer;
+    private TextView mHoverViewTitle;
+
+    // event listeners
     private HomeEventListener mHomeEventListener;
 
     public interface HomeEventListener {
@@ -124,6 +134,8 @@ public class FragmentHome extends Fragment {
         mRecyclerMain.setAdapter(adapter);
 
         /* hover view*/
+        mHoverViewContainer = (RelativeLayout) v.findViewById(R.id.hover_view_container);
+        mHoverViewTitle = (TextView) v.findViewById(R.id.hover_view_title);
         mHoverView = (ImageView) v.findViewById(R.id.hover_view);
         return v;
     }
@@ -390,7 +402,9 @@ public class FragmentHome extends Fragment {
                         mRecyclerMain.setHandleTouchEvents(false);
                         isImageViewPressed = true;
                         GlideApp.load(item.getUrl()).into(mHoverView);
-                        mHoverView.setVisibility(View.VISIBLE);
+                        mHoverViewTitle.setText(item.getTitle());
+                        mHoverViewContainer.setVisibility(View.VISIBLE);
+                        //mHoverView.setVisibility(View.VISIBLE);
                         return true;
                     }
                 });
@@ -405,7 +419,9 @@ public class FragmentHome extends Fragment {
                                 // done with hoverview, allow recyclerview to handle touch events
                                 mRecyclerMain.setHandleTouchEvents(true);
                                 isImageViewPressed = false;
-                                mHoverView.setVisibility(View.GONE);
+                                mHoverViewTitle.setText("");
+                                mHoverViewContainer.setVisibility(View.GONE);
+                                //mHoverView.setVisibility(View.GONE);
                             }
                         }
                         return false;

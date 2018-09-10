@@ -23,7 +23,8 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp">
+        android:layout_height="50dp"
+        android:layout_marginLeft="15dp">
 
         <TextView
             android:id="@+id/settings_textview_nsfw"
@@ -50,13 +51,39 @@
         android:layout_width="match_parent"
         android:layout_height="20dp"
         android:background="@color/colorBlack"
-        android:text="Image Previewing"
+        android:text="Previewing"
         android:textColor="@color/colorWhite" />
 
-    <!-- Allow Gif hover play-->
+    <!-- Allow Images preview-->
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp">
+        android:layout_height="50dp"
+        android:layout_marginLeft="15dp">
+
+        <TextView
+            android:id="@+id/settings_textview_image_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginTop="10dp"
+            android:text="Preview images on long press"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp" />
+
+        <CheckBox
+            android:id="@+id/settings_checkbox_image_preview"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:buttonTint="@color/colorWhite"
+            android:gravity="center|end" />
+    </RelativeLayout>
+
+    <!-- Allow GIF preview-->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginLeft="15dp">
 
         <TextView
             android:id="@+id/settings_textview_gif_preview"
@@ -68,7 +95,7 @@
             android:textSize="16sp" />
 
         <CheckBox
-            android:id="@+id/settings_checkbox_gif_hover_preview"
+            android:id="@+id/settings_checkbox_gif_preview"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_alignParentEnd="true"

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="@color/colorThemeDarkPrimary">
+
+    <Button
+        android:id="@+id/settings_back"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ic_white_back"
+        />
+
+    <!-- Allow NSFW-->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <TextView
+            android:id="@+id/settings_nsfw"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Allow NSFW posts"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp"
+        />
+
+        <CheckBox
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/settings_checkbox_nsfw"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:gravity="center|end"
+            android:buttonTint="@color/colorWhite"/>
+    </RelativeLayout>
+
+    <!-- Allow Gif hover play-->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <TextView
+            android:id="@+id/settings_gif_play_hover"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Preview GIFs on long press"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp"
+            />
+
+        <CheckBox
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/settings_checkbox_gif_hover_preview"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:gravity="center|end"
+            android:buttonTint="@color/colorWhite"/>
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <TextView
+            android:id="@+id/settings_1"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="TEST settings_1"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp"
+            />
+
+        <CheckBox
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/settings_checkbox_settings1"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:gravity="center|end"
+            android:buttonTint="@color/colorWhite"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+
+        <TextView
+            android:id="@+id/settings_2"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="TEST settings_2"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp"
+            />
+
+        <CheckBox
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/settings_checkbox_settings2"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:gravity="center|end"
+            android:buttonTint="@color/colorWhite"/>
+    </RelativeLayout>
+</LinearLayout>

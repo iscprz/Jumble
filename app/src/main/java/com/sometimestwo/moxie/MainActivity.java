@@ -1,5 +1,6 @@
 package com.sometimestwo.moxie;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -84,7 +85,12 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
         getMenuInflater().inflate(R.menu.menu_subreddit_view, menu);
         return true;
     }
-
+    @Override
+    public void onBackPressed() {
+        // ask if user is sure they want to exit
+        isViewingSubmission = false;
+        super.onBackPressed();
+    }
     /*
         Interface implementations
      */
@@ -121,6 +127,13 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
             fm.popBackStack();
         }
         isViewingSubmission = false;
+    }
+
+    @Override
+    public void openSettings(){
+        Intent settingsIntent = new Intent(this,ActivitySettings.class);
+        //settingsIntent.putExtra()
+        startActivity(settingsIntent);
     }
 
     @Override

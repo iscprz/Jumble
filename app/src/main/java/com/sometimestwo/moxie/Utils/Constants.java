@@ -34,6 +34,14 @@ public class Constants {
     public final static String[] API_SCOPES = {"read", "identity","vote"};
     public final static String TEST_CLIENT_ID = "x0CvI7eA_5Qchg";
 
+    /*SharedPrefs */
+    public final static String KEY_GETPREFS_SETTINGS = "KEY_GETPREFS_SETTINGS";
+    public final static String KEY_ALLOW_NSFW = "KEY_ALLOW_NSFW";
+    public final static String KEY_GIF_PLAY_HOVER = "KEY_GIF_PLAY_HOVER";
+    public final static String SETTINGS_NO = "SETTINGS_NO";
+    public final static String SETTINGS_YES = "SETTINGS_YES";
+
+
     /* Misc*/
     public final static String[] VALID_MEDIA_EXTENSION = {"jpg", "jpeg", "png","gifv" , "gif"};
 }

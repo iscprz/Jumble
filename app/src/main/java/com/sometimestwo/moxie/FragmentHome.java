@@ -64,7 +64,7 @@ public class FragmentHome extends Fragment {
 
     public interface HomeEventListener {
         public void openMediaViewer(Submission submission);
-
+        public void openSettings();
         public void refreshFeed(String fragmentTag);
     }
 
@@ -200,14 +200,9 @@ public class FragmentHome extends Fragment {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         // set item as selected to persist highlight
-                        menuItem.setChecked(true);
+                        //menuItem.setChecked(true);
                         handleNavItemSelection(menuItem);
-                        // close drawer when item is tapped
                         mDrawerLayout.closeDrawers();
-
-                        // Add code here to update the UI based on the item selected
-                        // For example, swap UI fragments here
-
                         return true;
                     }
                 });
@@ -274,6 +269,9 @@ public class FragmentHome extends Fragment {
                 builder.show();
                 return;
 
+            case R.id.nav_settings:
+                mHomeEventListener.openSettings();
+                return;
             default:
                 Log.e(TAG, "Nav item selection not found! Entered default case!");
         }
@@ -318,7 +316,7 @@ public class FragmentHome extends Fragment {
             View view = LayoutInflater.from(mContext).inflate(R.layout.recycler_item_thumbnail, parent, false);
             return new ItemViewHolder(view);
         }
-
+        @SuppressLint("ClickableViewAccessibility")
         @Override
         public void onBindViewHolder(@NonNull final ItemViewHolder holder, int position) {
             Submission item = getItem(position);

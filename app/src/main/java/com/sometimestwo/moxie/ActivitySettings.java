@@ -9,12 +9,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sometimestwo.moxie.Utils.Constants;
 
-public class ActivitySettings extends Activity{
+public class ActivitySettings extends Activity {
     private final String TAG = this.getClass().getCanonicalName();
 
     private Button mBackButton;
@@ -23,8 +25,10 @@ public class ActivitySettings extends Activity{
     private TextView mTextViewAllowImagePreview;
 
     private CheckBox mCheckboxAllowNSFW;
-    private CheckBox mCheckboxPreviewGIF;
+    //private CheckBox mCheckboxPreviewGIF;
     private CheckBox mCheckboxPreviewImage;
+
+    private RadioGroup mRadioGroupPreviewSize;
 
     // tracks whether anything was clicked on
     private boolean mModified = false;
@@ -43,9 +47,7 @@ public class ActivitySettings extends Activity{
 
         // NSFW
         mCheckboxAllowNSFW = (CheckBox) findViewById(R.id.settings_checkbox_nsfw);
-        String allowNSFW = prefs_settings.getString(Constants.KEY_ALLOW_NSFW,null);
-        // default NSFW to no if no setting found
-        allowNSFW = allowNSFW == null ? Constants.SETTINGS_NO : allowNSFW;
+        String allowNSFW = prefs_settings.getString(Constants.KEY_ALLOW_NSFW, Constants.SETTINGS_NO);
         mCheckboxAllowNSFW.setChecked(Constants.SETTINGS_YES.equalsIgnoreCase(allowNSFW));
         mCheckboxAllowNSFW.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -64,9 +66,8 @@ public class ActivitySettings extends Activity{
         });
 
         // GIF previewing
-        mCheckboxPreviewGIF = (CheckBox) findViewById(R.id.settings_checkbox_gif_preview);
-        String previewGif = prefs_settings.getString(Constants.KEY_GIF_PREVIEW,null);
-        previewGif = previewGif == null ? Constants.SETTINGS_NO : previewGif;
+       /* mCheckboxPreviewGIF = (CheckBox) findViewById(R.id.settings_checkbox_gif_preview);
+        String previewGif = prefs_settings.getString(Constants.KEY_GIF_PREVIEW, Constants.SETTINGS_NO);
         mCheckboxPreviewGIF.setChecked(Constants.SETTINGS_YES.equalsIgnoreCase(previewGif));
         mCheckboxPreviewGIF.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -83,11 +84,12 @@ public class ActivitySettings extends Activity{
                 mCheckboxPreviewGIF.setChecked(!mCheckboxPreviewGIF.isChecked());
             }
         });
+*/
+
 
         //Image previewing
         mCheckboxPreviewImage = (CheckBox) findViewById(R.id.settings_checkbox_image_preview);
-        String previewImage = prefs_settings.getString(Constants.KEY_IMAGE_PREVIEW,null);
-        previewImage = previewImage == null ? Constants.SETTINGS_NO : previewImage;
+        String previewImage = prefs_settings.getString(Constants.KEY_IMAGE_PREVIEW, Constants.SETTINGS_NO);
         mCheckboxPreviewImage.setChecked(Constants.SETTINGS_YES.equalsIgnoreCase(previewImage));
         mCheckboxPreviewImage.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -105,6 +107,13 @@ public class ActivitySettings extends Activity{
             }
         });
 
+        // Preview size radio buttons
+        mRadioGroupPreviewSize = (RadioGroup) findViewById(R.id.radio_group_preview_size);
+        String previewSizeSelection = prefs_settings.getString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
+        // check prefs for what user has selected for preview size and initialize radio buttons accordingly
+        mRadioGroupPreviewSize.check(previewSizeSelection.equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
+                ? R.id.radio_preview_size_option_small : R.id.radio_preview_size_option_large);
+
         mBackButton = (Button) findViewById(R.id.settings_back);
         mBackButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,7 +126,7 @@ public class ActivitySettings extends Activity{
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if(mModified){
+        if (mModified) {
             Toast.makeText(this, getResources()
                     .getString(R.string.toast_settings_saved), Toast.LENGTH_SHORT).show();
         }
@@ -130,6 +139,28 @@ public class ActivitySettings extends Activity{
         finish();
     }
 
+    // preview size radio buttons
+    public void onRadioButtonClicked(View view) {
+        boolean checked = ((RadioButton) view).isChecked();
+        switch (view.getId()) {
+            case R.id.radio_preview_size_option_large:
+                if (checked) {
+                    prefs_settings_editor.putString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE);
+                    mModified = true;
+                }
+                break;
+            case R.id.radio_preview_size_option_small:
+                if (checked) {
+                    prefs_settings_editor.putString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
+                    mModified = true;
+                }
+                break;
+        }
+    }
+
+    public String getRadioOption(){
+        return "";
+    }
 
 }
 

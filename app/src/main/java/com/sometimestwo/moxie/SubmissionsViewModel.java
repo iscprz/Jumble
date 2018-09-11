@@ -7,14 +7,15 @@ import android.arch.paging.LivePagedListBuilder;
 import android.arch.paging.PagedList;
 
 
+import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
 import net.dean.jraw.models.Submission;
 
 public class SubmissionsViewModel extends ViewModel {
     //creating livedata for PagedList  and PagedKeyedDataSource
-    LiveData<PagedList<Submission>> postsPagedList;
-    LiveData<ItemKeyedDataSource<String, Submission>> liveDataSource;
+    LiveData<PagedList<SubmissionObj>> postsPagedList;
+    LiveData<ItemKeyedDataSource<String, SubmissionObj>> liveDataSource;
     SubmissionsDataSourceFactory submissionsDataSourceFactory;
 
     //constructor

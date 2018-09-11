@@ -65,7 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginTop="10dp"
-            android:text="Preview images on long press"
+            android:text="Preview submissions on long press"
             android:textColor="@color/colorWhite"
             android:textSize="16sp" />
 
@@ -80,7 +80,7 @@
     </RelativeLayout>
 
     <!-- Allow GIF preview-->
-    <RelativeLayout
+<!--    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginLeft="15dp">
@@ -102,9 +102,33 @@
             android:layout_alignParentTop="true"
             android:buttonTint="@color/colorWhite"
             android:gravity="center|end" />
-    </RelativeLayout>
+    </RelativeLayout>-->
 
     <!-- Display large hover??-->
+    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/radio_group_preview_size"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center|end"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/radio_preview_size_option_large"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClicked"
+            android:text="Large"
+            android:textColor="@color/colorWhite" />
+
+        <RadioButton
+            android:id="@+id/radio_preview_size_option_small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onRadioButtonClicked"
+            android:text="Small"
+            android:textColor="@color/colorWhite" />
+    </RadioGroup>
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dp">

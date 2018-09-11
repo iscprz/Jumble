@@ -4,6 +4,7 @@ package com.sometimestwo.moxie.Utils;
 import net.dean.jraw.models.Submission;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class Helpers {
 
@@ -11,40 +12,73 @@ public class Helpers {
        imgur links will be given in the following format :
        https://i.imgur.com/CtyvHl6.gifv
      */
-    public static String getFileExtensionFromPostUrl(String postURL){
+    public static String getFileExtensionFromPostUrl(String postURL) {
         String split[] = postURL.split("\\.");
-        return split.length > 0 ? split[split.length-1] : "";
+        return split.length > 0 ? split[split.length - 1] : "";
     }
 
-    public static String formatGifUrl(String badGifUrl){
+    public static String formatGifUrl(String badGifUrl) {
         String split[] = badGifUrl.split("\\.");
-        if("gifv".equalsIgnoreCase(split[split.length-1])){
-            split[split.length-1] = "gif";
+        if ("gifv".equalsIgnoreCase(split[split.length - 1])) {
+            split[split.length - 1] = "gif";
         }
         return Arrays.toString(split);
     }
 
-    public enum MediaType{
+    public enum MediaType {
         IMAGE,
         GIF,
         YOUTUBE
     }
 
-    public static MediaType getMediaType(Submission item){
-        String extension = getFileExtensionFromPostUrl(item.getUrl());
-        if("gif".equalsIgnoreCase(extension)
-                || "gifv".equalsIgnoreCase(extension)){
+    public static MediaType getMediaType(String url) {
+        String extension = getFileExtensionFromPostUrl(url);
+        if ("gif".equalsIgnoreCase(extension)
+                || "gifv".equalsIgnoreCase(extension)) {
             return MediaType.GIF;
-        }
-        else if("jpg".equalsIgnoreCase(extension)
+        } else if ("jpg".equalsIgnoreCase(extension)
                 || "jpeg".equalsIgnoreCase(extension)
-                || "png".equalsIgnoreCase(extension)){
+                || "png".equalsIgnoreCase(extension)) {
             return MediaType.IMAGE;
         }
         //youtube
         /* else if()*/
 
-            return null;
+        return null;
     }
 
+    // takes a URL and ensures it takes us directly to an image URL (.jpg, .jpeg, .png)
+    public static String ensureImageUrl(String url) {
+        //  url = url.toLowerCase();
+        if (Arrays.asList(Constants.VALID_IMAGE_EXTENSION).contains(getFileExtensionFromPostUrl(url))) {
+            // already directly points to image, no change needed
+            return url;
+        }
+
+        StringBuilder sb = new StringBuilder(url);
+
+        // imgur
+        if ("imgur".contains(url)) {
+            // url is formatted like: https://imgur.com/V51pWpk
+            // url needs to be formatted to https://imgur.com/V51pWpk.jpg
+            sb.append(".jpg");
+            return sb.toString();
+        }
+
+        return "";
+    }
+
+    public static void removeNonMediaItems(List<Submission> items) {
+        for (Submission item : items) {
+            if (item == null || item.isSelfPost()) {
+                items.remove(item);
+                continue;
+            }
+            if ((Helpers.getMediaType(item.getUrl()) != Helpers.MediaType.GIF)
+                    && (Helpers.getMediaType(item.getUrl()) != Helpers.MediaType.YOUTUBE)
+                    && (Helpers.getMediaType(item.getUrl()) != Helpers.MediaType.IMAGE)) {
+                items.remove(item);
+            }
+        }
+    }
 }

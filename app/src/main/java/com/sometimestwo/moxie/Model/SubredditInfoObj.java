@@ -11,6 +11,7 @@ public class SubredditInfoObj {
     String subreddit;
     SubredditSort mSortBy;
     TimePeriod mTimePeriod;
+    boolean allowNSFW = false;
 
     public SubredditSort getmSortBy() {
         return mSortBy == null ? SubredditSort.HOT : mSortBy;
@@ -34,5 +35,13 @@ public class SubredditInfoObj {
 
     public void setSubreddit(String subreddit) {
         this.subreddit = subreddit;
+    }
+
+    public boolean isAllowNSFW() {
+        return allowNSFW;
+    }
+
+    public void setAllowNSFW(boolean allowNSFW) {
+        this.allowNSFW = allowNSFW;
     }
 }

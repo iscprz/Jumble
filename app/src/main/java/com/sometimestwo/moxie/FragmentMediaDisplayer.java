@@ -16,13 +16,15 @@ import com.bumptech.glide.Glide;
 import com.github.piasy.biv.BigImageViewer;
 import com.github.piasy.biv.loader.glide.GlideImageLoader;
 import com.github.piasy.biv.view.BigImageView;
+import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Helpers;
 
 import net.dean.jraw.models.Submission;
 
 public class FragmentMediaDisplayer extends Fragment {
     private static final String TAG = Constants.TAG_FRAG_MEDIA_DISPLAY;
-    private Submission mCurrSubmission;
+    private SubmissionObj mCurrSubmission;
     private BigImageView mBigImageView;
     private TextView mTitle;
     private ImageView mImageView;
@@ -45,7 +47,7 @@ public class FragmentMediaDisplayer extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCurrSubmission = (Submission) this.getArguments().get(Constants.EXTRA_POST);
+        mCurrSubmission = (SubmissionObj) this.getArguments().get(Constants.EXTRA_POST);
 
     }
 
@@ -141,8 +143,11 @@ public class FragmentMediaDisplayer extends Fragment {
         mTitle.setText(mCurrSubmission.getTitle());
        // mBigImageView.showImage(Uri.parse(mCurrSubmission.getPostURL()));
 
+        //image
+        String cleanPostUrl = Helpers.ensureImageUrl(mCurrSubmission.getUrl());
+        //TODO: handle invalid URL
         Glide.with(this)
-                .load(mCurrSubmission.getUrl())
+                .load(cleanPostUrl)
                 //* .apply(options)*//*
                 .into(mImageView);
 

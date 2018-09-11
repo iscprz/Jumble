@@ -13,7 +13,7 @@
     <RelativeLayout
         android:id="@+id/hover_view_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="center|top"
         android:visibility="gone">
 
@@ -29,9 +29,10 @@
         <ImageView
             android:id="@+id/hover_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_below="@id/hover_view_title"
             android:background="@color/colorBgBlackTint"
+            android:scaleType="fitStart"
             android:visibility="visible" />
     </RelativeLayout>
 

@@ -4,6 +4,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.paging.DataSource;
 import android.arch.paging.ItemKeyedDataSource;
 
+import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Model.SubredditInfoObj;
 
 import net.dean.jraw.RedditClient;
@@ -11,7 +12,7 @@ import net.dean.jraw.models.Submission;
 
 public class SubmissionsDataSourceFactory extends DataSource.Factory {
     //creating the mutable live data
-    private MutableLiveData<ItemKeyedDataSource<String, Submission>> postLiveDataSource = new MutableLiveData<>();
+    private MutableLiveData<ItemKeyedDataSource<String, SubmissionObj>> postLiveDataSource = new MutableLiveData<>();
     RedditClient redditClient;
     SubredditInfoObj mSubredditInfoObj;
 
@@ -20,7 +21,7 @@ public class SubmissionsDataSourceFactory extends DataSource.Factory {
     }
 
     @Override
-    public DataSource<String, Submission> create() {
+    public DataSource<String, SubmissionObj> create() {
         //getting our data source object
         SubmissionsDataSource submissionsDataSource = new SubmissionsDataSource(mSubredditInfoObj);
 
@@ -33,7 +34,7 @@ public class SubmissionsDataSourceFactory extends DataSource.Factory {
 
 
     //getter for itemlivedatasource
-    public MutableLiveData<ItemKeyedDataSource<String, Submission>> getItemLiveDataSource() {
+    public MutableLiveData<ItemKeyedDataSource<String, SubmissionObj>> getItemLiveDataSource() {
         return postLiveDataSource;
     }
 

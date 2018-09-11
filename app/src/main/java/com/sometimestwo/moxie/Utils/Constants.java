@@ -40,10 +40,17 @@ public class Constants {
     public final static String KEY_ALLOW_NSFW = "KEY_ALLOW_NSFW";
     public final static String KEY_GIF_PREVIEW = "KEY_GIF_PREVIEW";
     public final static String KEY_IMAGE_PREVIEW = "KEY_IMAGE_PREVIEW";
+    public final static String KEY_PREVIEW_SIZE = "KEY_PREVIEW_SIZE";
+
     public final static String SETTINGS_NO = "SETTINGS_NO";
     public final static String SETTINGS_YES = "SETTINGS_YES";
+    public final static String SETTINGS_PREVIEW_SIZE_SMALL = "SETTINGS_PREVIEW_SIZE_SMALL";
+    public final static String SETTINGS_PREVIEW_SIZE_LARGE = "SETTINGS_PREVIEW_SIZE_LARGE";
 
 
     /* Misc*/
     public final static String[] VALID_MEDIA_EXTENSION = {"jpg", "jpeg", "png","gifv" , "gif"};
+    public final static String[] VALID_IMAGE_EXTENSION = {"jpg", "jpeg", "png"};
+    public final static String[] VALID_GIF_EXTENSION = {"gifv", "gif"};
+
 }

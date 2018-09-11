@@ -1,6 +1,8 @@
 package com.sometimestwo.moxie;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -11,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
 
+import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import net.dean.jraw.models.Submission;
 
@@ -47,8 +50,14 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
     }
 
     private void init(){
+        // initialize user settings in case this is first time app is being run
+        SharedPreferences prefs = getSharedPreferences(Constants.KEY_GETPREFS_SETTINGS, Context.MODE_PRIVATE);
+
+
         //TODO: Read this information from sharedprefs. Hardcoded for now
         App.getCurrSubredditObj().setSubreddit("pics");
+        App.getCurrSubredditObj().setAllowNSFW(prefs.getString(Constants.KEY_ALLOW_NSFW,Constants.SETTINGS_NO)
+                                                               .equalsIgnoreCase(Constants.SETTINGS_YES));
         int numDisplayCols = 3;
 
         FragmentManager fm = getSupportFragmentManager();
@@ -111,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
      */
 
     @Override
-    public void openMediaViewer(Submission submission) {
+    public void openMediaViewer(SubmissionObj submission) {
         // prevent opening two media viewers (happens on quick double click)
         if(!isViewingSubmission) {
             FragmentManager fm = getSupportFragmentManager();

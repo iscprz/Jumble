@@ -31,15 +31,15 @@ public class Helpers {
         YOUTUBE
     }
 
-    public static MediaType getMediaType(String url) {
+    public static Constants.SubmissionType getSubmissionType(String url) {
         String extension = getFileExtensionFromPostUrl(url);
         if ("gif".equalsIgnoreCase(extension)
                 || "gifv".equalsIgnoreCase(extension)) {
-            return MediaType.GIF;
+            return Constants.SubmissionType.GIF;
         } else if ("jpg".equalsIgnoreCase(extension)
                 || "jpeg".equalsIgnoreCase(extension)
                 || "png".equalsIgnoreCase(extension)) {
-            return MediaType.IMAGE;
+            return Constants.SubmissionType.VIDEO;
         }
         //youtube
         /* else if()*/
@@ -68,20 +68,6 @@ public class Helpers {
         return "";
     }
 
-    public static void removeNonMediaItems(List<Submission> items) {
-        for (Submission item : items) {
-            if (item == null || item.isSelfPost()) {
-                items.remove(item);
-                continue;
-            }
-            if ((Helpers.getMediaType(item.getUrl()) != Helpers.MediaType.GIF)
-                    && (Helpers.getMediaType(item.getUrl()) != Helpers.MediaType.YOUTUBE)
-                    && (Helpers.getMediaType(item.getUrl()) != Helpers.MediaType.IMAGE)) {
-                items.remove(item);
-            }
-
-        }
-    }
 
     // Assuming we get an Imgur link in one of the following formats:
     // 1. https://i.imgur.com/4RxPsWI.gifv

@@ -87,7 +87,7 @@ public class ActivitySettings extends Activity {
 */
 
 
-        //Image previewing
+        //ImgurSubmission previewing
         mCheckboxPreviewImage = (CheckBox) findViewById(R.id.settings_checkbox_image_preview);
         String previewImage = prefs_settings.getString(Constants.KEY_ALLOW_HOVER_PREVIEW, Constants.SETTINGS_NO);
         mCheckboxPreviewImage.setChecked(Constants.SETTINGS_YES.equalsIgnoreCase(previewImage));

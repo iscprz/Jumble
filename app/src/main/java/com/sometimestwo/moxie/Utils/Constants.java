@@ -58,4 +58,9 @@ public class Constants {
         SMALL,
         LARGE
     }
+    public enum SubmissionType{
+        IMAGE,
+        GIF,
+        VIDEO
+    }
 }

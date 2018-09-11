@@ -6,7 +6,9 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class Image {
+/* Reprents an image or gif response from Imgur.*/
+
+public class ImgurSubmission {
 
     @SerializedName("id")
     @Expose

@@ -3,7 +3,7 @@ package com.sometimestwo.moxie.Imgur.response.common;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.sometimestwo.moxie.Imgur.response.images.Image;
+import com.sometimestwo.moxie.Imgur.response.images.ImgurSubmission;
 
 import java.util.List;
 
@@ -53,7 +53,7 @@ public class Tag {
     private Object logoDestinationUrl;
     @SerializedName("items")
     @Expose
-    private List<Image> items = null;
+    private List<ImgurSubmission> items = null;
 
     public String getName() {
         return name;
@@ -167,11 +167,11 @@ public class Tag {
         this.logoDestinationUrl = logoDestinationUrl;
     }
 
-    public List<Image> getItems() {
+    public List<ImgurSubmission> getItems() {
         return items;
     }
 
-    public void setItems(List<Image> items) {
+    public void setItems(List<ImgurSubmission> items) {
         this.items = items;
     }
 

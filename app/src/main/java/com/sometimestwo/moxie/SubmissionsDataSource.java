@@ -121,7 +121,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 // download any videos if user has selected to play GIF files through settings
                 if(true/* sharedprefs.playGifs*/){
                     for (Submission s : submissions){
-                      /*  if(Helpers.getMediaType(s) == Helpers.MediaType.GIF){
+                      /*  if(Helpers.getSubmissionType(s) == Helpers.MediaType.GIF){
 
                         }*/
                     }

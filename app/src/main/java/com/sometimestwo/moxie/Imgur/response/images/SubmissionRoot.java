@@ -3,11 +3,11 @@ package com.sometimestwo.moxie.Imgur.response.images;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class ImageRoot {
+public class SubmissionRoot {
 
     @SerializedName("data")
     @Expose
-    private Image imageData;
+    private ImgurSubmission imgurSubmissionData;
     @SerializedName("success")
     @Expose
     private Boolean success;
@@ -15,12 +15,12 @@ public class ImageRoot {
     @Expose
     private Integer status;
 
-    public Image getImageData() {
-        return imageData;
+    public ImgurSubmission getImgurSubmissionData() {
+        return imgurSubmissionData;
     }
 
-    public void setImageData(Image imageData) {
-        this.imageData = imageData;
+    public void setImgurSubmissionData(ImgurSubmission imgurSubmissionData) {
+        this.imgurSubmissionData = imgurSubmissionData;
     }
 
     public Boolean getSuccess() {

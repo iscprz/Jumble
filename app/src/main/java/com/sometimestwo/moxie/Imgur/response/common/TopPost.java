@@ -2,7 +2,7 @@ package com.sometimestwo.moxie.Imgur.response.common;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.sometimestwo.moxie.Imgur.response.images.Image;
+import com.sometimestwo.moxie.Imgur.response.images.ImgurSubmission;
 
 import java.util.List;
 
@@ -104,9 +104,9 @@ public class TopPost {
     @SerializedName("in_most_viral")
     @Expose
     private Boolean inMostViral;
-    @SerializedName("images")
+    @SerializedName("imgurSubmissions")
     @Expose
-    private List<Image> images = null;
+    private List<ImgurSubmission> imgurSubmissions = null;
     @SerializedName("type")
     @Expose
     private String type;
@@ -379,12 +379,12 @@ public class TopPost {
         this.inMostViral = inMostViral;
     }
 
-    public List<Image> getImages() {
-        return images;
+    public List<ImgurSubmission> getImgurSubmissions() {
+        return imgurSubmissions;
     }
 
-    public void setImages(List<Image> images) {
-        this.images = images;
+    public void setImgurSubmissions(List<ImgurSubmission> imgurSubmissions) {
+        this.imgurSubmissions = imgurSubmissions;
     }
 
     public String getType() {

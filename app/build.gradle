@@ -9,6 +9,8 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+
     }
     buildTypes {
         release {
@@ -68,6 +70,9 @@ dependencies {
 
     //exoplayer
     implementation 'com.google.android.exoplayer:exoplayer:2.8.4'
+
+    // fixes error: Cannot fit requested classes in a single dex file. Try supplying a main-dex list.
+    implementation 'com.android.support:multidex:1.0.3'
 
 
 }

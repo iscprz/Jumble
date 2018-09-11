@@ -1,5 +1,7 @@
 package com.sometimestwo.moxie.Model;
 
+import com.sometimestwo.moxie.Utils.Constants;
+
 import net.dean.jraw.models.CommentSort;
 import net.dean.jraw.models.VoteDirection;
 import net.dean.jraw.references.SubmissionReference;
@@ -41,6 +43,7 @@ public class SubmissionObj implements Serializable{
     private boolean isRemoved;
     private VoteDirection vote;
     private Integer commentCount;
+    private Constants.SubmissionType submissionType;
 
     public String getAuthor() {
         return author;
@@ -265,4 +268,13 @@ public class SubmissionObj implements Serializable{
     public void setCommentCount(Integer commentCount) {
         this.commentCount = commentCount;
     }
+
+    public Constants.SubmissionType getSubmissionType() {
+        return submissionType;
+    }
+
+    public void setSubmissionType(Constants.SubmissionType submissionType) {
+        this.submissionType = submissionType;
+    }
+
 }

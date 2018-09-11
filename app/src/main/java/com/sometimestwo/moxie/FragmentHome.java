@@ -9,10 +9,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
@@ -34,6 +34,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -41,9 +42,26 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.upstream.TransferListener;
+import com.google.android.exoplayer2.util.Util;
 import com.sometimestwo.moxie.Imgur.client.ImgurClient;
-import com.sometimestwo.moxie.Imgur.response.images.Image;
-import com.sometimestwo.moxie.Imgur.response.images.ImageRoot;
+import com.sometimestwo.moxie.Imgur.response.images.ImgurSubmission;
+import com.sometimestwo.moxie.Imgur.response.images.SubmissionRoot;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Helpers;
@@ -85,13 +103,24 @@ public class FragmentHome extends Fragment {
     private RelativeLayout mHoverPreviewContainerSmall;
     private TextView mHoverPreviewTitleSmall;
     private ImageView mHoverPreviewSmall;
-   // private PopupWindow mPopupWindow;
-   // private View mPopupView;
+    // private PopupWindow mPopupWindow;
+    // private View mPopupView;
 
     // hover view large
     private RelativeLayout mHoverPreviewContainerLarge;
     private TextView mHoverPreviewTitleLarge;
     private ImageView mHoverPreviewLarge;
+
+    //exo player stuff
+    private BandwidthMeter bandwidthMeter;
+    private PlayerView mExoplayerLarge;
+    private DefaultTrackSelector trackSelector;
+    private SimpleExoPlayer player;
+    private ProgressBar progressBar;
+    private DataSource.Factory mediaDataSourceFactory;
+    private int currentWindow;
+    private long playbackPosition;
+    private Timeline.Window window;
 
     // event listeners
     private HomeEventListener mHomeEventListener;
@@ -171,6 +200,15 @@ public class FragmentHome extends Fragment {
         mHoverPreviewContainerLarge = (RelativeLayout) v.findViewById(R.id.hover_view_container_large);
         mHoverPreviewTitleLarge = (TextView) v.findViewById(R.id.hover_view_title_large);
         mHoverPreviewLarge = (ImageView) v.findViewById(R.id.hover_view_large);
+
+        /* Exo player */
+        mExoplayerLarge = (PlayerView) v.findViewById(R.id.exoplayer_large);
+        bandwidthMeter = new DefaultBandwidthMeter();
+        mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(), Util.getUserAgent(getContext(), "mediaPlayerSample"), (TransferListener<? super DataSource>) bandwidthMeter);
+        window = new Timeline.Window();
+        //ivHideControllerButton = findViewById(R.id.exo_controller);
+       // progressBar = findViewById(R.id.progress_bar);
+
         return v;
     }
 
@@ -341,8 +379,8 @@ public class FragmentHome extends Fragment {
         mPrefsAllowNSFW = prefs.getString(Constants.KEY_ALLOW_NSFW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
         mAllowImagePreview = prefs.getString(Constants.KEY_ALLOW_HOVER_PREVIEW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
         mPreviewSize = prefs.getString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
-                            .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
-                            ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
+                .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
+                ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
     }
 
     private static DiffUtil.ItemCallback<SubmissionObj> DIFF_CALLBACK =
@@ -383,29 +421,23 @@ public class FragmentHome extends Fragment {
             SubmissionObj item = getItem(position);
             //ignore any items that do not have thumbnail do display
             if (item != null && !item.isSelfPost()) {
-                String thumbnailUrl = item.getThumbnail();
-                String postUrl = item.getUrl();
-
                 // Imgur
                 if (item.getDomain().contains("imgur")) {
-                    String extension = Helpers.getFileExtensionFromPostUrl(postUrl);
-                    // Submission links to non-direct image link such as "https://imgur.com/qTadRtq?r"
-                    // Need to append "jpg": https://imgur.com/qTadRtq?r.jpg
-                    if (!Arrays.asList(Constants.VALID_MEDIA_EXTENSION).contains(extension)) {
-                        StringBuilder sb = new StringBuilder(item.getUrl());
-                        item.setUrl(sb.append(".jpg").toString());
-                        // While we're here, make sure thumbnail is valid image otherwise override
-                        // it with the post URL. Glide will resize it to thumbnail (preformance hit)
-                        //TODO: This might be unnecessary
-                        if (!Arrays.asList(Constants.VALID_MEDIA_EXTENSION).contains(Helpers.getFileExtensionFromPostUrl(item.getThumbnail()))) {
-                            item.setThumbnail(sb.toString());
-                        }
-                        extension = "jpg";
+                    // try setting the submission type here. Imgur links will have .jpg/.gifv
+                    // appended to them if linked directly. Don't worry about indirect links here.
+                    item.setSubmissionType(Helpers.getSubmissionType(item.getUrl()));
+
+                    // Check if submission type is null. This will happen if the item's URL is
+                    // to a non-direct image/gif link such as https://imgur.com/qTadRtq
+                    if (item.getSubmissionType() == null) {
+                        String imgurHash = Helpers.getImgurHash(item.getUrl());
+                        // replaces item's postURL with direct link to image/gif(mp4)
+                        fixIndirectImgurUrl(item, imgurHash);
                     }
+
                     // image
-                    if (Arrays.asList(Constants.VALID_IMAGE_EXTENSION).contains(extension)) {
-                        GlideApp
-                                .load(thumbnailUrl)
+                    if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                        GlideApp.load(item.getThumbnail())
                                 .apply(new RequestOptions()
                                         .centerCrop()
                                         .diskCacheStrategy(DiskCacheStrategy.ALL))
@@ -413,31 +445,11 @@ public class FragmentHome extends Fragment {
                     }
 
                     // gif
-                    if (Arrays.asList(Constants.VALID_GIF_EXTENSION).contains(extension)) {
-                        // Assume we're given .gifv link. Need to fetch .mp4 link
-                        String hash = Helpers.getImgurHash(item.getUrl());
-                        String hashTest = "4RxPsWI";
-                        ImgurClient imgurClient = new ImgurClient();
-                        imgurClient.getImageService()
-                                .getImageByHash(hash)
-                                .subscribeOn(Schedulers.io())
-                                .subscribe(new io.reactivex.Observer<ImageRoot>() {
-                                    @Override
-                                    public void onSubscribe(Disposable d) {}
-                                    @Override
-                                    public void onNext(ImageRoot imageRoot) {
-                                        Image imageData = imageRoot.getImageData();
-                                        mp4Url = imageData.getMp4();
-                                    }
-                                    @Override
-                                    public void onError(Throwable e) {
-
-                                        e.printStackTrace();
-                                    }
-
-                                    @Override
-                                    public void onComplete() {}
-                                });
+                    else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
+                        // Assume we're given .gifv link. Need to fetch .mp4 link from Imgur API
+                        String imgurHash = Helpers.getImgurHash(item.getUrl());
+                        getMp4LinkImgur(item,imgurHash);
+                        //String hashTest = "4RxPsWI";
                        /* GlideApp
                                 .load(thumbnailUrl)
                                 .apply(new RequestOptions()
@@ -496,33 +508,45 @@ public class FragmentHome extends Fragment {
                             // prevent recyclerview from handling touch events, otherwise bad things happen
                             mRecyclerMain.setHandleTouchEvents(false);
                             isImageViewPressed = true;
-                            if(mPreviewSize == Constants.HoverPreviewSize.SMALL){
+                            if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
                                 //popupWindow = new PopupWindow(customView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                                if(item.getSubmissionType() == Constants.SubmissionType.IMAGE){
+                                    GlideApp
+                                            .load(item.getUrl())
+                                            .apply(new RequestOptions()
+                                                    .diskCacheStrategy(DiskCacheStrategy.ALL))
+                                            .into(mHoverPreviewSmall);
+                                    mHoverPreviewTitleSmall.setText(item.getTitle());
+                                    mHoverPreviewContainerSmall.setVisibility(View.VISIBLE);
+                                }
+                                else if(item.getSubmissionType() == Constants.SubmissionType.GIF){
 
-                                GlideApp
-                                        .load(item.getUrl())
-                                        .apply(new RequestOptions()
-                                                .diskCacheStrategy(DiskCacheStrategy.ALL))
-                                        .into(mHoverPreviewSmall);
-                                mHoverPreviewTitleSmall.setText(item.getTitle());
-                                mHoverPreviewContainerSmall.setVisibility(View.VISIBLE);
+                                }
+
 
                                 //qqq
                                 // mPopupWindow = new PopupWindow(getActivity());
 
                                 //mPopupWindow = new PopupWindow(mPopupView, RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                               // mPopupWindow.setContentView(mHoverPreviewContainerSmall);
+                                // mPopupWindow.setContentView(mHoverPreviewContainerSmall);
                                 //mPopupWindow.showAtLocation(mParentView, Gravity.CENTER,0,0);
 
-                            }
-                            else if(mPreviewSize == Constants.HoverPreviewSize.LARGE){
-                                GlideApp
-                                        .load(item.getUrl())
-                                        .apply(new RequestOptions()
-                                                .diskCacheStrategy(DiskCacheStrategy.ALL))
-                                        .into(mHoverPreviewLarge);
-                                mHoverPreviewTitleLarge.setText(item.getTitle());
-                                mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
+                            } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+                                if(item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                                    GlideApp
+                                            .load(item.getUrl())
+                                            .apply(new RequestOptions()
+                                                    .diskCacheStrategy(DiskCacheStrategy.ALL))
+                                            .into(mHoverPreviewLarge);
+                                    mHoverPreviewTitleLarge.setText(item.getTitle());
+                                    mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
+                                }
+                                else if(item.getSubmissionType() == Constants.SubmissionType.GIF) {
+                                    initializePlayer(item.getUrl());
+                                    mHoverPreviewTitleLarge.setText(item.getTitle());
+                                    mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
+                                }
+
                             }
                             return true;
                         }
@@ -538,12 +562,11 @@ public class FragmentHome extends Fragment {
                                     // done with hoverview, allow recyclerview to handle touch events
                                     mRecyclerMain.setHandleTouchEvents(true);
                                     isImageViewPressed = false;
-                                    if(mPreviewSize == Constants.HoverPreviewSize.SMALL){
-                                       // mHoverPreviewTitleSmall.setText("");
+                                    if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
+                                        // mHoverPreviewTitleSmall.setText("");
                                         mHoverPreviewContainerSmall.setVisibility(View.GONE);
-                                    }
-                                   else if(mPreviewSize == Constants.HoverPreviewSize.LARGE){
-                                       // mHoverPreviewTitleSmall.setText("");
+                                    } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+                                        // mHoverPreviewTitleSmall.setText("");
                                         mHoverPreviewContainerLarge.setVisibility(View.GONE);
                                     }
                                 }
@@ -576,5 +599,145 @@ public class FragmentHome extends Fragment {
         }
     }
 
+
+    /*
+        Takes indirect Imgur url such as https://imgur.com/7Ogk88I, fetches direct link from
+        Imgur API, and sets item's URL to direct link.
+        We also are setting the item's submission type here. Might need to do this elsewhere.
+     */
+    public void fixIndirectImgurUrl(SubmissionObj item, String imgurHash) {
+        ImgurClient imgurClient = new ImgurClient();
+
+        imgurClient.getImageService()
+                .getImageByHash(imgurHash)
+                .subscribeOn(Schedulers.io())
+                .subscribe(new io.reactivex.Observer<SubmissionRoot>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(SubmissionRoot submissionRoot) {
+                        ImgurSubmission imgurSubmissionData = submissionRoot.getImgurSubmissionData();
+                        // ImgurSubmission can be one of two things:
+                        // 1. Image. Will not contain any mp4 data
+                        // 2. Gif. Will contain mp4 link
+
+                        // image
+                        if (imgurSubmissionData.getMp4() == null /*|| "".equalsIgnoreCase(imgurSubmissionData.getMp4())*/) {
+                            item.setUrl(imgurSubmissionData.getLink());
+                            item.setSubmissionType(Constants.SubmissionType.IMAGE);
+                        }
+                        // gif
+                        else {
+                            item.setUrl(imgurSubmissionData.getMp4());
+                            item.setSubmissionType(Constants.SubmissionType.GIF);
+
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                    }
+                });
+    }
+
+    /*
+        [IMGUR SPECIFIC FUNCTION]
+        Given a imgur link ending with .gif/gifv such as https://i.imgur.com/4RxPsWI.gifv,
+        retrieve corresponding .mp4 link: https://i.imgur.com/4RxPsWI.mp4 and set item's
+        URL to new .mp4 link.
+     */
+    private void getMp4LinkImgur(SubmissionObj item, String imgurHash){
+        ImgurClient imgurClient = new ImgurClient();
+
+        imgurClient.getImageService()
+                .getImageByHash(imgurHash)
+                .subscribeOn(Schedulers.io())
+                .subscribe(new io.reactivex.Observer<SubmissionRoot>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(SubmissionRoot submissionRoot) {
+                        ImgurSubmission imgurSubmissionData = submissionRoot.getImgurSubmissionData();
+                        item.setUrl(imgurSubmissionData.getMp4());
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                    }
+                });
+    }
+
+
+    private void initializePlayer(String url) {
+
+        mExoplayerLarge.requestFocus();
+
+        TrackSelection.Factory videoTrackSelectionFactory =
+                new AdaptiveTrackSelection.Factory(bandwidthMeter);
+
+        trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
+
+        player = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector);
+
+        mExoplayerLarge.setPlayer(player);
+
+        player.addListener(new PlayerEventListener());
+        player.setPlayWhenReady(true);
+/*        MediaSource mediaSource = new HlsMediaSource(Uri.parse("https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
+                mediaDataSourceFactory, mainHandler, null);*/
+
+
+        MediaSource mediaSource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
+                .createMediaSource(Uri.parse(url));
+
+        boolean haveStartPosition = currentWindow != C.INDEX_UNSET;
+        if (haveStartPosition) {
+            player.seekTo(currentWindow, playbackPosition);
+        }
+
+        player.prepare(mediaSource, !haveStartPosition, false);
+
+     /*   ivHideControllerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playerView.hideController();
+            }
+        });*/
+    }
+
+    private class PlayerEventListener extends Player.DefaultEventListener{
+
+        @Override
+        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+            switch (playbackState) {
+                case Player.STATE_IDLE:       // The player does not have any media to play yet.
+                    //progressBar.setVisibility(View.VISIBLE);
+                    break;
+                case Player.STATE_BUFFERING:  // The player is buffering (loading the content)
+                 //   progressBar.setVisibility(View.VISIBLE);
+                    break;
+                case Player.STATE_READY:      // The player is able to immediately play
+                   // progressBar.setVisibility(View.GONE);
+                    break;
+                case Player.STATE_ENDED:      // The player has finished playing the media
+                  //  progressBar.setVisibility(View.GONE);
+                    break;
+            }
+        }
+    }
 
 }

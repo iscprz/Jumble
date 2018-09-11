@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -27,7 +26,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -72,12 +70,17 @@ public class FragmentHome extends Fragment {
     private boolean mPrefsAllowNSFW = false;
     private boolean mAllowImagePreview = false;
     // private boolean mAllowGifPreview = false;
-    private int mPreviewSize = 0; // 0 small, 1 large
+    private Constants.HoverPreviewSize mPreviewSize;
 
-    // hover view
-    private ImageView mHoverView;
-    private RelativeLayout mHoverViewContainer;
-    private TextView mHoverViewTitle;
+    // hover preview small
+    private RelativeLayout mHoverPreviewContainerSmall;
+    private TextView mHoverPreviewTitleSmall;
+    private ImageView mHoverPreviewSmall;
+
+    // hover view large
+    private RelativeLayout mHoverPreviewContainerLarge;
+    private TextView mHoverPreviewTitleLarge;
+    private ImageView mHoverPreviewLarge;
 
     // event listeners
     private HomeEventListener mHomeEventListener;
@@ -146,10 +149,15 @@ public class FragmentHome extends Fragment {
 
         mRecyclerMain.setAdapter(adapter);
 
-        /* hover view*/
-        mHoverViewContainer = (RelativeLayout) v.findViewById(R.id.hover_view_container);
-        mHoverViewTitle = (TextView) v.findViewById(R.id.hover_view_title);
-        mHoverView = (ImageView) v.findViewById(R.id.hover_view);
+        /* hover view small*/
+        mHoverPreviewContainerSmall = (RelativeLayout) v.findViewById(R.id.hover_view_container_small);
+        mHoverPreviewTitleSmall = (TextView) v.findViewById(R.id.hover_view_title_small);
+        mHoverPreviewSmall = (ImageView) v.findViewById(R.id.hover_view_small);
+
+        /* hover view large*/
+        mHoverPreviewContainerLarge = (RelativeLayout) v.findViewById(R.id.hover_view_container_large);
+        mHoverPreviewTitleLarge = (TextView) v.findViewById(R.id.hover_view_title_large);
+        mHoverPreviewLarge = (ImageView) v.findViewById(R.id.hover_view_large);
         return v;
     }
 
@@ -180,7 +188,6 @@ public class FragmentHome extends Fragment {
         // i.e. User went to settings, opted in to NSFW posts then navigated back.
         validatePreferences();
         //loggedIn = ???
-
     }
 
 
@@ -319,9 +326,10 @@ public class FragmentHome extends Fragment {
 
     private void validatePreferences() {
         mPrefsAllowNSFW = prefs.getString(Constants.KEY_ALLOW_NSFW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
-        mAllowImagePreview = prefs.getString(Constants.KEY_IMAGE_PREVIEW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
-        mAllowImagePreview = prefs.getString(Constants.KEY_GIF_PREVIEW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
-        mPreviewSize = prefs.getString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL).equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL) ? 0 : 1;
+        mAllowImagePreview = prefs.getString(Constants.KEY_ALLOW_HOVER_PREVIEW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
+        mPreviewSize = prefs.getString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
+                            .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
+                            ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
     }
 
     private static DiffUtil.ItemCallback<SubmissionObj> DIFF_CALLBACK =
@@ -360,9 +368,6 @@ public class FragmentHome extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull final ItemViewHolder holder, int position) {
             SubmissionObj item = getItem(position);
-            if (item.getAuthor().equalsIgnoreCase("deweysizemore")) {
-                int a = 2;
-            }
             //ignore any items that do not have thumbnail do display
             if (item != null && !item.isSelfPost()) {
                 String thumbnailUrl = item.getThumbnail();
@@ -370,18 +375,15 @@ public class FragmentHome extends Fragment {
 
                 // Imgur
                 if (item.getDomain().contains("imgur")) {
-                    // find extension
                     String extension = Helpers.getFileExtensionFromPostUrl(postUrl);
-
                     // Submission links to non-direct image link such as "https://imgur.com/qTadRtq?r"
                     // Need to append "jpg": https://imgur.com/qTadRtq?r.jpg
                     if (!Arrays.asList(Constants.VALID_MEDIA_EXTENSION).contains(extension)) {
                         StringBuilder sb = new StringBuilder(item.getUrl());
-                        sb.append(".jpg");
-                        item.setUrl(sb.toString());
-
+                        item.setUrl(sb.append(".jpg").toString());
                         // While we're here, make sure thumbnail is valid image otherwise override
                         // it with the post URL. Glide will resize it to thumbnail (preformance hit)
+                        //TODO: This might be unnecessary
                         if (!Arrays.asList(Constants.VALID_MEDIA_EXTENSION).contains(Helpers.getFileExtensionFromPostUrl(item.getThumbnail()))) {
                             item.setThumbnail(sb.toString());
                         }
@@ -451,26 +453,30 @@ public class FragmentHome extends Fragment {
 
                 /* Long press hover previewer */
                 if (mAllowImagePreview) {
-
                     holder.thumbnailImageView.setOnLongClickListener(new View.OnLongClickListener() {
                         @Override
                         public boolean onLongClick(View pView) {
                             // prevent recyclerview from handling touch events, otherwise bad things happen
                             mRecyclerMain.setHandleTouchEvents(false);
                             isImageViewPressed = true;
-
-                            GlideApp
-                                    .load(item.getUrl())
-                                    .apply(new RequestOptions()
-                                            .diskCacheStrategy(DiskCacheStrategy.ALL))
-                                    .into(mHoverView);
-                            mHoverViewTitle.setText(item.getTitle());
-
-                           // float scale = getResources().getDisplayMetrics().density;
-                            //int dpAsPixels = (int) (mHoverViewTitle.getHeight()*scale + 0.5f);
-                           // mHoverViewContainer.(0,dpAsPixels,0,0);
-                            mHoverViewContainer.setVisibility(View.VISIBLE);
-                            //mHoverView.setVisibility(View.VISIBLE);
+                            if(mPreviewSize == Constants.HoverPreviewSize.SMALL){
+                                GlideApp
+                                        .load(item.getUrl())
+                                        .apply(new RequestOptions()
+                                                .diskCacheStrategy(DiskCacheStrategy.ALL))
+                                        .into(mHoverPreviewSmall);
+                                mHoverPreviewTitleSmall.setText(item.getTitle());
+                                mHoverPreviewContainerSmall.setVisibility(View.VISIBLE);
+                            }
+                            else if(mPreviewSize == Constants.HoverPreviewSize.LARGE){
+                                GlideApp
+                                        .load(item.getUrl())
+                                        .apply(new RequestOptions()
+                                                .diskCacheStrategy(DiskCacheStrategy.ALL))
+                                        .into(mHoverPreviewLarge);
+                                mHoverPreviewTitleLarge.setText(item.getTitle());
+                                mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
+                            }
                             return true;
                         }
                     });
@@ -485,9 +491,14 @@ public class FragmentHome extends Fragment {
                                     // done with hoverview, allow recyclerview to handle touch events
                                     mRecyclerMain.setHandleTouchEvents(true);
                                     isImageViewPressed = false;
-                                    mHoverViewTitle.setText("");
-                                    mHoverViewContainer.setVisibility(View.GONE);
-                                    //mHoverView.setVisibility(View.GONE);
+                                    if(mPreviewSize == Constants.HoverPreviewSize.SMALL){
+                                       // mHoverPreviewTitleSmall.setText("");
+                                        mHoverPreviewContainerSmall.setVisibility(View.GONE);
+                                    }
+                                   else if(mPreviewSize == Constants.HoverPreviewSize.LARGE){
+                                       // mHoverPreviewTitleSmall.setText("");
+                                        mHoverPreviewContainerLarge.setVisibility(View.GONE);
+                                    }
                                 }
                             }
                             return false;

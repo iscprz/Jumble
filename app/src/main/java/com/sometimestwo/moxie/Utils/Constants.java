@@ -38,8 +38,7 @@ public class Constants {
     /*SharedPrefs */
     public final static String KEY_GETPREFS_SETTINGS = "KEY_GETPREFS_SETTINGS";
     public final static String KEY_ALLOW_NSFW = "KEY_ALLOW_NSFW";
-    public final static String KEY_GIF_PREVIEW = "KEY_GIF_PREVIEW";
-    public final static String KEY_IMAGE_PREVIEW = "KEY_IMAGE_PREVIEW";
+    public final static String KEY_ALLOW_HOVER_PREVIEW = "KEY_ALLOW_HOVER_PREVIEW";
     public final static String KEY_PREVIEW_SIZE = "KEY_PREVIEW_SIZE";
 
     public final static String SETTINGS_NO = "SETTINGS_NO";
@@ -53,4 +52,10 @@ public class Constants {
     public final static String[] VALID_IMAGE_EXTENSION = {"jpg", "jpeg", "png"};
     public final static String[] VALID_GIF_EXTENSION = {"gifv", "gif"};
 
+
+    /* Enums*/
+    public enum HoverPreviewSize{
+        SMALL,
+        LARGE
+    }
 }

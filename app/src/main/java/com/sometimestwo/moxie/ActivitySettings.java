@@ -89,13 +89,13 @@ public class ActivitySettings extends Activity {
 
         //Image previewing
         mCheckboxPreviewImage = (CheckBox) findViewById(R.id.settings_checkbox_image_preview);
-        String previewImage = prefs_settings.getString(Constants.KEY_IMAGE_PREVIEW, Constants.SETTINGS_NO);
+        String previewImage = prefs_settings.getString(Constants.KEY_ALLOW_HOVER_PREVIEW, Constants.SETTINGS_NO);
         mCheckboxPreviewImage.setChecked(Constants.SETTINGS_YES.equalsIgnoreCase(previewImage));
         mCheckboxPreviewImage.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 mModified = true;
-                prefs_settings_editor.putString(Constants.KEY_IMAGE_PREVIEW, b ? Constants.SETTINGS_YES : Constants.SETTINGS_NO);
+                prefs_settings_editor.putString(Constants.KEY_ALLOW_HOVER_PREVIEW, b ? Constants.SETTINGS_YES : Constants.SETTINGS_NO);
             }
         });
         // textview clicks will trigger checkbox checking

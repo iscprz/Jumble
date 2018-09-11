@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
 
 
         //TODO: Read this information from sharedprefs. Hardcoded for now
-        App.getCurrSubredditObj().setSubreddit("pics");
+        App.getCurrSubredditObj().setSubreddit("gifs");
         App.getCurrSubredditObj().setAllowNSFW(prefs.getString(Constants.KEY_ALLOW_NSFW,Constants.SETTINGS_NO)
                                                                .equalsIgnoreCase(Constants.SETTINGS_YES));
         int numDisplayCols = 3;

@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
@@ -40,6 +41,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.sometimestwo.moxie.Imgur.client.ImgurClient;
+import com.sometimestwo.moxie.Imgur.response.images.Image;
+import com.sometimestwo.moxie.Imgur.response.images.ImageRoot;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Helpers;
@@ -47,6 +51,9 @@ import com.sometimestwo.moxie.Utils.Helpers;
 import net.dean.jraw.RedditClient;
 
 import java.util.Arrays;
+
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -63,6 +70,8 @@ public class FragmentHome extends Fragment {
     private String mCurrSubreddit;
     private RedditClient mRedditClient;
     private boolean isImageViewPressed = false;
+    // temporarily stores mp4 link to corresponding GIFV
+    private String mp4Url;
 
     // settings prefs
     SharedPreferences prefs;
@@ -76,6 +85,8 @@ public class FragmentHome extends Fragment {
     private RelativeLayout mHoverPreviewContainerSmall;
     private TextView mHoverPreviewTitleSmall;
     private ImageView mHoverPreviewSmall;
+   // private PopupWindow mPopupWindow;
+   // private View mPopupView;
 
     // hover view large
     private RelativeLayout mHoverPreviewContainerLarge;
@@ -108,6 +119,8 @@ public class FragmentHome extends Fragment {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_main, container, false);
+        //mPopupView = inflater.inflate(R.layout.layout_popup_preview_small,null);
+        //mParentView = v.findViewById(R.id.main_content);
 
         /* Hamburger menu*/
         setupHamburgerMenu(v);
@@ -401,6 +414,30 @@ public class FragmentHome extends Fragment {
 
                     // gif
                     if (Arrays.asList(Constants.VALID_GIF_EXTENSION).contains(extension)) {
+                        // Assume we're given .gifv link. Need to fetch .mp4 link
+                        String hash = Helpers.getImgurHash(item.getUrl());
+                        String hashTest = "4RxPsWI";
+                        ImgurClient imgurClient = new ImgurClient();
+                        imgurClient.getImageService()
+                                .getImageByHash(hash)
+                                .subscribeOn(Schedulers.io())
+                                .subscribe(new io.reactivex.Observer<ImageRoot>() {
+                                    @Override
+                                    public void onSubscribe(Disposable d) {}
+                                    @Override
+                                    public void onNext(ImageRoot imageRoot) {
+                                        Image imageData = imageRoot.getImageData();
+                                        mp4Url = imageData.getMp4();
+                                    }
+                                    @Override
+                                    public void onError(Throwable e) {
+
+                                        e.printStackTrace();
+                                    }
+
+                                    @Override
+                                    public void onComplete() {}
+                                });
                        /* GlideApp
                                 .load(thumbnailUrl)
                                 .apply(new RequestOptions()
@@ -460,6 +497,8 @@ public class FragmentHome extends Fragment {
                             mRecyclerMain.setHandleTouchEvents(false);
                             isImageViewPressed = true;
                             if(mPreviewSize == Constants.HoverPreviewSize.SMALL){
+                                //popupWindow = new PopupWindow(customView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+
                                 GlideApp
                                         .load(item.getUrl())
                                         .apply(new RequestOptions()
@@ -467,6 +506,14 @@ public class FragmentHome extends Fragment {
                                         .into(mHoverPreviewSmall);
                                 mHoverPreviewTitleSmall.setText(item.getTitle());
                                 mHoverPreviewContainerSmall.setVisibility(View.VISIBLE);
+
+                                //qqq
+                                // mPopupWindow = new PopupWindow(getActivity());
+
+                                //mPopupWindow = new PopupWindow(mPopupView, RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                               // mPopupWindow.setContentView(mHoverPreviewContainerSmall);
+                                //mPopupWindow.showAtLocation(mParentView, Gravity.CENTER,0,0);
+
                             }
                             else if(mPreviewSize == Constants.HoverPreviewSize.LARGE){
                                 GlideApp

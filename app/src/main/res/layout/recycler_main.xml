@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Preview container that gets hidden/unhidden-->
+    <!-- Large preview container that gets hidden/unhidden-->
     <RelativeLayout
         android:id="@+id/hover_view_container_large"
         android:layout_width="match_parent"
@@ -33,11 +33,13 @@
             android:layout_below="@id/hover_view_title_large"
             android:background="@color/colorBgBlackTint"
             android:scaleType="fitStart"
+            android:adjustViewBounds="true"
+            android:layout_centerHorizontal="true"
             android:visibility="visible" />
     </RelativeLayout>
 
 
-    <!-- Preview container that gets hidden/unhidden-->
+    <!-- Small preview container that gets hidden/unhidden-->
     <RelativeLayout
         android:id="@+id/hover_view_container_small"
         android:layout_width="wrap_content"

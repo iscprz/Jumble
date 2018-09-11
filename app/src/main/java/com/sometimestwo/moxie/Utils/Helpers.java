@@ -79,6 +79,21 @@ public class Helpers {
                     && (Helpers.getMediaType(item.getUrl()) != Helpers.MediaType.IMAGE)) {
                 items.remove(item);
             }
+
         }
+    }
+
+    // Assuming we get an Imgur link in one of the following formats:
+    // 1. https://i.imgur.com/4RxPsWI.gifv
+    // 2. https://i.imgur.com/4RxPsWI
+    //
+    // Return: 4RxPsWI
+    public static String getImgurHash(String imgurLink){
+        String split[] = imgurLink.split("/");
+        String res = split[split.length-1];
+        if(res.contains(".")){
+            res = res.split("\\.")[0];
+        }
+        return res;
     }
 }

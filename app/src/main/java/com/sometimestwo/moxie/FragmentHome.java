@@ -207,7 +207,7 @@ public class FragmentHome extends Fragment {
         mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(), Util.getUserAgent(getContext(), "mediaPlayerSample"), (TransferListener<? super DataSource>) bandwidthMeter);
         window = new Timeline.Window();
         //ivHideControllerButton = findViewById(R.id.exo_controller);
-       // progressBar = findViewById(R.id.progress_bar);
+        // progressBar = findViewById(R.id.progress_bar);
 
         return v;
     }
@@ -419,6 +419,7 @@ public class FragmentHome extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull final ItemViewHolder holder, int position) {
             SubmissionObj item = getItem(position);
+            String thumbnail = Constants.THUMBNAIL_NOT_FOUND;
             //ignore any items that do not have thumbnail do display
             if (item != null && !item.isSelfPost()) {
                 // Imgur
@@ -435,63 +436,49 @@ public class FragmentHome extends Fragment {
                         fixIndirectImgurUrl(item, imgurHash);
                     }
 
-                    // image
+                    // imgur image
                     if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-                        GlideApp.load(item.getThumbnail())
-                                .apply(new RequestOptions()
-                                        .centerCrop()
-                                        .diskCacheStrategy(DiskCacheStrategy.ALL))
-                                .into(holder.thumbnailImageView);
+                        thumbnail = item.getThumbnail();
                     }
-
-                    // gif
+                    // imgur gif
                     else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
                         // Assume we're given .gifv link. Need to fetch .mp4 link from Imgur API
                         String imgurHash = Helpers.getImgurHash(item.getUrl());
-                        getMp4LinkImgur(item,imgurHash);
-                        //String hashTest = "4RxPsWI";
-                       /* GlideApp
-                                .load(thumbnailUrl)
-                                .apply(new RequestOptions()
-                                        .centerCrop()
-                                        .diskCacheStrategy(DiskCacheStrategy.ALL))
-                                .into(holder.thumbnailImageView);*/
+                        getMp4LinkImgur(item, imgurHash);
+                        thumbnail = item.getThumbnail();
                     }
                 }
                 //v.redd.it
-                if ("v.redd.it".equalsIgnoreCase(item.getDomain())) {
+                else if ("v.redd.it".equalsIgnoreCase(item.getDomain())) {
                     Log.e("VIDEO_DOMAIN_FOUND", " Found v.redd.it link. Not working yet.");
+                    thumbnail = item.getThumbnail();
                 }
 
                 // i.redd.it
-                if (item.getDomain().contains("i.redd.it")) {
+                else if (item.getDomain().contains("i.redd.it")) {
+                    thumbnail = item.getThumbnail();
 
-                    GlideApp
-                            .load(item.getThumbnail())
-                            .apply(new RequestOptions()
-                                    .centerCrop()
-                                    .diskCacheStrategy(DiskCacheStrategy.ALL))
-                            .into(holder.thumbnailImageView);
+
                 }
                 //youtube
-                if (item.getDomain().contains("youtube")) {
-                    Log.e("VIDEO_DOMAIN_FOUND", " Found youtube link. Not working yet.");
+                else if (item.getDomain().contains("youtube")) {
+                    Log.e("VIDEO_DOMAIN_FOUND", " Found YOUTUBE link. Not working yet.");
+
 
                 }
                 //???
                 else {
                     Log.e("DOMAIN_NOT_FOUND", "Domain not recognized: " + item.getDomain() + ". Position: " + position);
-
-                    //TODO: For now, if we don't recognize the submission's domain we will assume it
-                    //      has a thumbnail to display.
-                    GlideApp
-                            .load(item.getThumbnail())
-                            .apply(new RequestOptions()
-                                    .centerCrop()
-                                    .diskCacheStrategy(DiskCacheStrategy.ALL))
-                            .into(holder.thumbnailImageView);
                 }
 
+                /* Finally display thumbnail */
+                //TODO: handle Constants.THUMBNAIL_NOT_FOUND
+                GlideApp
+                        .load(thumbnail)
+                        .apply(new RequestOptions()
+                                .centerCrop()
+                                .diskCacheStrategy(DiskCacheStrategy.ALL))
+                        .into(holder.thumbnailImageView);
                 /* open submission viewer when image clicked*/
                 holder.thumbnailImageView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -510,7 +497,7 @@ public class FragmentHome extends Fragment {
                             isImageViewPressed = true;
                             if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
                                 //popupWindow = new PopupWindow(customView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-                                if(item.getSubmissionType() == Constants.SubmissionType.IMAGE){
+                                if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
                                     GlideApp
                                             .load(item.getUrl())
                                             .apply(new RequestOptions()
@@ -518,8 +505,7 @@ public class FragmentHome extends Fragment {
                                             .into(mHoverPreviewSmall);
                                     mHoverPreviewTitleSmall.setText(item.getTitle());
                                     mHoverPreviewContainerSmall.setVisibility(View.VISIBLE);
-                                }
-                                else if(item.getSubmissionType() == Constants.SubmissionType.GIF){
+                                } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
 
                                 }
 
@@ -532,7 +518,7 @@ public class FragmentHome extends Fragment {
                                 //mPopupWindow.showAtLocation(mParentView, Gravity.CENTER,0,0);
 
                             } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
-                                if(item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                                if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
                                     GlideApp
                                             .load(item.getUrl())
                                             .apply(new RequestOptions()
@@ -540,8 +526,7 @@ public class FragmentHome extends Fragment {
                                             .into(mHoverPreviewLarge);
                                     mHoverPreviewTitleLarge.setText(item.getTitle());
                                     mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
-                                }
-                                else if(item.getSubmissionType() == Constants.SubmissionType.GIF) {
+                                } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
                                     initializePlayer(item.getUrl());
                                     mHoverPreviewTitleLarge.setText(item.getTitle());
                                     mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
@@ -569,6 +554,7 @@ public class FragmentHome extends Fragment {
                                         // mHoverPreviewTitleSmall.setText("");
                                         mHoverPreviewContainerLarge.setVisibility(View.GONE);
                                     }
+                                    player.release();
                                 }
                             }
                             return false;
@@ -632,7 +618,6 @@ public class FragmentHome extends Fragment {
                         else {
                             item.setUrl(imgurSubmissionData.getMp4());
                             item.setSubmissionType(Constants.SubmissionType.GIF);
-
                         }
                     }
 
@@ -653,7 +638,7 @@ public class FragmentHome extends Fragment {
         retrieve corresponding .mp4 link: https://i.imgur.com/4RxPsWI.mp4 and set item's
         URL to new .mp4 link.
      */
-    private void getMp4LinkImgur(SubmissionObj item, String imgurHash){
+    private void getMp4LinkImgur(SubmissionObj item, String imgurHash) {
         ImgurClient imgurClient = new ImgurClient();
 
         imgurClient.getImageService()
@@ -709,6 +694,8 @@ public class FragmentHome extends Fragment {
             player.seekTo(currentWindow, playbackPosition);
         }
 
+         // repeat mode: 0 = off, 1 = loop single video, 2 = loop playlist
+        player.setRepeatMode(1);
         player.prepare(mediaSource, !haveStartPosition, false);
 
      /*   ivHideControllerButton.setOnClickListener(new View.OnClickListener() {
@@ -719,7 +706,7 @@ public class FragmentHome extends Fragment {
         });*/
     }
 
-    private class PlayerEventListener extends Player.DefaultEventListener{
+    private class PlayerEventListener extends Player.DefaultEventListener {
 
         @Override
         public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
@@ -728,13 +715,13 @@ public class FragmentHome extends Fragment {
                     //progressBar.setVisibility(View.VISIBLE);
                     break;
                 case Player.STATE_BUFFERING:  // The player is buffering (loading the content)
-                 //   progressBar.setVisibility(View.VISIBLE);
+                    //   progressBar.setVisibility(View.VISIBLE);
                     break;
                 case Player.STATE_READY:      // The player is able to immediately play
-                   // progressBar.setVisibility(View.GONE);
+                    // progressBar.setVisibility(View.GONE);
                     break;
                 case Player.STATE_ENDED:      // The player has finished playing the media
-                  //  progressBar.setVisibility(View.GONE);
+                    //  progressBar.setVisibility(View.GONE);
                     break;
             }
         }

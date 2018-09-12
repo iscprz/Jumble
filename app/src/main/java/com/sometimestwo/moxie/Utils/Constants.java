@@ -51,7 +51,7 @@ public class Constants {
     public final static String[] VALID_MEDIA_EXTENSION = {"jpg", "jpeg", "png","gifv" , "gif"};
     public final static String[] VALID_IMAGE_EXTENSION = {"jpg", "jpeg", "png"};
     public final static String[] VALID_GIF_EXTENSION = {"gifv", "gif"};
-
+    public final static String THUMBNAIL_NOT_FOUND = "THUMBNAIL_NOT_FOUND";
 
     /* Enums*/
     public enum HoverPreviewSize{

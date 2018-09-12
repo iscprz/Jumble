@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- Recyclerview -->
     <com.sometimestwo.moxie.MultiClickRecyclerView
@@ -37,12 +38,26 @@
             android:scaleType="fitStart"
             android:visibility="gone" />
 
-
-        <com.google.android.exoplayer2.ui.PlayerView
-            android:id="@+id/exoplayer_large"
+        <FrameLayout
+            android:id="@+id/container_exoplayer_large"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        </com.google.android.exoplayer2.ui.PlayerView>
+            android:layout_height="wrap_content"
+            android:layout_below="@id/hover_view_title_large"
+            android:background="@color/colorDarkThemeAccent">
+
+            <com.google.android.exoplayer2.ui.PlayerView
+                android:id="@+id/exoplayer_large"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorBgBlackTint"
+                app:player_layout_id="@layout/exo_player_view_preview_large"
+                app:controller_layout_id="@layout/exo_playback_control_view_preview"
+                app:use_controller="true"
+                app:show_buffering="true"/>
+
+        </FrameLayout>
+
+
     </RelativeLayout>
 
 

@@ -81,7 +81,6 @@ public class FragmentHome extends Fragment {
     private final static String ARGS_NUM_DISPLAY_COLS = "ARGS_NUM_DISPLAY_COLS";
     private final static int INTENT_LOG_IN = 1;
 
-    // Glide
     private RequestManager GlideApp;
     private SwipeRefreshLayout mRefreshLayout;
     private MultiClickRecyclerView mRecyclerMain;
@@ -91,6 +90,7 @@ public class FragmentHome extends Fragment {
     private String mCurrSubreddit;
     private RedditClient mRedditClient;
     private boolean isImageViewPressed = false;
+    private int mActivePointerId = -1;
 
     // temporarily stores mp4 link to corresponding GIFV
     private String mp4Url;
@@ -426,6 +426,7 @@ public class FragmentHome extends Fragment {
         @SuppressLint("ClickableViewAccessibility")
         @Override
         public void onBindViewHolder(@NonNull final ItemViewHolder holder, int position) {
+
             SubmissionObj item = getItem(position);
             // Waiting for API response
             String thumbnail = Constants.THUMBNAIL_NOT_FOUND;
@@ -505,11 +506,15 @@ public class FragmentHome extends Fragment {
                     }
                 });
 
+                    int touchID = -1;
                 /* Long press hover previewer */
-                if (mAllowImagePreview) {
                     holder.thumbnailImageView.setOnLongClickListener(new View.OnLongClickListener() {
                         @Override
                         public boolean onLongClick(View pView) {
+                            // do nothing if previewing has been disabled through settings
+                            if(!mAllowImagePreview){
+                                return true;
+                            }
                             // prevent recyclerview from handling touch events, otherwise bad things happen
                             mRecyclerMain.setHandleTouchEvents(false);
                             isImageViewPressed = true;
@@ -562,22 +567,34 @@ public class FragmentHome extends Fragment {
                     holder.thumbnailImageView.setOnTouchListener(new View.OnTouchListener() {
                         @Override
                         public boolean onTouch(View pView, MotionEvent pEvent) {
-                            pView.onTouchEvent(pEvent);
+                            // do nothing if previewing has been disabled through settings
+                            if(!mAllowImagePreview ){
+                                return true;
+                            }
+                            // save ID of the first pointer(touch) ID
+                            mActivePointerId = pEvent.getPointerId(0);
+
+                            // find current touch ID
+                            final int action = pEvent.getAction();
+                            int currPointerId = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+
+                            // don't care about touches that aren't the first touch
+                            if(currPointerId != mActivePointerId){
+                                return true;
+                            }
+                            // only care about doing stuff that relates to first finger touch
                             if (pEvent.getAction() == MotionEvent.ACTION_UP) {
                                 // hide hoverView on click release
                                 if (isImageViewPressed) {
-                                    // done with hoverview, allow recyclerview to handle touch events
+                                    // done with hover view, allow recyclerview to handle touch events
                                     mRecyclerMain.setHandleTouchEvents(true);
                                     isImageViewPressed = false;
                                     if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
-                                        // mHoverPreviewTitleSmall.setText("");
                                         mHoverPreviewContainerSmall.setVisibility(View.GONE);
 
                                     } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
-                                        // mHoverPreviewTitleSmall.setText("");
                                         mHoverPreviewContainerLarge.setVisibility(View.GONE);
                                         mExoplayerContainerLarge.setVisibility(View.GONE);
-
                                     }
                                     if(player != null){
                                         player.release();
@@ -588,7 +605,6 @@ public class FragmentHome extends Fragment {
                         }
                     });
 
-                }
             }
 
 
@@ -600,7 +616,6 @@ public class FragmentHome extends Fragment {
 
             public ItemViewHolder(View itemView) {
                 super(itemView);
-                //textView = itemView.findViewById(R.id.textViewName);
                 thumbnailImageView = (ImageView) itemView.findViewById(R.id.thumbnail);
             }
 

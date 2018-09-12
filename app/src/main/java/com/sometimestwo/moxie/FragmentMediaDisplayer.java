@@ -144,10 +144,10 @@ public class FragmentMediaDisplayer extends Fragment {
        // mBigImageView.showImage(Uri.parse(mCurrSubmission.getPostURL()));
 
         //image
-        String cleanPostUrl = Helpers.ensureImageUrl(mCurrSubmission.getUrl());
+        //String cleanPostUrl = Helpers.ensureImageUrl(mCurrSubmission.getUrl());
         //TODO: handle invalid URL
         Glide.with(this)
-                .load(cleanPostUrl)
+                .load(mCurrSubmission.getUrl())
                 //* .apply(options)*//*
                 .into(mImageView);
 

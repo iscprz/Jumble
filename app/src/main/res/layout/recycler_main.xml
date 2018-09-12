@@ -53,7 +53,8 @@
                 app:player_layout_id="@layout/exo_player_view_preview_large"
                 app:controller_layout_id="@layout/exo_playback_control_view_preview"
                 app:use_controller="true"
-                app:show_buffering="true"/>
+                app:show_buffering="true"
+                /> <!-- app:show_timeout="5"-->
 
         </FrameLayout>
 

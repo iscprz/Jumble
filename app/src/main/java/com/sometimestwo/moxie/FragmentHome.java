@@ -554,7 +554,9 @@ public class FragmentHome extends Fragment {
                                         // mHoverPreviewTitleSmall.setText("");
                                         mHoverPreviewContainerLarge.setVisibility(View.GONE);
                                     }
-                                    player.release();
+                                    if(player != null){
+                                        player.release();
+                                    }
                                 }
                             }
                             return false;

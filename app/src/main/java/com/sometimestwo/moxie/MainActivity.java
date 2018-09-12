@@ -20,16 +20,14 @@ import net.dean.jraw.models.Submission;
 
 /*
         TODOS:
-            - everything lolz
             - toolbar random button
             - animated gifs
-            - refreshFeed pulldown
             - pinch zoomies
-            - long press to open, click to play gif
             - double tap to upvote
             - long press to show title of post
-            - long press media viewer to show options (save, download, ?>??)
+            - media viewer image options (download, etc)
             - view pager
+            - invalid subreddit
 
             settings options:
             - browse mode (no comments, upvoting , etc) for lurkers

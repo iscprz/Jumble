@@ -471,6 +471,10 @@ public class FragmentHome extends Fragment {
 
 
                 }
+                //gfycat
+                else if(item.getDomain().contains("gfycat")){
+                    thumbnail = item.getThumbnail();
+                }
                 //youtube
                 else if (item.getDomain().contains("youtube")) {
                     Log.e("VIDEO_DOMAIN_FOUND", " Found YOUTUBE link. Not working yet.");
@@ -485,7 +489,9 @@ public class FragmentHome extends Fragment {
 
                     //TODO: Test what happens when we encounter weird domain linked to gif/video
                     else if(item.getSubmissionType() == Constants.SubmissionType.GIF
-                            || item.getSubmissionType() == Constants.SubmissionType.VIDEO)
+                            || item.getSubmissionType() == Constants.SubmissionType.VIDEO){
+                        thumbnail = item.getUrl();
+                    }
                     Log.e("DOMAIN_NOT_FOUND", "Domain not recognized: " + item.getDomain() + ". Position: " + position);
                 }
 

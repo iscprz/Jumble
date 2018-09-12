@@ -39,7 +39,7 @@ public class Helpers {
         } else if ("jpg".equalsIgnoreCase(extension)
                 || "jpeg".equalsIgnoreCase(extension)
                 || "png".equalsIgnoreCase(extension)) {
-            return Constants.SubmissionType.VIDEO;
+            return Constants.SubmissionType.IMAGE;
         }
         //youtube
         /* else if()*/

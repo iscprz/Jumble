@@ -44,6 +44,9 @@ public class SubmissionObj implements Serializable{
     private VoteDirection vote;
     private Integer commentCount;
     private Constants.SubmissionType submissionType;
+    // object is in the process of getting filled through async API call
+    private boolean loadingData;
+
 
     public String getAuthor() {
         return author;
@@ -277,4 +280,11 @@ public class SubmissionObj implements Serializable{
         this.submissionType = submissionType;
     }
 
+    public boolean isLoadingData() {
+        return loadingData;
+    }
+
+    public void setLoadingData(boolean loadingData) {
+        this.loadingData = loadingData;
+    }
 }

@@ -30,6 +30,10 @@ import net.dean.jraw.models.Submission;
             - long press to show title of post
             - long press media viewer to show options (save, download, ?>??)
             - view pager
+
+            settings options:
+            - browse mode (no comments, upvoting , etc) for lurkers
+            - hide progress bar on exoplayer
  */
 public class MainActivity extends AppCompatActivity implements FragmentHome.HomeEventListener,
         FragmentMediaDisplayer.MediaDisplayerEventListener {
@@ -55,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
 
 
         //TODO: Read this information from sharedprefs. Hardcoded for now
-        App.getCurrSubredditObj().setSubreddit("gifs");
+        App.getCurrSubredditObj().setSubreddit("pics");
         App.getCurrSubredditObj().setAllowNSFW(prefs.getString(Constants.KEY_ALLOW_NSFW,Constants.SETTINGS_NO)
                                                                .equalsIgnoreCase(Constants.SETTINGS_YES));
         int numDisplayCols = 3;

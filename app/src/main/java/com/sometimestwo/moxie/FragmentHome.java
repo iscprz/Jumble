@@ -33,7 +33,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -41,6 +43,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.Request;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -68,8 +71,6 @@ import com.sometimestwo.moxie.Utils.Helpers;
 
 import net.dean.jraw.RedditClient;
 
-import java.util.Arrays;
-
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -80,6 +81,8 @@ public class FragmentHome extends Fragment {
     private final static String ARGS_NUM_DISPLAY_COLS = "ARGS_NUM_DISPLAY_COLS";
     private final static int INTENT_LOG_IN = 1;
 
+    // Glide
+    private RequestManager GlideApp;
     private SwipeRefreshLayout mRefreshLayout;
     private MultiClickRecyclerView mRecyclerMain;
     private Toolbar mToolbar;
@@ -88,6 +91,7 @@ public class FragmentHome extends Fragment {
     private String mCurrSubreddit;
     private RedditClient mRedditClient;
     private boolean isImageViewPressed = false;
+
     // temporarily stores mp4 link to corresponding GIFV
     private String mp4Url;
 
@@ -102,18 +106,18 @@ public class FragmentHome extends Fragment {
     // hover preview small
     private RelativeLayout mHoverPreviewContainerSmall;
     private TextView mHoverPreviewTitleSmall;
-    private ImageView mHoverPreviewSmall;
+    private ImageView mHoverImagePreviewSmall;
     // private PopupWindow mPopupWindow;
     // private View mPopupView;
 
     // hover view large
     private RelativeLayout mHoverPreviewContainerLarge;
     private TextView mHoverPreviewTitleLarge;
-    private ImageView mHoverPreviewLarge;
+    private ImageView mHoverImagePreviewLarge;
+
 
     //exo player stuff
     private BandwidthMeter bandwidthMeter;
-    private PlayerView mExoplayerLarge;
     private DefaultTrackSelector trackSelector;
     private SimpleExoPlayer player;
     private ProgressBar progressBar;
@@ -121,6 +125,8 @@ public class FragmentHome extends Fragment {
     private int currentWindow;
     private long playbackPosition;
     private Timeline.Window window;
+    private FrameLayout mExoplayerContainerLarge;
+    private PlayerView mExoplayerLarge;
 
     // event listeners
     private HomeEventListener mHomeEventListener;
@@ -141,9 +147,11 @@ public class FragmentHome extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         unpackArgs();
+        GlideApp = Glide.with(this);
         //  mRedditClient = App.getAccountHelper().isAuthenticated() ? App.getAccountHelper().getReddit() : App.getAccountHelper().switchToUserless();
         setHasOptionsMenu(true);
         prefs = getContext().getSharedPreferences(Constants.KEY_GETPREFS_SETTINGS, Context.MODE_PRIVATE);
+
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -177,7 +185,7 @@ public class FragmentHome extends Fragment {
         //  disabler = new RecyclerViewDisabler();
 
         /* RecyclerView adapter stuff */
-        final RecyclerAdapter adapter = new RecyclerAdapter(getContext(), Glide.with(this));
+        final RecyclerAdapter adapter = new RecyclerAdapter(getContext());
 
         /* Viewmodel fetching and data updating */
         SubmissionsViewModel submissionsViewModel = ViewModelProviders.of(this).get(SubmissionsViewModel.class);
@@ -194,15 +202,17 @@ public class FragmentHome extends Fragment {
         /* hover view small*/
         mHoverPreviewContainerSmall = (RelativeLayout) v.findViewById(R.id.hover_view_container_small);
         mHoverPreviewTitleSmall = (TextView) v.findViewById(R.id.hover_view_title_small);
-        mHoverPreviewSmall = (ImageView) v.findViewById(R.id.hover_view_small);
+        mHoverImagePreviewSmall = (ImageView) v.findViewById(R.id.hover_imageview_small);
 
         /* hover view large*/
         mHoverPreviewContainerLarge = (RelativeLayout) v.findViewById(R.id.hover_view_container_large);
         mHoverPreviewTitleLarge = (TextView) v.findViewById(R.id.hover_view_title_large);
-        mHoverPreviewLarge = (ImageView) v.findViewById(R.id.hover_view_large);
+        mHoverImagePreviewLarge = (ImageView) v.findViewById(R.id.hover_imageview_large);
 
         /* Exo player */
+        mExoplayerContainerLarge = (FrameLayout) v.findViewById(R.id.container_exoplayer_large);
         mExoplayerLarge = (PlayerView) v.findViewById(R.id.exoplayer_large);
+
         bandwidthMeter = new DefaultBandwidthMeter();
         mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(), Util.getUserAgent(getContext(), "mediaPlayerSample"), (TransferListener<? super DataSource>) bandwidthMeter);
         window = new Timeline.Window();
@@ -399,13 +409,11 @@ public class FragmentHome extends Fragment {
 
     public class RecyclerAdapter extends PagedListAdapter<SubmissionObj, RecyclerAdapter.ItemViewHolder> {
         private Context mContext;
-        private final RequestManager GlideApp;
 
 
-        RecyclerAdapter(Context mContext, RequestManager glideApp) {
+        RecyclerAdapter(Context mContext ) {
             super(DIFF_CALLBACK);
             this.mContext = mContext;
-            this.GlideApp = glideApp;
         }
 
         @NonNull
@@ -419,34 +427,36 @@ public class FragmentHome extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull final ItemViewHolder holder, int position) {
             SubmissionObj item = getItem(position);
+            // Waiting for API response
             String thumbnail = Constants.THUMBNAIL_NOT_FOUND;
-            //ignore any items that do not have thumbnail do display
+            item.setSubmissionType(Helpers.getSubmissionType(item.getUrl()));
+
             if (item != null && !item.isSelfPost()) {
                 // Imgur
                 if (item.getDomain().contains("imgur")) {
                     // try setting the submission type here. Imgur links will have .jpg/.gifv
                     // appended to them if linked directly. Don't worry about indirect links here.
-                    item.setSubmissionType(Helpers.getSubmissionType(item.getUrl()));
 
                     // Check if submission type is null. This will happen if the item's URL is
                     // to a non-direct image/gif link such as https://imgur.com/qTadRtq
                     if (item.getSubmissionType() == null) {
                         String imgurHash = Helpers.getImgurHash(item.getUrl());
-                        // replaces item's postURL with direct link to image/gif(mp4)
+                        // Async call to Imgur API
+                        item.setLoadingData(true);
                         fixIndirectImgurUrl(item, imgurHash);
                     }
 
                     // imgur image
                     if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-                        thumbnail = item.getThumbnail();
                     }
                     // imgur gif
                     else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
                         // Assume we're given .gifv link. Need to fetch .mp4 link from Imgur API
                         String imgurHash = Helpers.getImgurHash(item.getUrl());
                         getMp4LinkImgur(item, imgurHash);
-                        thumbnail = item.getThumbnail();
                     }
+                    // We assume item will always have a thumbnail in an image format
+                    thumbnail = item.getThumbnail();
                 }
                 //v.redd.it
                 else if ("v.redd.it".equalsIgnoreCase(item.getDomain())) {
@@ -466,19 +476,27 @@ public class FragmentHome extends Fragment {
 
 
                 }
-                //???
+                // Domain not recognized - hope submission is linked to a valid media extension
                 else {
+                    if(item.getSubmissionType() == Constants.SubmissionType.IMAGE){
+                        thumbnail = item.getUrl();
+                    }
+
+                    //TODO: Test what happens when we encounter weird domain linked to gif/video
+                    else if(item.getSubmissionType() == Constants.SubmissionType.GIF
+                            || item.getSubmissionType() == Constants.SubmissionType.VIDEO)
                     Log.e("DOMAIN_NOT_FOUND", "Domain not recognized: " + item.getDomain() + ". Position: " + position);
                 }
 
-                /* Finally display thumbnail */
                 //TODO: handle Constants.THUMBNAIL_NOT_FOUND
-                GlideApp
-                        .load(thumbnail)
-                        .apply(new RequestOptions()
-                                .centerCrop()
-                                .diskCacheStrategy(DiskCacheStrategy.ALL))
+
+                // Finally load thumbnail into recyclerview
+                //loadThumbNailIntoRV(thumbnail,holder);
+                GlideApp.load(thumbnail)
+                        .apply(new RequestOptions().centerCrop().diskCacheStrategy(DiskCacheStrategy.ALL))
                         .into(holder.thumbnailImageView);
+
+
                 /* open submission viewer when image clicked*/
                 holder.thumbnailImageView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -502,9 +520,10 @@ public class FragmentHome extends Fragment {
                                             .load(item.getUrl())
                                             .apply(new RequestOptions()
                                                     .diskCacheStrategy(DiskCacheStrategy.ALL))
-                                            .into(mHoverPreviewSmall);
+                                            .into(mHoverImagePreviewSmall);
                                     mHoverPreviewTitleSmall.setText(item.getTitle());
                                     mHoverPreviewContainerSmall.setVisibility(View.VISIBLE);
+                                    mHoverImagePreviewSmall.setVisibility(View.VISIBLE);
                                 } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
 
                                 }
@@ -523,13 +542,16 @@ public class FragmentHome extends Fragment {
                                             .load(item.getUrl())
                                             .apply(new RequestOptions()
                                                     .diskCacheStrategy(DiskCacheStrategy.ALL))
-                                            .into(mHoverPreviewLarge);
+                                            .into(mHoverImagePreviewLarge);
                                     mHoverPreviewTitleLarge.setText(item.getTitle());
                                     mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
+                                    mExoplayerContainerLarge.setVisibility(View.GONE);
+                                  //  mHoverImagePreviewLarge.setVisibility(View.VISIBLE);
                                 } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
                                     initializePlayer(item.getUrl());
                                     mHoverPreviewTitleLarge.setText(item.getTitle());
                                     mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
+                                    mExoplayerContainerLarge.setVisibility(View.VISIBLE);
                                 }
 
                             }
@@ -550,9 +572,12 @@ public class FragmentHome extends Fragment {
                                     if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
                                         // mHoverPreviewTitleSmall.setText("");
                                         mHoverPreviewContainerSmall.setVisibility(View.GONE);
+
                                     } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
                                         // mHoverPreviewTitleSmall.setText("");
                                         mHoverPreviewContainerLarge.setVisibility(View.GONE);
+                                        mExoplayerContainerLarge.setVisibility(View.GONE);
+
                                     }
                                     if(player != null){
                                         player.release();
@@ -587,6 +612,11 @@ public class FragmentHome extends Fragment {
         }
     }
 
+    private void loadThumbNailIntoRV(String thumbnailUrl, RecyclerAdapter.ItemViewHolder holder){
+        GlideApp.load(thumbnailUrl)
+                .apply(new RequestOptions().centerCrop().diskCacheStrategy(DiskCacheStrategy.ALL))
+                .into(holder.thumbnailImageView);
+    }
 
     /*
         Takes indirect Imgur url such as https://imgur.com/7Ogk88I, fetches direct link from
@@ -630,6 +660,7 @@ public class FragmentHome extends Fragment {
 
                     @Override
                     public void onComplete() {
+                        //item.setLoadingData(false);
                     }
                 });
     }

@@ -29,7 +29,7 @@ public class FragmentSubmissionViewer extends Fragment {
     private static final String TAG = Constants.TAG_FRAG_MEDIA_DISPLAY;
     private SubmissionObj mCurrSubmission;
     private BigImageView mBigImageView;
-    private TextView mTitle;
+    private TextView mSubmissionTitle;
     private ImageView mImageView;
     private RelativeLayout mBackground;
     private LinearLayout mCommentsContainer;
@@ -49,7 +49,6 @@ public class FragmentSubmissionViewer extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mCurrSubmission = (SubmissionObj) this.getArguments().get(Constants.EXTRA_POST);
-
     }
 
     @Override
@@ -59,12 +58,12 @@ public class FragmentSubmissionViewer extends Fragment {
         View v = inflater.inflate(R.layout.submission_viewer, container, false);
 
         /* Toolbar setup*/
-        mToolbar = (Toolbar) v.findViewById(R.id.media_viewer_toolbar);
+        mToolbar = (Toolbar) v.findViewById(R.id.submission_viewer_toolbar);
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
 
         //mBigImageView = (BigImageView) v.findViewById(R.id.big_image_viewer);
 
-        mTitle = (TextView) v.findViewById(R.id.media_viewer_title);
+        mSubmissionTitle = (TextView) v.findViewById(R.id.submission_viewer_title);
 
         /* The actual view in which the image is displayed*/
         mImageView = (ImageView) v.findViewById(R.id.media_viewer_image);
@@ -146,7 +145,7 @@ public class FragmentSubmissionViewer extends Fragment {
             //toolbar.setTitle(getResources().getString(R.string.toolbar_title_albums));
             toolbar.setDisplayHomeAsUpEnabled(true);
             toolbar.setHomeAsUpIndicator(R.drawable.ic_back_arrow);
-            toolbar.setTitle("");
+            toolbar.setTitle(mCurrSubmission.getSubreddit());
         }
         mToolbar.setAlpha(1);
     }
@@ -172,7 +171,7 @@ public class FragmentSubmissionViewer extends Fragment {
                     .override(1280, 720)
                     .centerInside();
 */
-        mTitle.setText(mCurrSubmission.getTitle());
+        mSubmissionTitle.setText(mCurrSubmission.getTitle());
         // mBigImageView.showImage(Uri.parse(mCurrSubmission.getPostURL()));
 
         //image

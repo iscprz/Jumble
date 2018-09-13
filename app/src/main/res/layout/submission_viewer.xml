@@ -3,36 +3,32 @@
     android:id="@+id/media_viewer_scroll_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBgBlackTint">
-
+    android:background="@color/colorBgBlackTintDarker">
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/post_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Header -->
+        <!-- Header toolbar -->
         <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/media_viewer_toolbar"
+            android:id="@+id/submission_viewer_toolbar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/media_viewer_toolbar_height"
-            android:background="@color/colorBgBlackTint"
+            android:layout_marginTop="10dp"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-
 
 
         <!-- Title -->
         <TextView
-            android:id="@+id/media_viewer_title"
+            android:id="@+id/submission_viewer_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/media_viewer_toolbar"
-            android:background="@color/colorBgBlackTint"
+            android:layout_below="@id/submission_viewer_toolbar"
             android:gravity="center"
             android:paddingBottom="20dp"
             android:paddingRight="10dp"
-            android:paddingTop="10dp"
+            android:layout_marginTop="10dp"
             android:textColor="@color/colorWhite"
             android:textSize="16sp" />
 
@@ -59,7 +55,7 @@
             android:id="@+id/media_viewer_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/media_viewer_title"
+            android:layout_below="@id/submission_viewer_title"
             android:clickable="false" />
 
 
@@ -69,7 +65,6 @@
             android:layout_width="match_parent"
             android:layout_height="500dp"
             android:layout_below="@id/media_viewer_image"
-            android:background="@color/colorBgBlackTint"
             android:orientation="vertical">
 
         </LinearLayout>

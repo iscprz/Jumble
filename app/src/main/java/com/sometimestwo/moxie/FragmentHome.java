@@ -15,6 +15,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -35,7 +37,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -43,7 +44,6 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.Request;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -71,6 +71,9 @@ import com.sometimestwo.moxie.Utils.Helpers;
 
 import net.dean.jraw.RedditClient;
 
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
+
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -78,8 +81,9 @@ import static android.app.Activity.RESULT_OK;
 
 public class FragmentHome extends Fragment {
     public final static String TAG = Constants.TAG_FRAG_HOME;
+    public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
+    private final static int KEY_LOG_IN = 2;
     private final static String ARGS_NUM_DISPLAY_COLS = "ARGS_NUM_DISPLAY_COLS";
-    private final static int INTENT_LOG_IN = 1;
 
     private RequestManager GlideApp;
     private SwipeRefreshLayout mRefreshLayout;
@@ -91,7 +95,7 @@ public class FragmentHome extends Fragment {
     private RedditClient mRedditClient;
     private boolean isImageViewPressed = false;
     private int mActivePointerId = -1;
-
+    private boolean isViewingSubmission = false;
     // temporarily stores mp4 link to corresponding GIFV
     private String mp4Url;
 
@@ -132,8 +136,6 @@ public class FragmentHome extends Fragment {
     private HomeEventListener mHomeEventListener;
 
     public interface HomeEventListener {
-        public void openMediaViewer(SubmissionObj submission);
-
         public void openSettings();
 
         public void refreshFeed(String fragmentTag);
@@ -234,6 +236,16 @@ public class FragmentHome extends Fragment {
     }
 
     @Override
+    public void onAttachFragment(Fragment childFragment) {
+        super.onAttachFragment(childFragment);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
@@ -248,9 +260,39 @@ public class FragmentHome extends Fragment {
         // Check if user settings have been altered.
         // i.e. User went to settings, opted in to NSFW posts then navigated back.
         validatePreferences();
-        //loggedIn = ???
+
+        // make sure toolbar is showing (precautionary)
+        setupToolbar();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        releaseExoPlayer();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mToolbar.setAlpha(0);
+
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        releaseExoPlayer();
+    }
+
+    @Override
+    public void onDestroyOptionsMenu() {
+        super.onDestroyOptionsMenu();
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -265,11 +307,25 @@ public class FragmentHome extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == INTENT_LOG_IN) {
+
+        /* Returned from SubmissionViewer*/
+        if (requestCode == KEY_INTENT_GOTO_SUBMISSIONVIEWER) {
+            if (resultCode == RESULT_OK) {
+                isViewingSubmission = false;
+                mToolbar.setAlpha(1);
+            }
+        }
+
+        if (requestCode == KEY_LOG_IN) {
             if (resultCode == RESULT_OK) {
 
             }
         }
+    }
+
+    private void setupToolbar() {
+        mToolbar.setVisibility(View.VISIBLE);
+        mToolbar.setAlpha(1);
     }
 
     private void unpackArgs() {
@@ -342,7 +398,7 @@ public class FragmentHome extends Fragment {
            /* case R.id.nav_log_in:
                 Intent loginIntent = new Intent(getContext(), ActivityLogin.class);
                 //unlockSessionIntent.putExtra("REQUEST_UNLOCK_SESSION", true);
-                startActivityForResult(loginIntent,INTENT_LOG_IN);
+                startActivityForResult(loginIntent,KEY_LOG_IN);
                 return;*/
             case R.id.nav_menu_goto_subreddit:
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -411,7 +467,7 @@ public class FragmentHome extends Fragment {
         private Context mContext;
 
 
-        RecyclerAdapter(Context mContext ) {
+        RecyclerAdapter(Context mContext) {
             super(DIFF_CALLBACK);
             this.mContext = mContext;
         }
@@ -472,7 +528,7 @@ public class FragmentHome extends Fragment {
 
                 }
                 //gfycat
-                else if(item.getDomain().contains("gfycat")){
+                else if (item.getDomain().contains("gfycat")) {
                     thumbnail = item.getThumbnail();
                 }
                 //youtube
@@ -483,13 +539,13 @@ public class FragmentHome extends Fragment {
                 }
                 // Domain not recognized - hope submission is linked to a valid media extension
                 else {
-                    if(item.getSubmissionType() == Constants.SubmissionType.IMAGE){
+                    if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
                         thumbnail = item.getUrl();
                     }
 
                     //TODO: Test what happens when we encounter weird domain linked to gif/video
-                    else if(item.getSubmissionType() == Constants.SubmissionType.GIF
-                            || item.getSubmissionType() == Constants.SubmissionType.VIDEO){
+                    else if (item.getSubmissionType() == Constants.SubmissionType.GIF
+                            || item.getSubmissionType() == Constants.SubmissionType.VIDEO) {
                         thumbnail = item.getUrl();
                     }
                     Log.e("DOMAIN_NOT_FOUND", "Domain not recognized: " + item.getDomain() + ". Position: " + position);
@@ -512,104 +568,102 @@ public class FragmentHome extends Fragment {
                     }
                 });
 
-                    int touchID = -1;
                 /* Long press hover previewer */
-                    holder.thumbnailImageView.setOnLongClickListener(new View.OnLongClickListener() {
-                        @Override
-                        public boolean onLongClick(View pView) {
-                            // do nothing if previewing has been disabled through settings
-                            if(!mAllowImagePreview){
-                                return true;
-                            }
-                            // prevent recyclerview from handling touch events, otherwise bad things happen
-                            mRecyclerMain.setHandleTouchEvents(false);
-                            isImageViewPressed = true;
-                            if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
-                                //popupWindow = new PopupWindow(customView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-                                if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-                                    GlideApp
-                                            .load(item.getUrl())
-                                            .apply(new RequestOptions()
-                                                    .diskCacheStrategy(DiskCacheStrategy.ALL))
-                                            .into(mHoverImagePreviewSmall);
-                                    mHoverPreviewTitleSmall.setText(item.getTitle());
-                                    mHoverPreviewContainerSmall.setVisibility(View.VISIBLE);
-                                    mHoverImagePreviewSmall.setVisibility(View.VISIBLE);
-                                } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
-
-                                }
-
-
-                                //qqq
-                                // mPopupWindow = new PopupWindow(getActivity());
-
-                                //mPopupWindow = new PopupWindow(mPopupView, RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                                // mPopupWindow.setContentView(mHoverPreviewContainerSmall);
-                                //mPopupWindow.showAtLocation(mParentView, Gravity.CENTER,0,0);
-
-                            } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
-                                if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-                                    GlideApp
-                                            .load(item.getUrl())
-                                            .apply(new RequestOptions()
-                                                    .diskCacheStrategy(DiskCacheStrategy.ALL))
-                                            .into(mHoverImagePreviewLarge);
-                                    mHoverPreviewTitleLarge.setText(item.getTitle());
-                                    mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
-                                    mExoplayerContainerLarge.setVisibility(View.GONE);
-                                  //  mHoverImagePreviewLarge.setVisibility(View.VISIBLE);
-                                } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
-                                    initializePlayer(item.getUrl());
-                                    mHoverPreviewTitleLarge.setText(item.getTitle());
-                                    mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
-                                    mExoplayerContainerLarge.setVisibility(View.VISIBLE);
-                                }
-
-                            }
+                holder.thumbnailImageView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View pView) {
+                        // do nothing if previewing has been disabled through settings
+                        if (!mAllowImagePreview) {
                             return true;
                         }
-                    });
+                        // prevent recyclerview from handling touch events, otherwise bad things happen
+                        mRecyclerMain.setHandleTouchEvents(false);
+                        isImageViewPressed = true;
 
-                    holder.thumbnailImageView.setOnTouchListener(new View.OnTouchListener() {
-                        @Override
-                        public boolean onTouch(View pView, MotionEvent pEvent) {
-                            // do nothing if previewing has been disabled through settings
-                            if(!mAllowImagePreview ){
-                                return true;
+                        if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
+                            //popupWindow = new PopupWindow(customView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                            if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                                GlideApp
+                                        .load(item.getUrl())
+                                        .apply(new RequestOptions()
+                                                .diskCacheStrategy(DiskCacheStrategy.ALL))
+                                        .into(mHoverImagePreviewSmall);
+                                mHoverPreviewTitleSmall.setText(item.getTitle());
+                                mHoverPreviewContainerSmall.setVisibility(View.VISIBLE);
+                                mHoverImagePreviewSmall.setVisibility(View.VISIBLE);
+                            } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
+
                             }
-                            // save ID of the first pointer(touch) ID
-                            mActivePointerId = pEvent.getPointerId(0);
 
-                            // find current touch ID
-                            final int action = pEvent.getAction();
-                            int currPointerId = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
 
-                            // don't care about touches that aren't the first touch
-                            if(currPointerId != mActivePointerId){
-                                return true;
+                            //qqq
+                            // mPopupWindow = new PopupWindow(getActivity());
+
+                            //mPopupWindow = new PopupWindow(mPopupView, RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                            // mPopupWindow.setContentView(mHoverPreviewContainerSmall);
+                            //mPopupWindow.showAtLocation(mParentView, Gravity.CENTER,0,0);
+
+                        } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+                            mHoverPreviewTitleLarge.setText(item.getTitle());
+                            mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
+                            // hide the toolbar until we're done with hover view
+                            mToolbar.setAlpha(.1f);
+                            if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                                GlideApp.load(item.getUrl())
+                                        .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
+                                        .into(mHoverImagePreviewLarge);
+                                // make sure the gif/video player isn't showing
+                                mExoplayerContainerLarge.setVisibility(View.GONE);
+                            } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
+                                initializePlayer(item.getUrl());
+                                mExoplayerContainerLarge.setVisibility(View.VISIBLE);
                             }
-                            // only care about doing stuff that relates to first finger touch
-                            if (pEvent.getAction() == MotionEvent.ACTION_UP) {
-                                // hide hoverView on click release
-                                if (isImageViewPressed) {
-                                    // done with hover view, allow recyclerview to handle touch events
-                                    mRecyclerMain.setHandleTouchEvents(true);
-                                    isImageViewPressed = false;
-                                    if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
-                                        mHoverPreviewContainerSmall.setVisibility(View.GONE);
-
-                                    } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
-                                        mHoverPreviewContainerLarge.setVisibility(View.GONE);
-                                        mExoplayerContainerLarge.setVisibility(View.GONE);
-                                    }
-                                    if(player != null){
-                                        player.release();
-                                    }
-                                }
-                            }
-                            return false;
                         }
-                    });
+                        return true;
+                    }
+                });
+
+                holder.thumbnailImageView.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View pView, MotionEvent pEvent) {
+                        // do nothing if previewing has been disabled through settings
+                        if (!mAllowImagePreview) {
+                            return true;
+                        }
+                        // save ID of the first pointer(touch) ID
+                        mActivePointerId = pEvent.getPointerId(0);
+
+                        // find current touch ID
+                        final int action = pEvent.getAction();
+                        int currPointerId = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+
+                        // don't care about touches that aren't the first touch
+                        if (currPointerId != mActivePointerId) {
+                            return true;
+                        }
+                        // only care about doing stuff that relates to first finger touch
+                        if (pEvent.getAction() == MotionEvent.ACTION_UP) {
+                            // hide hoverView on click release
+                            if (isImageViewPressed) {
+                                // done with hover view, allow recyclerview to handle touch events
+                                mRecyclerMain.setHandleTouchEvents(true);
+                                isImageViewPressed = false;
+                                if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
+                                    mHoverPreviewContainerSmall.setVisibility(View.GONE);
+
+                                } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+                                    mHoverPreviewContainerLarge.setVisibility(View.GONE);
+                                    mExoplayerContainerLarge.setVisibility(View.GONE);
+
+                                    // restore the toolbar
+                                    mToolbar.setAlpha(1);
+                                }
+                                releaseExoPlayer();
+                            }
+                        }
+                        return false;
+                    }
+                });
 
             }
 
@@ -628,16 +682,46 @@ public class FragmentHome extends Fragment {
             @Override
             public void onClick(View view) {
                 SubmissionObj submission = getItem(getLayoutPosition());
-                mHomeEventListener.openMediaViewer(submission);
+                mToolbar.setAlpha(0);
+
+                // prevent any weird double clicks from opening two media viewers
+                if (!isViewingSubmission) {
+                    openSubmissionViewer(submission);
+                    isViewingSubmission = true;
+                }
             }
         }
     }
 
-    private void loadThumbNailIntoRV(String thumbnailUrl, RecyclerAdapter.ItemViewHolder holder){
-        GlideApp.load(thumbnailUrl)
-                .apply(new RequestOptions().centerCrop().diskCacheStrategy(DiskCacheStrategy.ALL))
-                .into(holder.thumbnailImageView);
+    private void openSubmissionViewer(SubmissionObj submission) {
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        Fragment mediaDisplayerFragment = (FragmentSubmissionViewer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
+        FragmentTransaction ft = fm.beginTransaction();
+
+        Bundle args = new Bundle();
+        args.putSerializable(Constants.EXTRA_POST, submission);
+
+        // might be unnecessary but we'll do it for precaution
+        if (mediaDisplayerFragment != null) {
+            ft.remove(mediaDisplayerFragment);
+        }
+
+        mediaDisplayerFragment = FragmentSubmissionViewer.newInstance();
+        mediaDisplayerFragment.setArguments(args);
+
+        mediaDisplayerFragment.setTargetFragment(FragmentHome.this, KEY_INTENT_GOTO_SUBMISSIONVIEWER);
+
+        ft.add(R.id.fragment_container, mediaDisplayerFragment, Constants.TAG_FRAG_MEDIA_DISPLAY);
+        ft.addToBackStack(null);
+        ft.commit();
     }
+
+    public void releaseExoPlayer() {
+        if (player != null) {
+            player.release();
+        }
+    }
+
 
     /*
         Takes indirect Imgur url such as https://imgur.com/7Ogk88I, fetches direct link from
@@ -748,7 +832,7 @@ public class FragmentHome extends Fragment {
             player.seekTo(currentWindow, playbackPosition);
         }
 
-         // repeat mode: 0 = off, 1 = loop single video, 2 = loop playlist
+        // repeat mode: 0 = off, 1 = loop single video, 2 = loop playlist
         player.setRepeatMode(1);
         player.prepare(mediaSource, !haveStartPosition, false);
 

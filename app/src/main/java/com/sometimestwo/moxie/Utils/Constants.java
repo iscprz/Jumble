@@ -21,7 +21,7 @@ public class Constants {
     public final static String EXTRA_POST = "EXTRA_POST";
 
     /* Default values*/
-    public final static String DEFAULT_SUBREDDIT = "wtf";
+    public final static String DEFAULT_SUBREDDIT = "pics";
     public final static int DEFAULT_NUM_DISPLAY_COLS = 3;
 
     /* Query values */

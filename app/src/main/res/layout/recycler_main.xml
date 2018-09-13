@@ -22,9 +22,11 @@
             android:id="@+id/hover_view_title_large"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorBgBlackTint"
+            android:background="@color/colorBgBlackTintDarker"
             android:gravity="center"
             android:textColor="@color/colorWhite"
+            android:textSize="18sp"
+            android:padding="15dp"
             android:visibility="visible" />
 
         <ImageView
@@ -32,9 +34,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/hover_view_title_large"
-            android:layout_centerHorizontal="true"
             android:adjustViewBounds="true"
-            android:background="@color/colorDarkThemeAccent"
+            android:background="@color/colorBgBlackTintDarker"
             android:scaleType="fitStart"
             android:visibility="visible"
              />
@@ -44,14 +45,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/hover_view_title_large"
-            android:background="@color/colorDarkThemeAccent"
+            android:background="@color/colorBgBlackTintDarker"
             android:visibility="gone">
 
             <com.google.android.exoplayer2.ui.PlayerView
                 android:id="@+id/exoplayer_large"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/colorBgBlackTint"
+                android:background="@color/colorBgBlackTintDarker"
                 app:player_layout_id="@layout/exo_player_view_preview_large"
                 app:controller_layout_id="@layout/exo_playback_control_view_preview"
                 app:use_controller="true"
@@ -86,7 +87,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/hover_view_title_small"
-            android:background="@color/colorDarkThemeAccent"
+            android:background="@color/colorBgBlackTint"
             android:visibility="visible" />
     </RelativeLayout>
 

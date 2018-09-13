@@ -8,14 +8,11 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
-import android.widget.Toast;
 
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
-import net.dean.jraw.models.Submission;
 
 
 /*
@@ -32,9 +29,13 @@ import net.dean.jraw.models.Submission;
             settings options:
             - browse mode (no comments, upvoting , etc) for lurkers
             - hide progress bar on exoplayer
+
+            layout issues:
+            - centering very tall image in large hover
+            - hide toolbar on large hover preview
  */
 public class MainActivity extends AppCompatActivity implements FragmentHome.HomeEventListener,
-        FragmentMediaDisplayer.MediaDisplayerEventListener {
+        FragmentSubmissionViewer.SubmissionDisplayerEventListener {
 
     private static final String TAG = "MainActivity";
 
@@ -120,40 +121,6 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
     /*
         Interface implementations
      */
-
-    @Override
-    public void openMediaViewer(SubmissionObj submission) {
-        // prevent opening two media viewers (happens on quick double click)
-        if(!isViewingSubmission) {
-            FragmentManager fm = getSupportFragmentManager();
-            Fragment mediaDisplayerFragment = (FragmentMediaDisplayer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
-            FragmentTransaction ft = fm.beginTransaction();
-            Bundle args = new Bundle();
-            args.putSerializable(Constants.EXTRA_POST, submission);
-            if (mediaDisplayerFragment != null) {
-                ft.remove(mediaDisplayerFragment);
-            }
-            mediaDisplayerFragment = FragmentMediaDisplayer.newInstance();
-            mediaDisplayerFragment.setArguments(args);
-            ft.add(R.id.fragment_container, mediaDisplayerFragment, Constants.TAG_FRAG_MEDIA_DISPLAY);
-            ft.addToBackStack(null);
-            ft.commit();
-            isViewingSubmission = true;
-        }
-    }
-
-
-    @Override
-    public void closeMediaDisplayer() {
-        FragmentManager fm = getSupportFragmentManager();
-        Fragment mediaDisplayerFragment = (FragmentMediaDisplayer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
-        if(mediaDisplayerFragment != null){
-            fm.beginTransaction().remove(mediaDisplayerFragment).commit();
-            // before adding this, pressing Back would re-open previously closed images
-            fm.popBackStack();
-        }
-        isViewingSubmission = false;
-    }
 
     @Override
     public void openSettings(){

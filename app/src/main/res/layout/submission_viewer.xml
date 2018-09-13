@@ -1,28 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/media_viewer_scroll_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/media_viewer_scroll_container"
-    android:paddingTop="10dp"
-    android:background="@color/test_media_viewer_scroll_container">
-
+    android:background="@color/colorBgBlackTint">
 
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/post_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
+        <!-- Header -->
+        <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/media_viewer_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/media_viewer_toolbar_height"
+            android:background="@color/colorBgBlackTint"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+
+
+
+        <!-- Title -->
         <TextView
             android:id="@+id/media_viewer_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="25dp"
-            android:padding="20dp"
+            android:layout_below="@id/media_viewer_toolbar"
+            android:background="@color/colorBgBlackTint"
             android:gravity="center"
-            android:background="@color/redic"
-            android:textSize="18sp" />
+            android:paddingBottom="20dp"
+            android:paddingRight="10dp"
+            android:paddingTop="10dp"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp" />
+
 
         <!--
             <com.github.piasy.biv.view.BigImageView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -35,28 +48,19 @@
                 app:failureImageInitScaleType="center"
                 app:optimizeDisplay="true" />
         -->
-<!--        <FrameLayout
-            android:layout_width="fill_parent"
+        <!--        <FrameLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/media_viewer_image_container"
+                    android:layout_below="@id/media_viewer_title">-->
+
+        <!-- Image/gif/video-->
+        <ImageView
+            android:id="@+id/media_viewer_image"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/media_viewer_image_container"
-            android:layout_below="@id/media_viewer_title">-->
-
-            <ImageView
-                android:id="@+id/media_viewer_image"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/media_viewer_title"
-                android:clickable="false"/>
-
-            <!-- this view will "catch" the clicks -->
-<!--            <View
-                android:id="@+id/media_viewer_clicker"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/colorBgBlackTint"
-                android:clickable="true"/>
-
-        </FrameLayout>-->
+            android:layout_below="@id/media_viewer_title"
+            android:clickable="false" />
 
 
         <!-- Comments -->
@@ -65,7 +69,7 @@
             android:layout_width="match_parent"
             android:layout_height="500dp"
             android:layout_below="@id/media_viewer_image"
-            android:background="@color/test_media_viewer_comments"
+            android:background="@color/colorBgBlackTint"
             android:orientation="vertical">
 
         </LinearLayout>

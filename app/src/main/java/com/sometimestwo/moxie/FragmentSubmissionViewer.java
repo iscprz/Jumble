@@ -1,8 +1,14 @@
 package com.sometimestwo.moxie;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,11 +24,8 @@ import com.github.piasy.biv.loader.glide.GlideImageLoader;
 import com.github.piasy.biv.view.BigImageView;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
-import com.sometimestwo.moxie.Utils.Helpers;
 
-import net.dean.jraw.models.Submission;
-
-public class FragmentMediaDisplayer extends Fragment {
+public class FragmentSubmissionViewer extends Fragment {
     private static final String TAG = Constants.TAG_FRAG_MEDIA_DISPLAY;
     private SubmissionObj mCurrSubmission;
     private BigImageView mBigImageView;
@@ -32,16 +35,14 @@ public class FragmentMediaDisplayer extends Fragment {
     private LinearLayout mCommentsContainer;
     private View mClicker;
     private GestureDetector mDetector;
+    Toolbar mToolbar;
 
+    private SubmissionDisplayerEventListener mMediaDisplayerEventListener;
 
-    private MediaDisplayerEventListener mMediaDisplayerEventListener;
+    public interface SubmissionDisplayerEventListener {}
 
-    public interface MediaDisplayerEventListener {
-        public void closeMediaDisplayer();
-    }
-
-    public static FragmentMediaDisplayer newInstance() {
-        return new FragmentMediaDisplayer();
+    public static FragmentSubmissionViewer newInstance() {
+        return new FragmentSubmissionViewer();
     }
 
     @Override
@@ -55,28 +56,22 @@ public class FragmentMediaDisplayer extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         BigImageViewer.initialize(GlideImageLoader.with(getContext()));
 
-        View v = inflater.inflate(R.layout.media_viewer, container, false);
+        View v = inflater.inflate(R.layout.submission_viewer, container, false);
+
+        /* Toolbar setup*/
+        mToolbar = (Toolbar) v.findViewById(R.id.media_viewer_toolbar);
+        ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
 
         //mBigImageView = (BigImageView) v.findViewById(R.id.big_image_viewer);
 
         mTitle = (TextView) v.findViewById(R.id.media_viewer_title);
-
-        /* View that will capture click events on image. This view will be transparent*/
- /*       mClicker = (View) v.findViewById(R.id.media_viewer_clicker);
-        mDetector = new GestureDetector(getContext(), new MediaViewGestureListener());
-        mClicker.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                return mDetector.onTouchEvent(motionEvent);
-            }
-        });*/
 
         /* The actual view in which the image is displayed*/
         mImageView = (ImageView) v.findViewById(R.id.media_viewer_image);
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mMediaDisplayerEventListener.closeMediaDisplayer();
+                closeMediaPlayer();
             }
         });
         /*mBigImageView.setOnClickListener(new View.OnClickListener() {
@@ -87,7 +82,7 @@ public class FragmentMediaDisplayer extends Fragment {
             }
         });*/
         mBackground = (RelativeLayout) v.findViewById(R.id.post_container);
-       // mBackground = (FrameLayout) v.findViewById(R.id.bg_media_viewer);
+        // mBackground = (FrameLayout) v.findViewById(R.id.bg_media_viewer);
        /* mBackground.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -97,7 +92,7 @@ public class FragmentMediaDisplayer extends Fragment {
         });*/
 
 
-       mCommentsContainer = (LinearLayout) v.findViewById(R.id.media_viewer_comments_container);
+        mCommentsContainer = (LinearLayout) v.findViewById(R.id.media_viewer_comments_container);
         setupMedia();
       /*  mToolbar = (Toolbar) v.findViewById(R.id.toolbar_top);
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);*/
@@ -108,7 +103,7 @@ public class FragmentMediaDisplayer extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
-            mMediaDisplayerEventListener = (MediaDisplayerEventListener) context;
+            mMediaDisplayerEventListener = (SubmissionDisplayerEventListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
                     + " must implement listener inferfaces!");
@@ -118,19 +113,56 @@ public class FragmentMediaDisplayer extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        //setupToolbar();
+        setupToolbar();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        releaseExoPlayer();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        releaseExoPlayer();
     }
 
     @Override
     public void onDestroy() {
+        // Notify calling fragment that we're closing the submission viewer
+        // Don't need to pass anything back. Pass an empty intent for now
+        Intent resultIntent = new Intent();
+        getTargetFragment().onActivityResult(FragmentHome.KEY_INTENT_GOTO_SUBMISSIONVIEWER, Activity.RESULT_OK, resultIntent);
+        releaseExoPlayer();
         super.onDestroy();
     }
 
+
+    private void setupToolbar() {
+        //toolbar setup
+        ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (toolbar != null) {
+            //toolbar.setTitle(getResources().getString(R.string.toolbar_title_albums));
+            toolbar.setDisplayHomeAsUpEnabled(true);
+            toolbar.setHomeAsUpIndicator(R.drawable.ic_back_arrow);
+            toolbar.setTitle("");
+        }
+        mToolbar.setAlpha(1);
+    }
+
+    // Pop this fragment off the stack, effectively closing the submission viewer.
+    private void closeMediaPlayer() {
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        Fragment mediaDisplayerFragment = (FragmentSubmissionViewer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
+        if (mediaDisplayerFragment != null) {
+            fm.beginTransaction().remove(mediaDisplayerFragment).commit();
+            // Note: onDestroy gets called when we pop this off the stack.
+            fm.popBackStack();
+        }
+    }
+
+    private void releaseExoPlayer() {}
 
     private void setupMedia() {
 
@@ -141,7 +173,7 @@ public class FragmentMediaDisplayer extends Fragment {
                     .centerInside();
 */
         mTitle.setText(mCurrSubmission.getTitle());
-       // mBigImageView.showImage(Uri.parse(mCurrSubmission.getPostURL()));
+        // mBigImageView.showImage(Uri.parse(mCurrSubmission.getPostURL()));
 
         //image
         //String cleanPostUrl = Helpers.ensureImageUrl(mCurrSubmission.getUrl());

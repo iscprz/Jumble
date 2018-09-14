@@ -13,4 +13,5 @@
     <color name="redic">#60ff6dd1</color>
     <color name="test_media_viewer_comments">#8949ff00</color>
     <color name="test_media_viewer_scroll_container">#73ff9d00</color>
+    <color name="test_404">#39fcff</color>
 </resources>

@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,10 +18,10 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.util.DiffUtil;
@@ -70,9 +71,10 @@ import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Helpers;
 
 import net.dean.jraw.RedditClient;
-
-import java.io.FileDescriptor;
-import java.io.PrintWriter;
+import net.dean.jraw.models.Listing;
+import net.dean.jraw.models.Submission;
+import net.dean.jraw.models.SubredditSort;
+import net.dean.jraw.models.TimePeriod;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -90,6 +92,7 @@ public class FragmentHome extends Fragment {
     private MultiClickRecyclerView mRecyclerMain;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
+    private ActionBarDrawerToggle mDrawerToggle;
     private int mNumDisplayColumns;
     private String mCurrSubreddit;
     private RedditClient mRedditClient;
@@ -153,13 +156,15 @@ public class FragmentHome extends Fragment {
         //  mRedditClient = App.getAccountHelper().isAuthenticated() ? App.getAccountHelper().getReddit() : App.getAccountHelper().switchToUserless();
         setHasOptionsMenu(true);
         prefs = getContext().getSharedPreferences(Constants.KEY_GETPREFS_SETTINGS, Context.MODE_PRIVATE);
-
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_main, container, false);
         //mPopupView = inflater.inflate(R.layout.layout_popup_preview_small,null);
         //mParentView = v.findViewById(R.id.main_content);
+
+        /* Initialize any preference/settings variables */
+        validatePreferences();
 
         /* Hamburger menu*/
         setupHamburgerMenu(v);
@@ -250,19 +255,13 @@ public class FragmentHome extends Fragment {
         super.onResume();
 
         //toolbar setup
-        ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        if (toolbar != null) {
-            //toolbar.setTitle(getResources().getString(R.string.toolbar_title_albums));
-            toolbar.setDisplayHomeAsUpEnabled(true);
-            toolbar.setHomeAsUpIndicator(R.drawable.ic_menu);
-        }
+        setupToolbar();
+
+        setDrawerState(true);
 
         // Check if user settings have been altered.
         // i.e. User went to settings, opted in to NSFW posts then navigated back.
         validatePreferences();
-
-        // make sure toolbar is showing (precautionary)
-        setupToolbar();
     }
 
     @Override
@@ -296,11 +295,11 @@ public class FragmentHome extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
+        /*switch (item.getItemId()) {
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
-        }
+        }*/
         return super.onOptionsItemSelected(item);
     }
 
@@ -313,6 +312,7 @@ public class FragmentHome extends Fragment {
             if (resultCode == RESULT_OK) {
                 isViewingSubmission = false;
                 mToolbar.setAlpha(1);
+                setDrawerState(true);
             }
         }
 
@@ -324,23 +324,36 @@ public class FragmentHome extends Fragment {
     }
 
     private void setupToolbar() {
+        /*ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (toolbar != null) {
+            //toolbar.setTitle(getResources().getString(R.string.toolbar_title_albums));
+            //toolbar.setDisplayHomeAsUpEnabled(true);
+            //toolbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        }*/
         mToolbar.setVisibility(View.VISIBLE);
         mToolbar.setAlpha(1);
+        mToolbar.setTitle(mCurrSubreddit);
+
+        ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        toolbar.setDisplayHomeAsUpEnabled(true);
+        toolbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+
     }
 
     private void unpackArgs() {
         // SharedPreferencesTokenStore tokenStore = App.getTokenStore();
+        Bundle arguments = this.getArguments();
         try {
-            mNumDisplayColumns = (Integer) this.getArguments().get(ARGS_NUM_DISPLAY_COLS);
+            if (arguments != null) {
+                //mNumDisplayColumns = (Integer) arguments.get(ARGS_NUM_DISPLAY_COLS);
+            }
             //  mCurrSubreddit = mRedditClient.getmRedditDataRequestObj().getmSubreddit();
         } catch (NullPointerException npe) {
             throw new NullPointerException("Null ptr exception trying to unpack arguments in " + TAG);
         }
-        // default to 3 if at 0. //TODO: revisit default here
-        if (mNumDisplayColumns < 1) {
-            mNumDisplayColumns = Constants.DEFAULT_NUM_DISPLAY_COLS;
-        }
+
         // default to /r/pics as failsafe if nothing was passed to us
+        mCurrSubreddit = App.getCurrSubredditObj().getSubreddit();
         if (mCurrSubreddit == null || "".equals(mCurrSubreddit)) {
             mCurrSubreddit = Constants.DEFAULT_SUBREDDIT;
         }
@@ -349,6 +362,27 @@ public class FragmentHome extends Fragment {
     /* Hamburger menu*/
     private void setupHamburgerMenu(View v) {
         mDrawerLayout = v.findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(
+                getActivity(),                  /* host Activity */
+                mDrawerLayout,         /* DrawerLayout object */
+                /*  R.drawable.ic_menu,  nav drawer image to replace 'Up' caret */
+                R.string.drawer_open,  /* "open drawer" description for accessibility */
+                R.string.drawer_close  /* "close drawer" description for accessibility */
+        ) {
+            public void onDrawerClosed(View view) {
+                setupToolbar();
+                //getActivity().getSupportActionBar().setTitle(mTitle);
+                //supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+
+            public void onDrawerOpened(View drawerView) {
+                setupToolbar();
+                //supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+        };
+
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
+
 
         NavigationView navigationView = v.findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
@@ -362,34 +396,6 @@ public class FragmentHome extends Fragment {
                         return true;
                     }
                 });
-        mDrawerLayout.addDrawerListener(
-                new DrawerLayout.DrawerListener() {
-                    @Override
-                    public void onDrawerSlide(View drawerView, float slideOffset) {
-                        // Respond when the drawer's position changes
-                        Log.e(TAG, "Drawer slide!");
-                    }
-
-                    @Override
-                    public void onDrawerOpened(View drawerView) {
-                        // Respond when the drawer is opened
-                        Log.e(TAG, "Drawer opened!");
-
-                    }
-
-                    @Override
-                    public void onDrawerClosed(View drawerView) {
-                        // Respond when the drawer is closed
-                        Log.e(TAG, "Drawer closed!");
-                    }
-
-                    @Override
-                    public void onDrawerStateChanged(int newState) {
-                        // Respond when the drawer motion state changes
-                        Log.e(TAG, "Drawer state changed!");
-                    }
-                }
-        );
     }
 
     /* Handles left navigation menu item selections*/
@@ -410,10 +416,15 @@ public class FragmentHome extends Fragment {
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        App.getCurrSubredditObj().setSubreddit(input.getText().toString());
-                        SubmissionsViewModel submissionsViewModel = ViewModelProviders.of(FragmentHome.this).get(SubmissionsViewModel.class);
-                        submissionsViewModel.invalidate();
-                        mHomeEventListener.refreshFeed(TAG);
+                        String requestedSubreddit = input.getText().toString();
+                        App.getCurrSubredditObj().setSubreddit(requestedSubreddit);
+                        //SubmissionsViewModel submissionsViewModel = ViewModelProviders.of(FragmentHome.this).get(SubmissionsViewModel.class);
+                        //submissionsViewModel.invalidate();
+                        //mHomeEventListener.refreshFeed(TAG);
+
+                        Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
+                        visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, requestedSubreddit);
+                        startActivity(visitSubredditIntent);
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -433,6 +444,21 @@ public class FragmentHome extends Fragment {
         }
     }
 
+    public void setDrawerState(boolean isEnabled) {
+        if (isEnabled) {
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+            mDrawerToggle.onDrawerStateChanged(DrawerLayout.LOCK_MODE_UNLOCKED);
+            mDrawerToggle.setDrawerIndicatorEnabled(true);
+            //mDrawerToggle.setHomeAsUpIndicator(R.drawable.ic_menu);
+            mDrawerToggle.syncState();
+        } else {
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            mDrawerToggle.onDrawerStateChanged(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            mDrawerToggle.setDrawerIndicatorEnabled(false);
+            mDrawerToggle.syncState();
+        }
+    }
+
     private void saveRecyclerViewState() {
 
     }
@@ -447,6 +473,7 @@ public class FragmentHome extends Fragment {
         mPreviewSize = prefs.getString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                 .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                 ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
+        mNumDisplayColumns = 3;//prefs.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
     }
 
     private static DiffUtil.ItemCallback<SubmissionObj> DIFF_CALLBACK =
@@ -687,6 +714,7 @@ public class FragmentHome extends Fragment {
                 // prevent any weird double clicks from opening two media viewers
                 if (!isViewingSubmission) {
                     openSubmissionViewer(submission);
+                    setDrawerState(false);
                     isViewingSubmission = true;
                 }
             }
@@ -711,19 +739,14 @@ public class FragmentHome extends Fragment {
 
         mediaDisplayerFragment.setTargetFragment(FragmentHome.this, KEY_INTENT_GOTO_SUBMISSIONVIEWER);
 
-        ft.add(R.id.fragment_container, mediaDisplayerFragment, Constants.TAG_FRAG_MEDIA_DISPLAY);
+        ft.add(R.id.fragment_container_home, mediaDisplayerFragment, Constants.TAG_FRAG_MEDIA_DISPLAY);
         ft.addToBackStack(null);
         ft.commit();
     }
 
-    public void releaseExoPlayer() {
-        if (player != null) {
-            player.release();
-        }
-    }
-
 
     /*
+        [IMGUR SPECIFIC FUNCTION]
         Takes indirect Imgur url such as https://imgur.com/7Ogk88I, fetches direct link from
         Imgur API, and sets item's URL to direct link.
         We also are setting the item's submission type here. Might need to do this elsewhere.
@@ -805,6 +828,9 @@ public class FragmentHome extends Fragment {
     }
 
 
+
+    /* Exoplayer */
+
     private void initializePlayer(String url) {
 
         mExoplayerLarge.requestFocus();
@@ -865,4 +891,9 @@ public class FragmentHome extends Fragment {
         }
     }
 
+    public void releaseExoPlayer() {
+        if (player != null) {
+            player.release();
+        }
+    }
 }

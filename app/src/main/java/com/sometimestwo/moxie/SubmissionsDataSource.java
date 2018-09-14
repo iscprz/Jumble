@@ -12,6 +12,7 @@ import com.sometimestwo.moxie.Utils.Helpers;
 
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.models.Listing;
+import net.dean.jraw.models.PersistedAuthData;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.models.SubredditSort;
 import net.dean.jraw.models.TimePeriod;
@@ -19,6 +20,7 @@ import net.dean.jraw.pagination.DefaultPaginator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 
 public class SubmissionsDataSource extends ItemKeyedDataSource<String, SubmissionObj> {
 
@@ -34,9 +36,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
     @Override
     public void loadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {
-        App.getAccountHelper().switchToUserless();
         RedditClient redditClient = App.getAccountHelper().getReddit();
-
         mPaginator = redditClient
                 .subreddit(mSubredditInfoObj.getSubreddit())
                 .posts()

@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 
-import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
 
@@ -46,15 +45,15 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.drawer_layout);
-        setContentView(R.layout.activity_fragment);
+        setContentView(R.layout.activity_home);
 
-        Log.d(TAG, "onCreate: starting.");
         init();
     }
 
     private void init(){
         // initialize user settings in case this is first time app is being run
         SharedPreferences prefs = getSharedPreferences(Constants.KEY_GETPREFS_SETTINGS, Context.MODE_PRIVATE);
+        App.getAccountHelper().switchToUserless();
 
 
         //TODO: Read this information from sharedprefs. Hardcoded for now
@@ -68,18 +67,17 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
         FragmentTransaction ft = fm.beginTransaction();
         Bundle args = new Bundle();
         args.putInt(Constants.ARGS_NUM_DISPLAY_COLS,numDisplayCols);
-        if (fragment != null) {
-            //fragment.setArguments(args);
+      /*  if (fragment != null) {
             ft.remove(fragment);
-        }
+        }*/
 
         fragment = FragmentHome.newInstance();
         fragment.setArguments(args);
-        ft.add(R.id.fragment_container, fragment, Constants.TAG_FRAG_HOME);
+        ft.add(R.id.fragment_container_home, fragment, Constants.TAG_FRAG_HOME);
         ft.commit();
     }
 
-    private void refreshFragment(String fragmentTag){
+    protected void refreshFragment(String fragmentTag){
         Fragment frg = getSupportFragmentManager().findFragmentByTag(fragmentTag);
         final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         try{
@@ -96,9 +94,10 @@ public class MainActivity extends AppCompatActivity implements FragmentHome.Home
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //getMenuInflater().inflate(R.menu.navigation_menu, menu);
-        getMenuInflater().inflate(R.menu.menu_subreddit_view, menu);
+        getMenuInflater().inflate(R.menu.menu_home_header, menu);
         return true;
     }
+
     @Override
     public void onBackPressed() {
         // ask if user is sure they want to exit

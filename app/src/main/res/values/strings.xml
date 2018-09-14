@@ -2,6 +2,8 @@
     <string name="app_name">Moxie</string>
     <string name="menu_goto_subreddit">Go to subreddit...</string>
     <string name="log_in">Log in</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 
     <!-- Toasts-->
     <string name="toast_settings_saved">Settings saved</string>

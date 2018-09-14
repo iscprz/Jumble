@@ -39,7 +39,7 @@ public class FragmentSubmissionViewer extends Fragment {
 
     private SubmissionDisplayerEventListener mMediaDisplayerEventListener;
 
-    public interface SubmissionDisplayerEventListener {}
+    public interface SubmissionDisplayerEventListener { }
 
     public static FragmentSubmissionViewer newInstance() {
         return new FragmentSubmissionViewer();

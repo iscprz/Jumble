@@ -35,6 +35,10 @@
         <activity android:name=".ActivitySettings">
 
         </activity>
+
+        <activity android:name=".ActivitySubredditViewer">
+
+        </activity>
     </application>
 
 </manifest>

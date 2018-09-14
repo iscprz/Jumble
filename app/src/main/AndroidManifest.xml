@@ -24,12 +24,15 @@
             android:name="net.dean.jraw.android.REDIRECT_URL"
             android:value="https://github.com/izikperz" />
 
-        <activity android:name="MainActivity">
+        <activity android:name=".ActivityMain">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity android:name=".ActivityHome">
+
         </activity>
 
         <activity android:name=".ActivitySettings">

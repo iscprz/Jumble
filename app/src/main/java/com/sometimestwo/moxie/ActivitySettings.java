@@ -133,7 +133,7 @@ public class ActivitySettings extends Activity {
 
         prefs_settings_editor.commit();
         Intent intent = getIntent();
-        //TODO: Need to inform MainActivity of any changes that may require reload i.e. allowing NSFW
+        //TODO: Need to inform ActivityMain of any changes that may require reload i.e. allowing NSFW
         //intent.putExtra(Constants.NUM_GALLERIE_DIRS_CHOSEN, chosenDirectories.size());
         setResult(RESULT_OK, intent);
         finish();

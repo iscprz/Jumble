@@ -10,7 +10,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,6 +17,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
@@ -30,6 +30,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -70,12 +71,6 @@ import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Helpers;
 
-import net.dean.jraw.RedditClient;
-import net.dean.jraw.models.Listing;
-import net.dean.jraw.models.Submission;
-import net.dean.jraw.models.SubredditSort;
-import net.dean.jraw.models.TimePeriod;
-
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -85,7 +80,6 @@ public class FragmentHome extends Fragment {
     public final static String TAG = Constants.TAG_FRAG_HOME;
     public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
     private final static int KEY_LOG_IN = 2;
-    private final static String ARGS_NUM_DISPLAY_COLS = "ARGS_NUM_DISPLAY_COLS";
 
     private RequestManager GlideApp;
     private SwipeRefreshLayout mRefreshLayout;
@@ -95,12 +89,11 @@ public class FragmentHome extends Fragment {
     private ActionBarDrawerToggle mDrawerToggle;
     private int mNumDisplayColumns;
     private String mCurrSubreddit;
-    private RedditClient mRedditClient;
     private boolean isImageViewPressed = false;
     private int mActivePointerId = -1;
     private boolean isViewingSubmission = false;
-    // temporarily stores mp4 link to corresponding GIFV
-    private String mp4Url;
+    private GestureDetector gestureDetector;
+
 
     // settings prefs
     SharedPreferences prefs;
@@ -159,7 +152,7 @@ public class FragmentHome extends Fragment {
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_main, container, false);
+        View v = inflater.inflate(R.layout.fragment_home, container, false);
         //mPopupView = inflater.inflate(R.layout.layout_popup_preview_small,null);
         //mParentView = v.findViewById(R.id.main_content);
 
@@ -205,6 +198,9 @@ public class FragmentHome extends Fragment {
         });
 
         mRecyclerMain.setAdapter(adapter);
+
+        /* for detecting click types when needed */
+        gestureDetector = new GestureDetector(getContext(), new SingleTapConfirm());
 
         /* hover view small*/
         mHoverPreviewContainerSmall = (RelativeLayout) v.findViewById(R.id.hover_view_container_small);
@@ -257,8 +253,6 @@ public class FragmentHome extends Fragment {
         //toolbar setup
         setupToolbar();
 
-        setDrawerState(true);
-
         // Check if user settings have been altered.
         // i.e. User went to settings, opted in to NSFW posts then navigated back.
         validatePreferences();
@@ -295,11 +289,17 @@ public class FragmentHome extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        /*switch (item.getItemId()) {
+        switch (item.getItemId()) {
             case android.R.id.home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
+                // hacky workaround for handling conflict with opening drawer
+                // instead of going back when viewing a submission
+                if (!isViewingSubmission) {
+                    mDrawerLayout.openDrawer(GravityCompat.START);
+                } else {
+                    goBack();
+                }
                 return true;
-        }*/
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -312,7 +312,6 @@ public class FragmentHome extends Fragment {
             if (resultCode == RESULT_OK) {
                 isViewingSubmission = false;
                 mToolbar.setAlpha(1);
-                setDrawerState(true);
             }
         }
 
@@ -384,7 +383,7 @@ public class FragmentHome extends Fragment {
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
 
-        NavigationView navigationView = v.findViewById(R.id.nav_view);
+        NavigationView navigationView = (NavigationView) v.findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -418,9 +417,6 @@ public class FragmentHome extends Fragment {
                     public void onClick(DialogInterface dialog, int which) {
                         String requestedSubreddit = input.getText().toString();
                         App.getCurrSubredditObj().setSubreddit(requestedSubreddit);
-                        //SubmissionsViewModel submissionsViewModel = ViewModelProviders.of(FragmentHome.this).get(SubmissionsViewModel.class);
-                        //submissionsViewModel.invalidate();
-                        //mHomeEventListener.refreshFeed(TAG);
 
                         Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
                         visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, requestedSubreddit);
@@ -444,20 +440,6 @@ public class FragmentHome extends Fragment {
         }
     }
 
-    public void setDrawerState(boolean isEnabled) {
-        if (isEnabled) {
-            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
-            mDrawerToggle.onDrawerStateChanged(DrawerLayout.LOCK_MODE_UNLOCKED);
-            mDrawerToggle.setDrawerIndicatorEnabled(true);
-            //mDrawerToggle.setHomeAsUpIndicator(R.drawable.ic_menu);
-            mDrawerToggle.syncState();
-        } else {
-            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            mDrawerToggle.onDrawerStateChanged(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-            mDrawerToggle.setDrawerIndicatorEnabled(false);
-            mDrawerToggle.syncState();
-        }
-    }
 
     private void saveRecyclerViewState() {
 
@@ -509,6 +491,12 @@ public class FragmentHome extends Fragment {
         @SuppressLint("ClickableViewAccessibility")
         @Override
         public void onBindViewHolder(@NonNull final ItemViewHolder holder, int position) {
+            getView().getRootView().setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View view, MotionEvent motionEvent) {
+                    return false;
+                }
+            });
 
             SubmissionObj item = getItem(position);
             // Waiting for API response
@@ -653,8 +641,9 @@ public class FragmentHome extends Fragment {
                 holder.thumbnailImageView.setOnTouchListener(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View pView, MotionEvent pEvent) {
+                        boolean singleTap = gestureDetector.onTouchEvent(pEvent);
                         // do nothing if previewing has been disabled through settings
-                        if (!mAllowImagePreview) {
+                        if (!mAllowImagePreview && !singleTap) {
                             return true;
                         }
                         // save ID of the first pointer(touch) ID
@@ -714,7 +703,6 @@ public class FragmentHome extends Fragment {
                 // prevent any weird double clicks from opening two media viewers
                 if (!isViewingSubmission) {
                     openSubmissionViewer(submission);
-                    setDrawerState(false);
                     isViewingSubmission = true;
                 }
             }
@@ -744,6 +732,35 @@ public class FragmentHome extends Fragment {
         ft.commit();
     }
 
+    /* Solution to closing the submission viewer instead of opening left drawerlayout*/
+    private void goBack() {
+        try {
+            FragmentManager fm = getActivity().getSupportFragmentManager();
+            fm.popBackStack();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+     *   Hacky workaround for detecting single clicks. This was added to fix the issue where
+     *   submissions would not open when clicked if "preview on long touch" option was disabled.
+     *   (onTouchListener() was being called before onClick() every time.)
+     */
+    private class SingleTapConfirm extends GestureDetector.SimpleOnGestureListener {
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent event) {
+            return true;
+        }
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            /*it needs to return true if we don't want
+            to ignore rest of the gestures*/
+            return true;
+        }
+    }
 
     /*
         [IMGUR SPECIFIC FUNCTION]

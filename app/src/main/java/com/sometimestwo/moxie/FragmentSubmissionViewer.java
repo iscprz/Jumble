@@ -152,16 +152,21 @@ public class FragmentSubmissionViewer extends Fragment {
 
     // Pop this fragment off the stack, effectively closing the submission viewer.
     private void closeMediaPlayer() {
-        FragmentManager fm = getActivity().getSupportFragmentManager();
-        Fragment mediaDisplayerFragment = (FragmentSubmissionViewer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
-        if (mediaDisplayerFragment != null) {
-            fm.beginTransaction().remove(mediaDisplayerFragment).commit();
-            // Note: onDestroy gets called when we pop this off the stack.
-            fm.popBackStack();
-        }
+        goBack();
     }
 
-    private void releaseExoPlayer() {}
+    private void goBack() {
+        releaseExoPlayer();
+        try {
+            FragmentManager fm = getActivity().getSupportFragmentManager();
+            fm.popBackStack();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void releaseExoPlayer() { }
 
     private void setupMedia() {
 

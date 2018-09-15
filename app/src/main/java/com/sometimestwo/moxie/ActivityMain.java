@@ -32,12 +32,9 @@ import java.lang.ref.WeakReference;
             - centering very tall image in large hover
             - hide toolbar on large hover preview
  */
-public class ActivityMain extends AppCompatActivity  {
+public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.ActivityHomeEventListener*/{
 
     private final String TAG = this.getClass().getSimpleName();
-
-    // indicates whether user has clicked a submissions to browse
-    private boolean isViewingSubmission = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +42,11 @@ public class ActivityMain extends AppCompatActivity  {
         //setContentView(R.layout.drawer_layout);
         setContentView(R.layout.activity_main);
         new FetchRedditUser(this).execute();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -62,7 +64,6 @@ public class ActivityMain extends AppCompatActivity  {
         super.onActivityResult(requestCode, resultCode, data);
         /*if (requestCode == Constants.INTENT_SETTINGS) {
             if (resultCode == RESULT_OK) {
-
             }
         }*/
     }

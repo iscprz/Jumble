@@ -115,4 +115,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
     public void refreshFeed(String fragmentTag) {
         this.refreshFragment(fragmentTag);
     }
+
+    @Override
+    public void isHome(boolean isHome) { }
 }

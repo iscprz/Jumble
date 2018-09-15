@@ -1,11 +1,14 @@
 package com.sometimestwo.moxie;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -38,13 +41,13 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
 
     private final String TAG = ActivityHome.class.getSimpleName();
 
-    // indicates whether user has clicked a submissions to browse
-    private boolean isViewingSubmission = false;
+    // False if user has navigated to a submission or different subreddit.
+    // This allows us to know if we should handle onBackPressed() or not
+    private boolean isHome = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.drawer_layout);
         setContentView(R.layout.activity_home);
         init();
     }
@@ -63,15 +66,11 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
         int numDisplayCols = 3;
 
         FragmentManager fm = getSupportFragmentManager();
-        Fragment fragment;// =  fm.findFragmentByTag(Constants.TAG_FRAG_HOME);
         FragmentTransaction ft = fm.beginTransaction();
         Bundle args = new Bundle();
         args.putInt(Constants.ARGS_NUM_DISPLAY_COLS, numDisplayCols);
-      /*  if (fragment != null) {
-            ft.remove(fragment);
-        }*/
 
-        fragment = FragmentHome.newInstance();
+        Fragment fragment = FragmentHome.newInstance();
         fragment.setArguments(args);
         ft.add(R.id.fragment_container_home, fragment, Constants.TAG_FRAG_HOME);
         ft.commit();
@@ -91,15 +90,6 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
         }
     }
 
-    public void closeSubViewer() {
-        FragmentManager fm = getSupportFragmentManager();
-        Fragment mediaDisplayerFragment = (FragmentSubmissionViewer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
-        if (mediaDisplayerFragment != null) {
-            fm.beginTransaction().remove(mediaDisplayerFragment).commit();
-            // Note: onDestroy gets called when we pop this off the stack.
-            fm.popBackStack();
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -110,8 +100,28 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
 
     @Override
     public void onBackPressed() {
-        // ask if user is sure they want to exit
-        isViewingSubmission = false;
+        // If we're at home we prompt user if they really want to exit, else just pop back stack
+        if(isHome){
+            new AlertDialog.Builder(this, R.style.AppCompatAlertDialogStyle)
+                    .setTitle("Confirm exit")
+                    .setMessage("Really exit app?")
+                    .setIcon(R.drawable.ic_white_exclamation)
+                    .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            ActivityHome.this.exitApp();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, null)
+                    .show();
+        }
+        else{
+            getSupportFragmentManager().popBackStack();
+        }
+    }
+
+    public void exitApp(){
+        //mActivityHomeEventListener.exitApp();
+        //finish();
         super.onBackPressed();
     }
 
@@ -143,4 +153,8 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
         this.refreshFragment(fragmentTag);
     }
 
+    @Override
+    public void isHome(boolean isHome) {
+        this.isHome = isHome;
+    }
 }

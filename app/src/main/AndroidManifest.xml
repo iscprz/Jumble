@@ -24,7 +24,9 @@
             android:name="net.dean.jraw.android.REDIRECT_URL"
             android:value="https://github.com/izikperz" />
 
-        <activity android:name=".ActivityMain">
+        <activity
+            android:name=".ActivityMain"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

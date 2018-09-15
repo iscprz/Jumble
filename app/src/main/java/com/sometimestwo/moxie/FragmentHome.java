@@ -136,6 +136,8 @@ public class FragmentHome extends Fragment {
         public void openSettings();
 
         public void refreshFeed(String fragmentTag);
+
+        public void isHome(boolean isHome);
     }
 
     public static FragmentHome newInstance() {
@@ -316,6 +318,8 @@ public class FragmentHome extends Fragment {
         if (requestCode == KEY_INTENT_GOTO_SUBMISSIONVIEWER) {
             if (resultCode == RESULT_OK) {
                 isViewingSubmission = false;
+                // Lets the activity know we're back home so it can handle onBackPress()
+                mHomeEventListener.isHome(true);
                 mToolbar.setAlpha(1);
             }
         }
@@ -732,6 +736,9 @@ public class FragmentHome extends Fragment {
                 if (!isViewingSubmission) {
                     openSubmissionViewer(submission);
                     isViewingSubmission = true;
+                    // Let our activity know we're no longer home. This prevents this fragment's
+                    // activity from handling onBackPress() which would exit the app
+                    mHomeEventListener.isHome(false);
                 }
             }
         }

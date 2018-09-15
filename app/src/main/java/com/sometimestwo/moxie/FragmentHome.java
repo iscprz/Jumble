@@ -224,7 +224,7 @@ public class FragmentHome extends Fragment {
         mExoplayerLarge = (PlayerView) v.findViewById(R.id.exoplayer_large);
 
         bandwidthMeter = new DefaultBandwidthMeter();
-        mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(), Util.getUserAgent(getContext(), "mediaPlayerSample"), (TransferListener<? super DataSource>) bandwidthMeter);
+        mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(), Util.getUserAgent(getContext(), "Moxie"), (TransferListener<? super DataSource>) bandwidthMeter);
         window = new Timeline.Window();
         //ivHideControllerButton = findViewById(R.id.exo_controller);
         // progressBar = findViewById(R.id.progress_bar);
@@ -332,12 +332,6 @@ public class FragmentHome extends Fragment {
     }
 
     private void setupToolbar() {
-        /*ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        if (toolbar != null) {
-            //toolbar.setTitle(getResources().getString(R.string.toolbar_title_albums));
-            //toolbar.setDisplayHomeAsUpEnabled(true);
-            //toolbar.setHomeAsUpIndicator(R.drawable.ic_menu);
-        }*/
         if(isAdded()){
             mToolbar.setVisibility(View.VISIBLE);
             mToolbar.setAlpha(1);
@@ -666,6 +660,7 @@ public class FragmentHome extends Fragment {
                                         .into(mHoverImagePreviewLarge);
                                 // make sure the gif/video player isn't showing
                             } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
+                                //TODO: Settings option to disable exoplayer controller?
                                 // set up exoplayer to play gif
                                 initializePlayer(item.getUrl());
                             }

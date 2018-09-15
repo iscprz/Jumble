@@ -3,12 +3,14 @@ package com.sometimestwo.moxie;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,14 +21,34 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.github.piasy.biv.BigImageViewer;
 import com.github.piasy.biv.loader.glide.GlideImageLoader;
 import com.github.piasy.biv.view.BigImageView;
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.upstream.TransferListener;
+import com.google.android.exoplayer2.util.Util;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
 public class FragmentSubmissionViewer extends Fragment {
     private static final String TAG = Constants.TAG_FRAG_MEDIA_DISPLAY;
+
+    private RequestManager GlideApp;
     private SubmissionObj mCurrSubmission;
     private BigImageView mBigImageView;
     private TextView mSubmissionTitle;
@@ -36,6 +58,19 @@ public class FragmentSubmissionViewer extends Fragment {
     private GestureDetector mDetector;
     Toolbar mToolbar;
     ProgressBar mProgressBar;
+
+    //exo player stuff
+    private BandwidthMeter bandwidthMeter;
+    private DefaultTrackSelector trackSelector;
+    private SimpleExoPlayer player;
+    private ProgressBar progressBar;
+    private DataSource.Factory mediaDataSourceFactory;
+    private int currentWindow;
+    private long playbackPosition;
+    private Timeline.Window window;
+    //private FrameLayout mExoplayerContainerLarge;
+    private PlayerView mExoplayer;
+
 
     private SubmissionDisplayerEventListener mMediaDisplayerEventListener;
 
@@ -48,7 +83,9 @@ public class FragmentSubmissionViewer extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCurrSubmission = (SubmissionObj) this.getArguments().get(Constants.EXTRA_SUBMISSION_OBJ);
+        GlideApp = Glide.with(this);
+
+        unpackArgs();
     }
 
     @Override
@@ -81,9 +118,20 @@ public class FragmentSubmissionViewer extends Fragment {
             }
         });*/
 
+        /* Exo player*/
+        mExoplayer = (PlayerView) v.findViewById(R.id.submission_viewer_exoplayer);
+        bandwidthMeter = new DefaultBandwidthMeter();
+        mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(), Util.getUserAgent(getContext(), "Moxie"), (TransferListener<? super DataSource>) bandwidthMeter);
+        window = new Timeline.Window();
+
+        /* Loading progress bar */
         mProgressBar = (ProgressBar) v.findViewById(R.id.submission_viewer_media_progress);
 
+        /* Upvote/downvote/save/overflow*/
+
+        /* Comments */
         mCommentsContainer = (LinearLayout) v.findViewById(R.id.media_viewer_comments_container);
+
         setupMedia();
       /*  mToolbar = (Toolbar) v.findViewById(R.id.toolbar_top);
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);*/
@@ -129,6 +177,14 @@ public class FragmentSubmissionViewer extends Fragment {
         super.onDestroy();
     }
 
+    private void unpackArgs(){
+        try{
+            // Submission to be viewed
+            mCurrSubmission = (SubmissionObj) this.getArguments().get(Constants.EXTRA_SUBMISSION_OBJ);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
     private void setupToolbar() {
         //toolbar setup
@@ -158,27 +214,92 @@ public class FragmentSubmissionViewer extends Fragment {
 
     }
 
-    private void releaseExoPlayer() { }
+    private void releaseExoPlayer() {
+        if (player != null) {
+            player.release();
+        }
+    }
+
 
     private void setupMedia() {
-
-        /*
-            RequestOptions options = new RequestOptions()
-                    .skipMemoryCache(true)
-                    .override(1280, 720)
-                    .centerInside();
-*/
         mSubmissionTitle.setText(mCurrSubmission.getTitle());
-        // mBigImageView.showImage(Uri.parse(mCurrSubmission.getPostURL()));
 
-        //image
-        //String cleanPostUrl = Helpers.ensureImageUrl(mCurrSubmission.getUrl());
-        //TODO: handle invalid URL
-        Glide.with(this)
-                .load(mCurrSubmission.getUrl())
-                .listener(new ProgressBarRequestListener(mProgressBar))
-                //* .apply(options)*//*
-                .into(mImageView);
+        if(mCurrSubmission.getSubmissionType() == Constants.SubmissionType.IMAGE){
+            mImageView.setVisibility(View.VISIBLE);
+            mExoplayer.setVisibility(View.GONE);
+            //TODO: handle invalid URL
+            Glide.with(this)
+                    .load(mCurrSubmission.getUrl())
+                    .listener(new ProgressBarRequestListener(mProgressBar))
+                    //* .apply(options)*//*
+                    .into(mImageView);
+        }else if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.GIF
+                || mCurrSubmission.getSubmissionType() == Constants.SubmissionType.VIDEO){
+            mImageView.setVisibility(View.GONE);
+            mExoplayer.setVisibility(View.VISIBLE);
+            initializePlayer(mCurrSubmission.getUrl());
+        }
+    }
 
+
+    /* Exoplayer */
+    private void initializePlayer(String url) {
+
+        mExoplayer.requestFocus();
+
+        TrackSelection.Factory videoTrackSelectionFactory =
+                new AdaptiveTrackSelection.Factory(bandwidthMeter);
+
+        trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
+
+        player = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector);
+
+        mExoplayer.setPlayer(player);
+
+        player.addListener(new PlayerEventListener());
+        player.setPlayWhenReady(true);
+/*        MediaSource mediaSource = new HlsMediaSource(Uri.parse("https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
+                mediaDataSourceFactory, mainHandler, null);*/
+
+
+        MediaSource mediaSource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
+                .createMediaSource(Uri.parse(url));
+
+        boolean haveStartPosition = currentWindow != C.INDEX_UNSET;
+        if (haveStartPosition) {
+            player.seekTo(currentWindow, playbackPosition);
+        }
+
+        // repeat mode: 0 = off, 1 = loop single video, 2 = loop playlist
+        player.setRepeatMode(1);
+        player.prepare(mediaSource, !haveStartPosition, false);
+
+     /*   ivHideControllerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playerView.hideController();
+            }
+        });*/
+    }
+
+    private class PlayerEventListener extends Player.DefaultEventListener {
+
+        @Override
+        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+            switch (playbackState) {
+                case Player.STATE_IDLE:       // The player does not have any media to play yet.
+                    //progressBar.setVisibility(View.VISIBLE);
+                    break;
+                case Player.STATE_BUFFERING:  // The player is buffering (loading the content)
+                    //   progressBar.setVisibility(View.VISIBLE);
+                    break;
+                case Player.STATE_READY:      // The player is able to immediately play
+                    // progressBar.setVisibility(View.GONE);
+                    break;
+                case Player.STATE_ENDED:      // The player has finished playing the media
+                    //  progressBar.setVisibility(View.GONE);
+                    break;
+            }
+        }
     }
 }

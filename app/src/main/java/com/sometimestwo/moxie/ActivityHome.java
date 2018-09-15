@@ -120,8 +120,6 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
     }
 
     public void exitApp(){
-        //mActivityHomeEventListener.exitApp();
-        //finish();
         super.onBackPressed();
     }
 
@@ -137,10 +135,11 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
         }
 
     }
+
+    
     /*
         Interface implementations
      */
-
     @Override
     public void openSettings() {
         Intent settingsIntent = new Intent(this, ActivitySettings.class);

@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
             - media viewer image options (download, etc)
             - view pager
             - invalid subreddit
+            - exoplayer releases
 
             settings options:
             - browse mode (no comments, upvoting , etc) for lurkers

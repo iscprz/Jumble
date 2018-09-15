@@ -43,7 +43,7 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
 
     // False if user has navigated to a submission or different subreddit.
     // This allows us to know if we should handle onBackPressed() or not
-    private boolean isHome = false;
+    private boolean isHome = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,7 +136,7 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
 
     }
 
-    
+
     /*
         Interface implementations
      */

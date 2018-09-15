@@ -25,13 +25,37 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/submission_viewer_toolbar"
+            android:layout_marginTop="10dp"
             android:gravity="center"
             android:paddingBottom="20dp"
             android:paddingRight="10dp"
-            android:layout_marginTop="10dp"
             android:textColor="@color/colorWhite"
             android:textSize="16sp" />
 
+
+        <!-- Image/gif/video section-->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/submission_viewer_media_container"
+            android:layout_below="@id/submission_viewer_title">
+
+            <ProgressBar
+                android:id="@+id/submission_viewer_media_progress"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:visibility="visible" />
+
+            <!-- Image/gif/video-->
+            <ImageView
+                android:id="@+id/submission_media_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:clickable="false" />
+        </FrameLayout>
+        <!-- Media loading progress used by Glide when attempting to display url-->
 
         <!--
             <com.github.piasy.biv.view.BigImageView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -50,21 +74,13 @@
                     android:id="@+id/media_viewer_image_container"
                     android:layout_below="@id/media_viewer_title">-->
 
-        <!-- Image/gif/video-->
-        <ImageView
-            android:id="@+id/media_viewer_image"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/submission_viewer_title"
-            android:clickable="false" />
-
 
         <!-- Comments -->
         <LinearLayout
             android:id="@+id/media_viewer_comments_container"
             android:layout_width="match_parent"
             android:layout_height="500dp"
-            android:layout_below="@id/media_viewer_image"
+            android:layout_below="@id/submission_viewer_media_container"
             android:orientation="vertical">
 
         </LinearLayout>

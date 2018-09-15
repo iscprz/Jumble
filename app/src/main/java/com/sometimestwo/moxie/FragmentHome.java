@@ -92,8 +92,8 @@ public class FragmentHome extends Fragment {
     private boolean isImageViewPressed = false;
     private int mActivePointerId = -1;
     private boolean isViewingSubmission = false;
-    private GestureDetector gestureDetector;
-
+    private GestureDetector mGestureDetector;
+    private ProgressBar mProgressBar;
 
     // settings prefs
     SharedPreferences prefs;
@@ -112,6 +112,7 @@ public class FragmentHome extends Fragment {
 
     // hover view large
     private RelativeLayout mHoverPreviewContainerLarge;
+    private FrameLayout mHoverPreviewMediaContainerLarge;
     private TextView mHoverPreviewTitleLarge;
     private ImageView mHoverImagePreviewLarge;
 
@@ -125,7 +126,7 @@ public class FragmentHome extends Fragment {
     private int currentWindow;
     private long playbackPosition;
     private Timeline.Window window;
-    private FrameLayout mExoplayerContainerLarge;
+    //private FrameLayout mExoplayerContainerLarge;
     private PlayerView mExoplayerLarge;
 
     // event listeners
@@ -200,7 +201,10 @@ public class FragmentHome extends Fragment {
         mRecyclerMain.setAdapter(adapter);
 
         /* for detecting click types when needed */
-        gestureDetector = new GestureDetector(getContext(), new SingleTapConfirm());
+        mGestureDetector = new GestureDetector(getContext(), new SingleTapConfirm());
+
+        /* Progress bar for loading images/gifs/videos*/
+        mProgressBar = (ProgressBar) v.findViewById(R.id.hover_view_large_image_media_progress);
 
         /* hover view small*/
         mHoverPreviewContainerSmall = (RelativeLayout) v.findViewById(R.id.hover_view_container_small);
@@ -209,11 +213,12 @@ public class FragmentHome extends Fragment {
 
         /* hover view large*/
         mHoverPreviewContainerLarge = (RelativeLayout) v.findViewById(R.id.hover_view_container_large);
+        mHoverPreviewMediaContainerLarge = (FrameLayout) v.findViewById(R.id.hover_view_large_image_container);
         mHoverPreviewTitleLarge = (TextView) v.findViewById(R.id.hover_view_title_large);
         mHoverImagePreviewLarge = (ImageView) v.findViewById(R.id.hover_imageview_large);
 
         /* Exo player */
-        mExoplayerContainerLarge = (FrameLayout) v.findViewById(R.id.container_exoplayer_large);
+        //mExoplayerContainerLarge = (FrameLayout) v.findViewById(R.id.container_exoplayer_large);
         mExoplayerLarge = (PlayerView) v.findViewById(R.id.exoplayer_large);
 
         bandwidthMeter = new DefaultBandwidthMeter();
@@ -440,6 +445,40 @@ public class FragmentHome extends Fragment {
         }
     }
 
+    /*
+        Hover preview set up. Hides any views that aren't needed and unhides the ones we need.
+     */
+    private void setupPreviewer(SubmissionObj item) {
+        mProgressBar.setVisibility(View.VISIBLE);
+        if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
+            mHoverPreviewContainerSmall.setVisibility(View.VISIBLE);
+            mHoverPreviewContainerLarge.setVisibility(View.GONE);
+            //popupWindow = new PopupWindow(customView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                //mHoverPreviewTitleSmall.setText(item.getTitle());
+                mHoverImagePreviewSmall.setVisibility(View.VISIBLE);
+            }
+            if(item.getSubmissionType() == Constants.SubmissionType.GIF){ // and video?
+
+            }
+        } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+            mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
+            mHoverPreviewContainerSmall.setVisibility(View.GONE);
+            // fade the toolbar while we're in large previewer
+            mToolbar.setAlpha(.1f);
+            mHoverPreviewMediaContainerLarge.setVisibility(View.VISIBLE);
+            if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                mHoverImagePreviewLarge.setVisibility(View.VISIBLE);
+                mExoplayerLarge.setVisibility(View.GONE);
+            }
+            if(item.getSubmissionType() == Constants.SubmissionType.GIF){ // and video?
+                initializePlayer(item.getUrl());
+                mExoplayerLarge.setVisibility(View.VISIBLE);
+                mHoverImagePreviewLarge.setVisibility(View.GONE);
+
+            }
+        }
+    }
 
     private void saveRecyclerViewState() {
 
@@ -596,16 +635,15 @@ public class FragmentHome extends Fragment {
                         isImageViewPressed = true;
 
                         if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
+                            mHoverPreviewTitleSmall.setText(item.getTitle());
                             //popupWindow = new PopupWindow(customView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
                             if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                                setupPreviewer(item);
                                 GlideApp
                                         .load(item.getUrl())
                                         .apply(new RequestOptions()
                                                 .diskCacheStrategy(DiskCacheStrategy.ALL))
                                         .into(mHoverImagePreviewSmall);
-                                mHoverPreviewTitleSmall.setText(item.getTitle());
-                                mHoverPreviewContainerSmall.setVisibility(View.VISIBLE);
-                                mHoverImagePreviewSmall.setVisibility(View.VISIBLE);
                             } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
 
                             }
@@ -620,18 +658,16 @@ public class FragmentHome extends Fragment {
 
                         } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
                             mHoverPreviewTitleLarge.setText(item.getTitle());
-                            mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
-                            // hide the toolbar until we're done with hover view
-                            mToolbar.setAlpha(.1f);
+                            setupPreviewer(item);
                             if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
                                 GlideApp.load(item.getUrl())
-                                        .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
+                                        .listener(new ProgressBarRequestListener(mProgressBar))
+                                        /*.apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))*/
                                         .into(mHoverImagePreviewLarge);
                                 // make sure the gif/video player isn't showing
-                                mExoplayerContainerLarge.setVisibility(View.GONE);
                             } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
+                                // set up exoplayer to play gif
                                 initializePlayer(item.getUrl());
-                                mExoplayerContainerLarge.setVisibility(View.VISIBLE);
                             }
                         }
                         return true;
@@ -641,7 +677,7 @@ public class FragmentHome extends Fragment {
                 holder.thumbnailImageView.setOnTouchListener(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View pView, MotionEvent pEvent) {
-                        boolean singleTap = gestureDetector.onTouchEvent(pEvent);
+                        boolean singleTap = mGestureDetector.onTouchEvent(pEvent);
                         // do nothing if previewing has been disabled through settings
                         if (!mAllowImagePreview && !singleTap) {
                             return true;
@@ -669,12 +705,11 @@ public class FragmentHome extends Fragment {
 
                                 } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
                                     mHoverPreviewContainerLarge.setVisibility(View.GONE);
-                                    mExoplayerContainerLarge.setVisibility(View.GONE);
-
+                                    //mExoplayerContainerLarge.setVisibility(View.GONE);
                                     // restore the toolbar
                                     mToolbar.setAlpha(1);
                                 }
-                                releaseExoPlayer();
+                                //releaseExoPlayer();
                             }
                         }
                         return false;

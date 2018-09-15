@@ -15,7 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -31,11 +31,11 @@ public class FragmentSubmissionViewer extends Fragment {
     private BigImageView mBigImageView;
     private TextView mSubmissionTitle;
     private ImageView mImageView;
-    private RelativeLayout mBackground;
     private LinearLayout mCommentsContainer;
     private View mClicker;
     private GestureDetector mDetector;
     Toolbar mToolbar;
+    ProgressBar mProgressBar;
 
     private SubmissionDisplayerEventListener mMediaDisplayerEventListener;
 
@@ -66,7 +66,7 @@ public class FragmentSubmissionViewer extends Fragment {
         mSubmissionTitle = (TextView) v.findViewById(R.id.submission_viewer_title);
 
         /* The actual view in which the image is displayed*/
-        mImageView = (ImageView) v.findViewById(R.id.media_viewer_image);
+        mImageView = (ImageView) v.findViewById(R.id.submission_media_view);
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -80,16 +80,8 @@ public class FragmentSubmissionViewer extends Fragment {
                 mMediaDisplayerEventListener.closeMediaDisplayer();
             }
         });*/
-        mBackground = (RelativeLayout) v.findViewById(R.id.post_container);
-        // mBackground = (FrameLayout) v.findViewById(R.id.bg_media_viewer);
-       /* mBackground.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.e(TAG, "Clicked media viewer background(black tinted area)! ");
-                //mMediaDisplayerEventListener.closeMediaDisplayer();
-            }
-        });*/
 
+        mProgressBar = (ProgressBar) v.findViewById(R.id.submission_viewer_media_progress);
 
         mCommentsContainer = (LinearLayout) v.findViewById(R.id.media_viewer_comments_container);
         setupMedia();
@@ -184,6 +176,7 @@ public class FragmentSubmissionViewer extends Fragment {
         //TODO: handle invalid URL
         Glide.with(this)
                 .load(mCurrSubmission.getUrl())
+                .listener(new ProgressBarRequestListener(mProgressBar))
                 //* .apply(options)*//*
                 .into(mImageView);
 

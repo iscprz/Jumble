@@ -1,0 +1,24 @@
+<RelativeLayout android:id="@+id/hover_view_container_small"
+    android:layout_width="wrap_content"
+    android:layout_height="300dp"
+    android:layout_gravity="center|top"
+    android:visibility="gone"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:id="@+id/hover_view_title_small"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorBgBlackTint"
+        android:gravity="center"
+        android:textColor="@color/colorWhite"
+        android:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/hover_imageview_small"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/hover_view_title_small"
+        android:background="@color/colorBgBlackTint"
+        android:visibility="visible" />
+</RelativeLayout>

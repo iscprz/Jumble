@@ -725,9 +725,8 @@ public class FragmentHome extends Fragment {
             @Override
             public void onClick(View view) {
                 SubmissionObj submission = getItem(getLayoutPosition());
-                mToolbar.setAlpha(0);
 
-                // prevent any weird double clicks from opening two media viewers
+                // prevent any weird double clicks from opening two submission viewers
                 if (!isViewingSubmission) {
                     openSubmissionViewer(submission);
                     isViewingSubmission = true;

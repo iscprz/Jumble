@@ -17,7 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/media_viewer_toolbar_height"
             android:layout_marginTop="10dp"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            android:background="@color/colorThemeDarkPrimaryDark"/>
 
         <!-- Title -->
         <TextView

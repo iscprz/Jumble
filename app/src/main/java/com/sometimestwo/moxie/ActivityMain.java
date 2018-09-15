@@ -32,6 +32,7 @@ import java.lang.ref.WeakReference;
             layout issues:
             - centering very tall image in large hover
             - hide toolbar on large hover preview
+            - can open drawer layout while large hover previewing
  */
 public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.ActivityHomeEventListener*/{
 

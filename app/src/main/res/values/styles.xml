@@ -24,9 +24,4 @@
     <style name="DialogAsActivityTheme" parent="@android:style/Theme.Holo.Dialog">
     </style>
 
-    <style name="MediaViewerTitleTextTheme" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
-        <item name="android:textSize">18sp</item>
-        <item name="android:textColor">@color/colorWhite</item>
-        <item name="android:textStyle">normal</item>
-    </style>
 </resources>

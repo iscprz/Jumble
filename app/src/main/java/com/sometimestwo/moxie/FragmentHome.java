@@ -334,13 +334,19 @@ public class FragmentHome extends Fragment {
             //toolbar.setDisplayHomeAsUpEnabled(true);
             //toolbar.setHomeAsUpIndicator(R.drawable.ic_menu);
         }*/
-        mToolbar.setVisibility(View.VISIBLE);
-        mToolbar.setAlpha(1);
-        mToolbar.setTitle(mCurrSubreddit);
+        if(isAdded()){
+            mToolbar.setVisibility(View.VISIBLE);
+            mToolbar.setAlpha(1);
+            mToolbar.setTitle(getResources().getString(R.string.subreddit_prefix) + mCurrSubreddit);
 
-        ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        toolbar.setDisplayHomeAsUpEnabled(true);
-        toolbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+            // set hamburger menu icon
+            ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+            if(toolbar != null){
+                toolbar.setDisplayHomeAsUpEnabled(true);
+                toolbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+            }
+        }
+
 
     }
 
@@ -530,13 +536,6 @@ public class FragmentHome extends Fragment {
         @SuppressLint("ClickableViewAccessibility")
         @Override
         public void onBindViewHolder(@NonNull final ItemViewHolder holder, int position) {
-            getView().getRootView().setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View view, MotionEvent motionEvent) {
-                    return false;
-                }
-            });
-
             SubmissionObj item = getItem(position);
             // Waiting for API response
             String thumbnail = Constants.THUMBNAIL_NOT_FOUND;
@@ -553,7 +552,6 @@ public class FragmentHome extends Fragment {
                     if (item.getSubmissionType() == null) {
                         String imgurHash = Helpers.getImgurHash(item.getUrl());
                         // Async call to Imgur API
-                        item.setLoadingData(true);
                         fixIndirectImgurUrl(item, imgurHash);
                     }
 
@@ -578,8 +576,6 @@ public class FragmentHome extends Fragment {
                 // i.redd.it
                 else if (item.getDomain().contains("i.redd.it")) {
                     thumbnail = item.getThumbnail();
-
-
                 }
                 //gfycat
                 else if (item.getDomain().contains("gfycat")) {
@@ -588,12 +584,12 @@ public class FragmentHome extends Fragment {
                 //youtube
                 else if (item.getDomain().contains("youtube")) {
                     Log.e("VIDEO_DOMAIN_FOUND", " Found YOUTUBE link. Not working yet.");
-
-
                 }
                 // Domain not recognized - hope submission is linked to a valid media extension
                 else {
-                    if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                    thumbnail = item.getThumbnail();
+
+                   /* if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
                         thumbnail = item.getUrl();
                     }
 
@@ -601,7 +597,7 @@ public class FragmentHome extends Fragment {
                     else if (item.getSubmissionType() == Constants.SubmissionType.GIF
                             || item.getSubmissionType() == Constants.SubmissionType.VIDEO) {
                         thumbnail = item.getUrl();
-                    }
+                    }*/
                     Log.e("DOMAIN_NOT_FOUND", "Domain not recognized: " + item.getDomain() + ". Position: " + position);
                 }
 
@@ -715,10 +711,7 @@ public class FragmentHome extends Fragment {
                         return false;
                     }
                 });
-
             }
-
-
         }
 
         public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -745,26 +738,23 @@ public class FragmentHome extends Fragment {
     }
 
     private void openSubmissionViewer(SubmissionObj submission) {
-        FragmentManager fm = getActivity().getSupportFragmentManager();
-        Fragment mediaDisplayerFragment = (FragmentSubmissionViewer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
-        FragmentTransaction ft = fm.beginTransaction();
+        if(isAdded()) {
+            FragmentManager fm = getActivity().getSupportFragmentManager();
+            // Fragment mediaDisplayerFragment = (FragmentSubmissionViewer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
+            FragmentTransaction ft = fm.beginTransaction();
+            Fragment mediaDisplayerFragment = FragmentSubmissionViewer.newInstance();
+            Bundle args = new Bundle();
+            args.putSerializable(Constants.EXTRA_SUBMISSION_OBJ, submission);
+            mediaDisplayerFragment.setArguments(args);
 
-        Bundle args = new Bundle();
-        args.putSerializable(Constants.EXTRA_POST, submission);
+            mediaDisplayerFragment.setTargetFragment(FragmentHome.this, KEY_INTENT_GOTO_SUBMISSIONVIEWER);
 
-        // might be unnecessary but we'll do it for precaution
-        if (mediaDisplayerFragment != null) {
-            ft.remove(mediaDisplayerFragment);
+            //ft.replace(R.id.fragment_container_home, mediaDisplayerFragment,Constants.TAG_FRAG_MEDIA_DISPLAY);
+            int parentContainerId = ((ViewGroup)getView().getParent()).getId();
+            ft.add(parentContainerId, mediaDisplayerFragment/*, Constants.TAG_FRAG_MEDIA_DISPLAY*/);
+            ft.addToBackStack(null);
+            ft.commit();
         }
-
-        mediaDisplayerFragment = FragmentSubmissionViewer.newInstance();
-        mediaDisplayerFragment.setArguments(args);
-
-        mediaDisplayerFragment.setTargetFragment(FragmentHome.this, KEY_INTENT_GOTO_SUBMISSIONVIEWER);
-
-        ft.add(R.id.fragment_container_home, mediaDisplayerFragment, Constants.TAG_FRAG_MEDIA_DISPLAY);
-        ft.addToBackStack(null);
-        ft.commit();
     }
 
     /* Solution to closing the submission viewer instead of opening left drawerlayout*/

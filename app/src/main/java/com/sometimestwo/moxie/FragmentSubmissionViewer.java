@@ -48,7 +48,7 @@ public class FragmentSubmissionViewer extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCurrSubmission = (SubmissionObj) this.getArguments().get(Constants.EXTRA_POST);
+        mCurrSubmission = (SubmissionObj) this.getArguments().get(Constants.EXTRA_SUBMISSION_OBJ);
     }
 
     @Override

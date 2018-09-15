@@ -3,7 +3,6 @@ package com.sometimestwo.moxie;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -11,12 +10,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
-import android.view.View;
-import android.widget.FrameLayout;
 
 import com.sometimestwo.moxie.Utils.Constants;
-
-import java.util.List;
 
 
 /*
@@ -39,7 +34,7 @@ import java.util.List;
             - hide toolbar on large hover preview
  */
 public class ActivityHome extends AppCompatActivity implements FragmentHome.HomeEventListener,
-        FragmentSubmissionViewer.SubmissionDisplayerEventListener {
+FragmentSubmissionViewer.SubmissionDisplayerEventListener{
 
     private final String TAG = ActivityHome.class.getSimpleName();
 
@@ -51,14 +46,6 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.drawer_layout);
         setContentView(R.layout.activity_home);
-        FrameLayout f = findViewById(R.id.fragment_container_home);
-        f.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int o = 2;
-            }
-        });
-
         init();
     }
 

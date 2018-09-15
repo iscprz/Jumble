@@ -10,13 +10,14 @@ import android.view.Menu;
 import com.sometimestwo.moxie.Utils.Constants;
 
 public class ActivitySubredditViewer extends AppCompatActivity implements FragmentHome.HomeEventListener,
-        FragmentSubmissionViewer.SubmissionDisplayerEventListener{
-    public final  String TAG = this.getClass().getCanonicalName();
+        FragmentSubmissionViewer.SubmissionDisplayerEventListener {
+
+    public final String TAG = this.getClass().getCanonicalName();
+
     private String mCurrSubbredit;
-    private String testCurrSubreddit;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        testCurrSubreddit = App.getCurrSubredditObj().getSubreddit();
         setContentView(R.layout.activity_subreddit_viewer);
         unpackExtras();
 
@@ -25,7 +26,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
 //        args.putInt(Constants.ARGS_NUM_DISPLAY_COLS,numDisplayCols);
         Fragment fragment = FragmentHome.newInstance();
         fragment.setArguments(args);
-        ft.add(R.id.fragment_container_subreddit_view, fragment, Constants.TAG_FRAG_SUBREDDIT_VIEWER);
+        ft.add(R.id.fragment_container_subreddit_viewer, fragment, Constants.TAG_FRAG_SUBREDDIT_VIEWER);
         ft.commit();
     }
 
@@ -77,20 +78,22 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
     public void onBackPressed() {
         super.onBackPressed();
     }
-    public void unpackExtras(){
+
+    public void unpackExtras() {
         Bundle extras = getIntent().getExtras();
-        if(extras != null){
+        if (extras != null) {
             mCurrSubbredit = (String) getIntent().getExtras().get(Constants.EXTRA_GOTO_SUBREDDIT);
         }
     }
-    protected void refreshFragment(String fragmentTag){
+
+    protected void refreshFragment(String fragmentTag) {
         Fragment frg = getSupportFragmentManager().findFragmentByTag(fragmentTag);
         final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        try{
+        try {
             ft.detach(frg);
             ft.attach(frg);
             ft.commit();
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
             throw new NullPointerException(this.toString()
                     + ". Could not refresh fragment! Probably provided incorrect fragment tag. " +
                     " Fragment tag provided: " + fragmentTag);
@@ -101,10 +104,11 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
         Interface implementations
      */
     @Override
-    public void openSettings(){
-        Intent settingsIntent = new Intent(this,ActivitySettings.class);
+    public void openSettings() {
+        return;
+       /* Intent settingsIntent = new Intent(this,ActivitySettings.class);
         //settingsIntent.putExtra()
-        startActivityForResult(settingsIntent,Constants.INTENT_SETTINGS);
+        startActivityForResult(settingsIntent,Constants.INTENT_SETTINGS);*/
     }
 
     @Override

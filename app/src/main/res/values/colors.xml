@@ -9,9 +9,12 @@
     <color name="colorBgBlackTint">#aa000000</color>
     <color name="colorBgBlackTintDarker">#ce000000</color>
     <color name="colorBlack">#000000</color>
+    <color name="colorGray">#404040</color>
 
     <color name="redic">#60ff6dd1</color>
     <color name="test_media_viewer_comments">#8949ff00</color>
     <color name="test_media_viewer_scroll_container">#73ff9d00</color>
     <color name="test_404">#39fcff</color>
+    <color name="test_votebar">#730084</color>
+
 </resources>

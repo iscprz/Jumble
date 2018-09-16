@@ -16,9 +16,8 @@
             android:id="@+id/submission_viewer_toolbar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/media_viewer_toolbar_height"
-            android:layout_marginTop="10dp"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            android:background="@color/colorThemeDarkPrimaryDark"/>
+            android:background="@color/colorThemeDarkPrimaryDark"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
         <!-- Title -->
         <TextView
@@ -64,44 +63,204 @@
                 android:layout_height="match_parent"
                 android:visibility="gone"
 
-                app:resize_mode="fixed_width"
                 app:controller_layout_id="@layout/exo_playback_control_view_preview"
                 app:player_layout_id="@layout/exo_player_view_preview_large"
+                app:resize_mode="fixed_width"
                 app:show_buffering="true"
                 app:use_controller="true" />
 
 
         </FrameLayout>
-        <!-- Media loading progress used by Glide when attempting to display url-->
 
-        <!--
-            <com.github.piasy.biv.view.BigImageView xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/big_image_viewer"
-                android:layout_width="match_parent"
+        <!-- Vote, author, date (readable) info-->
+        <LinearLayout
+            android:id="@+id/submission_viewer_submission_info"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_below="@id/submission_viewer_media_container"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <!-- Vote counter-->
+            <LinearLayout
+                android:id="@+id/submission_viewer_vote_count_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".2"
+                android:background="@color/colorThemeDarkPrimary"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/submission_viewer_vote_counter_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/ic_white_upvote" />
+
+                <TextView
+                    android:id="@+id/submission_viewer_vote_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:textColor="@color/colorWhite" />
+            </LinearLayout>
+
+            <!-- Comment counter-->
+            <LinearLayout
+                android:id="@+id/submission_viewer_comment_count_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".2"
+                android:background="@color/colorThemeDarkPrimary"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/submission_viewer_comment_count_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/ic_white_chat" />
+
+                <TextView
+                    android:id="@+id/submission_viewer_comment_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:textColor="@color/colorWhite" />
+            </LinearLayout>
+
+            <!-- Author-->
+            <LinearLayout
+                android:id="@+id/submission_viewer_author_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".6"
+                android:background="@color/colorThemeDarkPrimary"
+                android:gravity="end"
+                android:orientation="horizontal"
+                android:paddingRight="10dp">
+
+                <ImageView
+                    android:id="@+id/submission_viewer_author_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/ic_white_author_icon" />
+
+                <TextView
+                    android:id="@+id/submission_viewer_author"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@color/colorThemeDarkPrimary"
+                    android:gravity="center"
+                    android:textColor="@color/colorWhite" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Separator-->
+        <FrameLayout
+            android:id="@+id/submission_viewer_separator_info_votebar"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_below="@+id/submission_viewer_submission_info"
+            android:background="@color/colorGray" />
+
+        <!-- Upvote/downvote/save/overflow-->
+        <LinearLayout
+            android:id="@+id/submission_viewer_vote_bar"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_below="@+id/submission_viewer_separator_info_votebar"
+
+            android:background="@color/colorThemeDarkPrimary"
+            android:orientation="horizontal">
+
+            <!-- Upvote -->
+            <FrameLayout
+                android:id="@+id/submission_viewer_commit_upvote_container"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:layout_below="@id/media_viewer_title"
-                app:failureImageInitScaleType="center"
-                app:optimizeDisplay="true" />
-        -->
-        <!--        <FrameLayout
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/media_viewer_image_container"
-                    android:layout_below="@id/media_viewer_title">-->
+                android:layout_weight=".25">
 
+                <ImageView
+                    android:id="@+id/submission_viewer_commit_upvote"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ic_white_upvote_medium" />
+            </FrameLayout>
+
+            <!-- Downvote-->
+            <FrameLayout
+                android:id="@+id/submission_viewer_commit_downvote_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".25">
+
+                <ImageView
+                    android:id="@+id/submission_viewer_commit_downvote"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ic_white_downvote_medium" />
+            </FrameLayout>
+
+
+            <!-- Save-->
+            <FrameLayout
+                android:id="@+id/submission_viewer_commit_save_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".25">
+
+                <ImageView
+                    android:id="@+id/submission_viewer_commit_save"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ic_white_star_medium" />
+            </FrameLayout>
+
+
+            <!-- Overflow-->
+            <FrameLayout
+                android:id="@+id/submission_viewer_commit_overflow_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".25">
+
+                <ImageView
+                    android:id="@+id/submission_viewer_votebar_overflow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ic_white_overflow_medium" />
+            </FrameLayout>
+        </LinearLayout>
 
         <!-- Comments -->
         <LinearLayout
             android:id="@+id/media_viewer_comments_container"
             android:layout_width="match_parent"
             android:layout_height="500dp"
-            android:layout_below="@id/submission_viewer_media_container"
-            android:orientation="vertical">
-        </LinearLayout>
+            android:layout_below="@id/submission_viewer_vote_bar"
+            android:orientation="vertical"></LinearLayout>
     </RelativeLayout>
 
 </ScrollView>
+
+
+    <!--
+        <com.github.piasy.biv.view.BigImageView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/big_image_viewer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_below="@id/media_viewer_title"
+            app:failureImageInitScaleType="center"
+            app:optimizeDisplay="true" />
+    -->
 
 

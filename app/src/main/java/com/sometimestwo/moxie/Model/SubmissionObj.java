@@ -46,6 +46,7 @@ public class SubmissionObj implements Serializable{
     private Constants.SubmissionType submissionType;
     // object is in the process of getting filled through async API call
     private boolean loadingData;
+    private int score;
 
 
     public String getAuthor() {
@@ -286,5 +287,13 @@ public class SubmissionObj implements Serializable{
 
     public void setLoadingData(boolean loadingData) {
         this.loadingData = loadingData;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
     }
 }

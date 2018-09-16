@@ -177,7 +177,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             s.setSubredditFullName(submission.getSubredditFullName());
             s.setVote(submission.getVote());
             s.setVisited(submission.isVisited());
-
+            s.setScore(submission.getScore());
             // thumbnail will be "nsfw" here if user has selected to hide NSFW thumbnails through
             // reddit preferences. If "nsfw", set postURL as thumbnail for now.
             if("nsfw".equalsIgnoreCase(submission.getThumbnail())){

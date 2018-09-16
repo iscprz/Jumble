@@ -59,7 +59,20 @@ public class FragmentSubmissionViewer extends Fragment {
     Toolbar mToolbar;
     ProgressBar mProgressBar;
 
-    //exo player stuff
+    // Submission info
+    LinearLayout mSubmissionInfo;
+    TextView mTextViewAuthor;
+    TextView mTextViewVoteCount;
+    TextView mCommentCount;
+
+    // Vote bar
+    LinearLayout mVotebar;
+    ImageView mButtonUpvote;
+    ImageView mButtonDownvote;
+    ImageView mButtonSave;
+    ImageView mButtonOverflow;
+
+    // Exo player stuff
     private BandwidthMeter bandwidthMeter;
     private DefaultTrackSelector trackSelector;
     private SimpleExoPlayer player;
@@ -127,12 +140,25 @@ public class FragmentSubmissionViewer extends Fragment {
         /* Loading progress bar */
         mProgressBar = (ProgressBar) v.findViewById(R.id.submission_viewer_media_progress);
 
+        /* Post info : Vote count, comment count, author */
+        mSubmissionInfo = (LinearLayout) v.findViewById(R.id.submission_viewer_submission_info);
+        mTextViewAuthor = (TextView) v.findViewById(R.id.submission_viewer_author);
+        mTextViewVoteCount = (TextView) v.findViewById(R.id.submission_viewer_vote_count);
+        mCommentCount = (TextView) v.findViewById(R.id.submission_viewer_comment_count);
+
         /* Upvote/downvote/save/overflow*/
+        mVotebar = (LinearLayout) v.findViewById(R.id.submission_viewer_vote_bar);
+        mButtonUpvote = (ImageView) v.findViewById(R.id.submission_viewer_commit_upvote);
+        mButtonDownvote = (ImageView) v.findViewById(R.id.submission_viewer_commit_downvote);
+        mButtonSave = (ImageView) v.findViewById(R.id.submission_viewer_commit_save);
+        mButtonOverflow = (ImageView) v.findViewById(R.id.submission_viewer_votebar_overflow);
 
         /* Comments */
         mCommentsContainer = (LinearLayout) v.findViewById(R.id.media_viewer_comments_container);
 
         setupMedia();
+        setupSubmissionInfoBar();
+        setupVotebar();
       /*  mToolbar = (Toolbar) v.findViewById(R.id.toolbar_top);
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);*/
         return v;
@@ -239,6 +265,16 @@ public class FragmentSubmissionViewer extends Fragment {
             mExoplayer.setVisibility(View.VISIBLE);
             initializePlayer(mCurrSubmission.getUrl());
         }
+    }
+
+    private void setupSubmissionInfoBar(){
+        mTextViewAuthor.setText(mCurrSubmission.getAuthor());
+        mTextViewVoteCount.setText(String.valueOf(mCurrSubmission.getScore()));
+        mCommentCount.setText(String.valueOf(mCurrSubmission.getCommentCount()));
+    }
+
+    private void setupVotebar(){
+        // change icon color depending on of user has voted on this already (only for logged in users)
     }
 
 

@@ -46,6 +46,7 @@
         android:background="@color/colorBgBlackTint"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/drawer_view"
+        app:itemIconTint="@color/colorWhite"
         app:itemTextColor="@color/colorWhite">
 
         <FrameLayout
@@ -59,9 +60,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:text="@string/log_out"
-                android:textSize="18sp"
+                android:textSize="20sp"
+                android:gravity="end"
                 android:textColor="@color/colorWhite"
-                android:layout_gravity="start" />
+                android:paddingRight="20dp" />
         </FrameLayout>
     </android.support.design.widget.NavigationView>
 

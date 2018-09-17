@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -449,14 +450,12 @@ public class FragmentHome extends Fragment {
                                 // Update user SharedPrefs's username to null(userless)
                                 curr_user_prefs.edit().putString(Constants.KEY_CURR_USERNAME, null).apply();
                                 App.getAccountHelper().logout();
-                                App.getAccountHelper().switchToUserless();
                                 mDrawerLayout.closeDrawer(navigationView);
-                                refresh(true);
+                                new FetchUserlessAccountTask().execute();
                             }
                         })
                         .setNegativeButton(android.R.string.no, null)
                         .show();
-
             }
         });
     }
@@ -926,7 +925,94 @@ public class FragmentHome extends Fragment {
         }
     }
 
-    /*
+
+    /* Exoplayer */
+
+    private void initializePlayer(String url) {
+
+        mExoplayerLarge.requestFocus();
+
+        TrackSelection.Factory videoTrackSelectionFactory =
+                new AdaptiveTrackSelection.Factory(bandwidthMeter);
+
+        trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
+
+        player = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector);
+
+        mExoplayerLarge.setPlayer(player);
+
+        player.addListener(new PlayerEventListener());
+        player.setPlayWhenReady(true);
+/*        MediaSource mediaSource = new HlsMediaSource(Uri.parse("https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
+                mediaDataSourceFactory, mainHandler, null);*/
+
+
+        MediaSource mediaSource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
+                .createMediaSource(Uri.parse(url));
+
+        boolean haveStartPosition = currentWindow != C.INDEX_UNSET;
+        if (haveStartPosition) {
+            player.seekTo(currentWindow, playbackPosition);
+        }
+
+        // repeat mode: 0 = off, 1 = loop single video, 2 = loop playlist
+        player.setRepeatMode(1);
+        player.prepare(mediaSource, !haveStartPosition, false);
+
+     /*   ivHideControllerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playerView.hideController();
+            }
+        });*/
+    }
+
+    private class PlayerEventListener extends Player.DefaultEventListener {
+
+        @Override
+        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+            switch (playbackState) {
+                case Player.STATE_IDLE:       // The player does not have any media to play yet.
+                    //progressBar.setVisibility(View.VISIBLE);
+                    break;
+                case Player.STATE_BUFFERING:  // The player is buffering (loading the content)
+                    //   progressBar.setVisibility(View.VISIBLE);
+                    break;
+                case Player.STATE_READY:      // The player is able to immediately play
+                    // progressBar.setVisibility(View.GONE);
+                    break;
+                case Player.STATE_ENDED:      // The player has finished playing the media
+                    //  progressBar.setVisibility(View.GONE);
+                    break;
+            }
+        }
+    }
+
+    public void releaseExoPlayer() {
+        if (player != null) {
+            player.release();
+        }
+    }
+
+
+
+    /*************************Async network tasks *******************************************/
+
+    /* Set's our reddit client to userless and refreshes Home on completion*/
+    private class FetchUserlessAccountTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            App.getAccountHelper().switchToUserless();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            refresh(true);
+        }
+    }
+
+     /*
         [IMGUR SPECIFIC FUNCTION]
         Takes indirect Imgur url such as https://imgur.com/7Ogk88I, fetches direct link from
         Imgur API, and sets item's URL to direct link.
@@ -1010,71 +1096,5 @@ public class FragmentHome extends Fragment {
 
 
 
-    /* Exoplayer */
 
-    private void initializePlayer(String url) {
-
-        mExoplayerLarge.requestFocus();
-
-        TrackSelection.Factory videoTrackSelectionFactory =
-                new AdaptiveTrackSelection.Factory(bandwidthMeter);
-
-        trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
-
-        player = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector);
-
-        mExoplayerLarge.setPlayer(player);
-
-        player.addListener(new PlayerEventListener());
-        player.setPlayWhenReady(true);
-/*        MediaSource mediaSource = new HlsMediaSource(Uri.parse("https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
-                mediaDataSourceFactory, mainHandler, null);*/
-
-
-        MediaSource mediaSource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
-                .createMediaSource(Uri.parse(url));
-
-        boolean haveStartPosition = currentWindow != C.INDEX_UNSET;
-        if (haveStartPosition) {
-            player.seekTo(currentWindow, playbackPosition);
-        }
-
-        // repeat mode: 0 = off, 1 = loop single video, 2 = loop playlist
-        player.setRepeatMode(1);
-        player.prepare(mediaSource, !haveStartPosition, false);
-
-     /*   ivHideControllerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                playerView.hideController();
-            }
-        });*/
-    }
-
-    private class PlayerEventListener extends Player.DefaultEventListener {
-
-        @Override
-        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-            switch (playbackState) {
-                case Player.STATE_IDLE:       // The player does not have any media to play yet.
-                    //progressBar.setVisibility(View.VISIBLE);
-                    break;
-                case Player.STATE_BUFFERING:  // The player is buffering (loading the content)
-                    //   progressBar.setVisibility(View.VISIBLE);
-                    break;
-                case Player.STATE_READY:      // The player is able to immediately play
-                    // progressBar.setVisibility(View.GONE);
-                    break;
-                case Player.STATE_ENDED:      // The player has finished playing the media
-                    //  progressBar.setVisibility(View.GONE);
-                    break;
-            }
-        }
-    }
-
-    public void releaseExoPlayer() {
-        if (player != null) {
-            player.release();
-        }
-    }
 }

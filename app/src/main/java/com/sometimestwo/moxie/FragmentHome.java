@@ -100,6 +100,7 @@ public class FragmentHome extends Fragment {
     private boolean mIsLoggedIn = false;
     private boolean mPrefsAllowNSFW = false;
     private boolean mAllowImagePreview = false;
+    private boolean mAllowBigDisplayClickClose = true;
     // private boolean mAllowGifPreview = false;
     private Constants.HoverPreviewSize mPreviewSize;
 
@@ -507,6 +508,7 @@ public class FragmentHome extends Fragment {
     private void validatePreferences() {
         mPrefsAllowNSFW = prefs.getString(Constants.KEY_ALLOW_NSFW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
         mAllowImagePreview = prefs.getString(Constants.KEY_ALLOW_HOVER_PREVIEW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
+        mAllowBigDisplayClickClose = prefs.getString(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, Constants.SETTINGS_YES).equalsIgnoreCase(Constants.SETTINGS_YES);
         mPreviewSize = prefs.getString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                 .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                 ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;

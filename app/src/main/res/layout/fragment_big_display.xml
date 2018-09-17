@@ -1,14 +1,14 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBgBlackTintDarkest">
+    android:background="@color/colorBgBlackTintDarker">
 
     <!-- Icon toolbar-->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_gravity="top"
-        android:background="@color/transparent"
+        android:background="@color/colorBgBlackTint"
         android:orientation="horizontal">
 
         <!-- Back -->
@@ -53,7 +53,7 @@
             android:layout_margin="10dp">
 
         <ImageView
-                android:id="@+id/big_display_button_copy_url2"
+                android:id="@+id/big_display_button_copy_url"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:background="@drawable/ic_white_copy_url" />
@@ -81,6 +81,8 @@
             android:id="@+id/big_image_viewer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="50dp"
+            android:clickable="true"
             app:failureImageInitScaleType="center"
             app:optimizeDisplay="true" />
 

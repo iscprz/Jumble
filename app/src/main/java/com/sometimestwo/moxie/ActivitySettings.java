@@ -23,10 +23,12 @@ public class ActivitySettings extends Activity {
     private TextView mTextViewAllowNSFW;
     private TextView mTextViewAllowGifPreview;
     private TextView mTextViewAllowImagePreview;
+    private TextView mTextViewAllowBigDisplayCloseClick;
 
     private CheckBox mCheckboxAllowNSFW;
     //private CheckBox mCheckboxPreviewGIF;
     private CheckBox mCheckboxPreviewImage;
+    private CheckBox mCheckboxAllowBigDisplayCloseClick;
 
     private RadioGroup mRadioGroupPreviewSize;
 
@@ -87,7 +89,27 @@ public class ActivitySettings extends Activity {
 */
 
 
-        //ImgurSubmission previewing
+        /* Close big display on click*/
+        mCheckboxAllowBigDisplayCloseClick = (CheckBox) findViewById(R.id.settings_checkbox_bigdisplay_close);
+        String closeOnClick = prefs_settings.getString(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, Constants.SETTINGS_NO);
+        mCheckboxAllowBigDisplayCloseClick.setChecked(Constants.SETTINGS_YES.equalsIgnoreCase(closeOnClick));
+        mCheckboxAllowBigDisplayCloseClick.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                mModified = true;
+                prefs_settings_editor.putString(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, b ? Constants.SETTINGS_YES : Constants.SETTINGS_NO);
+            }
+        });
+        // textview clicks will trigger checkbox checking
+        mTextViewAllowBigDisplayCloseClick = (TextView) findViewById(R.id.settings_textview_bigdisplay_close);
+        mTextViewAllowBigDisplayCloseClick.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCheckboxAllowBigDisplayCloseClick.setChecked(!mCheckboxAllowBigDisplayCloseClick.isChecked());
+            }
+        });
+
+        /* Previewing */
         mCheckboxPreviewImage = (CheckBox) findViewById(R.id.settings_checkbox_image_preview);
         String previewImage = prefs_settings.getString(Constants.KEY_ALLOW_HOVER_PREVIEW, Constants.SETTINGS_NO);
         mCheckboxPreviewImage.setChecked(Constants.SETTINGS_YES.equalsIgnoreCase(previewImage));
@@ -114,6 +136,9 @@ public class ActivitySettings extends Activity {
         mRadioGroupPreviewSize.check(previewSizeSelection.equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                 ? R.id.radio_preview_size_option_small : R.id.radio_preview_size_option_large);
 
+
+
+        /* Exit settings */
         mBackButton = (Button) findViewById(R.id.settings_back);
         mBackButton.setOnClickListener(new View.OnClickListener() {
             @Override

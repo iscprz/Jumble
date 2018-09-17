@@ -223,10 +223,7 @@ public class FragmentSubmissionViewer extends Fragment {
         mToolbar.setAlpha(1);
     }
 
-    // Pop this fragment off the stack, effectively closing the submission viewer.
-    private void closeMediaPlayer() {
-        goBack();
-    }
+
 
     private void goBack() {
         releaseExoPlayer();
@@ -236,7 +233,6 @@ public class FragmentSubmissionViewer extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     private void releaseExoPlayer() {

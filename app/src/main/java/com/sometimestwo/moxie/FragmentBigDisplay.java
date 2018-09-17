@@ -62,13 +62,13 @@ public class FragmentBigDisplay extends Fragment {
         View v = inflater.inflate(R.layout.fragment_big_display, container, false);
 
         /* Toolbar back button*/
-        mButtonBack = (ImageView) v.findViewById(R.id.big_display_button_back);
+       /* mButtonBack = (ImageView) v.findViewById(R.id.big_display_button_back);
         mButtonBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 goBack();
             }
-        });
+        });*/
 
         /* Toolbar Download button*/
         mButtonDownload = (ImageView) v.findViewById(R.id.big_display_button_download);

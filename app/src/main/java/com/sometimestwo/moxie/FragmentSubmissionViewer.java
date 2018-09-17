@@ -217,7 +217,7 @@ public class FragmentSubmissionViewer extends Fragment {
         if (toolbar != null) {
             //toolbar.setTitle(getResources().getString(R.string.toolbar_title_albums));
             toolbar.setDisplayHomeAsUpEnabled(true);
-            toolbar.setHomeAsUpIndicator(R.drawable.ic_back_arrow);
+            toolbar.setHomeAsUpIndicator(R.drawable.ic_white_back_arrow);
             toolbar.setTitle("/r/" + mCurrSubmission.getSubreddit());
         }
         mToolbar.setAlpha(1);

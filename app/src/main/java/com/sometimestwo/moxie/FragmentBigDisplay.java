@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
@@ -69,11 +70,27 @@ public class FragmentBigDisplay extends Fragment {
             }
         });
 
-        /* Toolbar download button*/
+        /* Toolbar Download button*/
         mButtonDownload = (ImageView) v.findViewById(R.id.big_display_button_download);
-        /* Toolbar copy url button*/
+
+        /* Toolbar Copy Url button*/
         mButtonCopyURL = (ImageView) v.findViewById(R.id.big_display_button_copy_url);
-        /* Toolbar share button*/
+        mButtonCopyURL.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int sdk = android.os.Build.VERSION.SDK_INT;
+                if(sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
+                    android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                    clipboard.setText(mCurrSubmission.getUrl());
+                } else {
+                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                    android.content.ClipData clip = android.content.ClipData.newPlainText(mCurrSubmission.getTitle(),mCurrSubmission.getUrl());
+                    clipboard.setPrimaryClip(clip);
+                }
+                Toast.makeText(getContext(), getContext().getResources()
+                        .getString(R.string.toast_copied_to_clipboard), Toast.LENGTH_SHORT).show();            }
+        });
+        /* Toolbar Share button*/
         mButtonShare = (ImageView) v.findViewById(R.id.big_display_button_share);
 
 

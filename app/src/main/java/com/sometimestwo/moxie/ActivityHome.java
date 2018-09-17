@@ -62,8 +62,11 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
         ft.commit();
     }
 
-    protected void refreshFragment(String fragmentTag) {
+    protected void refreshFragment(String fragmentTag, boolean invalidateData) {
         Fragment frg = getSupportFragmentManager().findFragmentByTag(fragmentTag);
+        Bundle args = new Bundle();
+        args.putBoolean(Constants.ARGS_INVALIDATE_DATASOURCE, invalidateData);
+        frg.setArguments(args);
         final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         try {
             ft.detach(frg);
@@ -114,9 +117,12 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constants.INTENT_SETTINGS) {
             if (resultCode == RESULT_OK) {
+                refreshFragment(Constants.TAG_FRAG_HOME,false);
                 Log.e(TAG, "Returned from settings activity");
-                /*if ((int) data.getExtras().get(Constants.NUM_GALLERIE_DIRS_CHOSEN) < 1) {
-                } */
+            }
+            // Setting was changed that requires data to be invalidated(refreshed)
+            else if(resultCode == Constants.RESULT_OK_INVALIDATE_DATA){
+                refreshFragment(Constants.TAG_FRAG_HOME,true);
             }
         }
 
@@ -134,8 +140,8 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
     }
 
     @Override
-    public void refreshFeed(String fragmentTag) {
-        refreshFragment(fragmentTag);
+    public void refreshFeed(String fragmentTag, boolean invalidateData) {
+        refreshFragment(fragmentTag, invalidateData);
     }
 
     @Override

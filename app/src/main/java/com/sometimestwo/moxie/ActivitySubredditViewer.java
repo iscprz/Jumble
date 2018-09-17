@@ -86,7 +86,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
         }
     }
 
-    protected void refreshFragment(String fragmentTag) {
+    protected void refreshFragment(String fragmentTag, boolean invalidateData) {
         Fragment frg = getSupportFragmentManager().findFragmentByTag(fragmentTag);
         final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         try {
@@ -111,8 +111,8 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
     }
 
     @Override
-    public void refreshFeed(String fragmentTag) {
-        this.refreshFragment(fragmentTag);
+    public void refreshFeed(String fragmentTag, boolean invalidateData) {
+        this.refreshFragment(fragmentTag, invalidateData);
     }
 
     @Override

@@ -95,6 +95,7 @@ public class FragmentHome extends Fragment {
     private boolean isViewingSubmission = false;
     private GestureDetector mGestureDetector;
     private ProgressBar mProgressBar;
+    private boolean mInvalidateDataSource = false;
 
     // settings prefs
     SharedPreferences prefs;
@@ -119,6 +120,8 @@ public class FragmentHome extends Fragment {
     private TextView mHoverPreviewTitleLarge;
     private ImageView mHoverImagePreviewLarge;
 
+    // log out button
+    private TextView mButtonLogout;
 
     //exo player stuff
     private BandwidthMeter bandwidthMeter;
@@ -138,7 +141,7 @@ public class FragmentHome extends Fragment {
     public interface HomeEventListener {
         public void openSettings();
 
-        public void refreshFeed(String fragmentTag);
+        public void refreshFeed(String fragmentTag, boolean invalidateData);
 
         public void isHome(boolean isHome);
         }
@@ -166,6 +169,7 @@ public class FragmentHome extends Fragment {
         /* Initialize any preference/settings variables */
         try{
             validatePreferences();
+            validateCurrUser();
         }catch (Exception e){
             //TODO: What to do when preferences aren't found? Will this ever happen? (prob not)
             e.printStackTrace();
@@ -185,7 +189,7 @@ public class FragmentHome extends Fragment {
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                FragmentHome.this.refresh();
+                FragmentHome.this.refresh(true);
             }
         });
 
@@ -198,6 +202,11 @@ public class FragmentHome extends Fragment {
         final RecyclerAdapter adapter = new RecyclerAdapter(getContext());
 
         /* Viewmodel fetching and data updating */
+        if(mInvalidateDataSource){
+            // This is true when we are refreshing a page whether it be from a sipe refresh,
+            // a new user log in, or user log out
+            invalidateData();
+        }
         SubmissionsViewModel submissionsViewModel = ViewModelProviders.of(this).get(SubmissionsViewModel.class);
         submissionsViewModel.postsPagedList.observe(getActivity(), new Observer<PagedList<SubmissionObj>>() {
             @Override
@@ -269,7 +278,7 @@ public class FragmentHome extends Fragment {
             // i.e. User went to settings, opted in to NSFW posts then navigated back.
             validatePreferences();
             // Make sure we're referencing the right user
-            validateCurrUser();
+            //validateCurrUser();
             setupToolbar();
         }
         catch (Exception e){
@@ -341,7 +350,7 @@ public class FragmentHome extends Fragment {
                 // User successfully logged in. Update the current user.
                 // Most recently logged in user will always be at the end of the usernames list
                 updateCurrentUser(App.getTokenStore().getUsernames().size() - 1);
-                refresh();
+                refresh(true);
             }
         }
     }
@@ -373,7 +382,7 @@ public class FragmentHome extends Fragment {
         Bundle arguments = this.getArguments();
         try {
             if (arguments != null) {
-                // mInvalidateDataSource = (boolean) arguments.getBoolean(Constants.ARGS_INVALIDATE_DATASOURCE);
+                 mInvalidateDataSource = (boolean) arguments.getBoolean(Constants.ARGS_INVALIDATE_DATASOURCE);
                 //mNumDisplayColumns = (Integer) arguments.get(ARGS_NUM_DISPLAY_COLS);
             }
             //  mCurrSubreddit = mRedditClient.getmRedditDataRequestObj().getmSubreddit();
@@ -425,6 +434,31 @@ public class FragmentHome extends Fragment {
                         return true;
                     }
                 });
+
+        mButtonLogout = (TextView) v.findViewById(R.id.navbar_button_logout);
+        mButtonLogout.setVisibility(mCurrUsername == null ? View.GONE : View.VISIBLE);
+        mButtonLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new AlertDialog.Builder(getContext(), R.style.AppCompatAlertDialogStyle)
+                        .setTitle("Confirm log out")
+                        .setMessage("Really log out?")
+                        .setIcon(R.drawable.ic_white_log_out)
+                        .setPositiveButton(R.string.log_out, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                // Update user SharedPrefs's username to null(userless)
+                                curr_user_prefs.edit().putString(Constants.KEY_CURR_USERNAME, null).apply();
+                                App.getAccountHelper().logout();
+                                App.getAccountHelper().switchToUserless();
+                                mDrawerLayout.closeDrawer(navigationView);
+                                refresh(true);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .show();
+
+            }
+        });
     }
 
     /* Handles left navigation menu item selections*/
@@ -547,9 +581,21 @@ public class FragmentHome extends Fragment {
         }
     }
 
+    /* Checking we have the correct user logged in. "Correct user" is determined by what we have
+    *  saved in SharedPrefs.
+    *
+    *  Null means userless.
+     */
     private void validateCurrUser() throws Exception{
         if(curr_user_prefs != null){
             mCurrUsername = curr_user_prefs.getString(Constants.KEY_CURR_USERNAME, null);
+
+            /*if(mCurrUsername != null){
+                App.getAccountHelper().switchToUser(mCurrUsername);
+            }
+            else{
+                App.getAccountHelper().switchToUser(Constants.USERNAME_USERLESS);
+            }*/
         }
         else{
             throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
@@ -813,10 +859,14 @@ public class FragmentHome extends Fragment {
         }
     }
 
-    private void refresh() {
-        SubmissionsViewModel submissionsViewModel = ViewModelProviders.of(FragmentHome.this).get(SubmissionsViewModel.class);
+    private void refresh(boolean invalidateData) {
+        mHomeEventListener.refreshFeed(TAG, true);
+    }
+
+    private void invalidateData(){
+        SubmissionsViewModel submissionsViewModel
+                = ViewModelProviders.of(FragmentHome.this).get(SubmissionsViewModel.class);
         submissionsViewModel.invalidate();
-        mHomeEventListener.refreshFeed(TAG);
     }
 
     /* Solution to closing the submission viewer instead of opening left drawerlayout*/

@@ -161,7 +161,7 @@
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:layout_below="@+id/submission_viewer_submission_info"
-            android:background="@color/colorGray" />
+            android:background="@color/colorDarkGray" />
 
         <!-- Upvote/downvote/save/overflow-->
         <LinearLayout

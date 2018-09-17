@@ -2,9 +2,11 @@ package com.sometimestwo.moxie;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -24,6 +26,7 @@ public class ActivitySettings extends Activity {
     private TextView mTextViewAllowGifPreview;
     private TextView mTextViewAllowImagePreview;
     private TextView mTextViewAllowBigDisplayCloseClick;
+    private TextView mTextViewLogOut;
 
     private CheckBox mCheckboxAllowNSFW;
     //private CheckBox mCheckboxPreviewGIF;
@@ -34,6 +37,10 @@ public class ActivitySettings extends Activity {
 
     // tracks whether anything was clicked on
     private boolean mModified = false;
+    // True when a "restart required" setting has been changed
+    private boolean mNeedsRefresh = false;
+    private boolean mLogoutEvent = false;
+
 
     SharedPreferences prefs_settings;
     SharedPreferences.Editor prefs_settings_editor;
@@ -55,6 +62,7 @@ public class ActivitySettings extends Activity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 mModified = true;
+                mNeedsRefresh = true;
                 prefs_settings_editor.putString(Constants.KEY_ALLOW_NSFW, b ? Constants.SETTINGS_YES : Constants.SETTINGS_NO);
             }
         });
@@ -129,13 +137,12 @@ public class ActivitySettings extends Activity {
             }
         });
 
-        // Preview size radio buttons
+        /* Preview size radio buttons */
         mRadioGroupPreviewSize = (RadioGroup) findViewById(R.id.radio_group_preview_size);
         String previewSizeSelection = prefs_settings.getString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
         // check prefs for what user has selected for preview size and initialize radio buttons accordingly
         mRadioGroupPreviewSize.check(previewSizeSelection.equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                 ? R.id.radio_preview_size_option_small : R.id.radio_preview_size_option_large);
-
 
 
         /* Exit settings */
@@ -151,7 +158,13 @@ public class ActivitySettings extends Activity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if (mModified) {
+
+        // Technically we can modify changes AND log out but logout will take precedence here
+        if(mLogoutEvent){
+            Toast.makeText(this, getResources()
+                    .getString(R.string.toast_settings_logout_success), Toast.LENGTH_SHORT).show();
+        }
+        else if (mModified) {
             Toast.makeText(this, getResources()
                     .getString(R.string.toast_settings_saved), Toast.LENGTH_SHORT).show();
         }
@@ -160,7 +173,13 @@ public class ActivitySettings extends Activity {
         Intent intent = getIntent();
         //TODO: Need to inform ActivityMain of any changes that may require reload i.e. allowing NSFW
         //intent.putExtra(Constants.NUM_GALLERIE_DIRS_CHOSEN, chosenDirectories.size());
-        setResult(RESULT_OK, intent);
+        if(mModified && mNeedsRefresh){
+            setResult(Constants.RESULT_OK_INVALIDATE_DATA, intent);
+        }
+        else if(mModified){
+            setResult(RESULT_OK, intent);
+
+        }
         finish();
     }
 

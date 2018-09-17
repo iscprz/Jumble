@@ -1,6 +1,5 @@
 package com.sometimestwo.moxie;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,7 +26,6 @@ import com.sometimestwo.moxie.Utils.Constants;
             - media viewer image options (download, etc)
             - view pager
             - invalid subreddit
-
             settings options:
             - browse mode (no comments, upvoting , etc) for lurkers
             - hide progress bar on exoplayer
@@ -53,22 +51,10 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
     }
 
     private void init() {
-        // initialize user settings in case this is first time app is being run
-        SharedPreferences prefs = getSharedPreferences(Constants.KEY_GETPREFS_SETTINGS, Context.MODE_PRIVATE);
-        //TODO userless vs signed in?
-        //App.getAccountHelper().switchToUserless();
-
-
-        //TODO: Read this information from sharedprefs. Hardcoded for now
-        App.getCurrSubredditObj().setSubreddit("pics");
-        App.getCurrSubredditObj().setAllowNSFW(prefs.getString(Constants.KEY_ALLOW_NSFW, Constants.SETTINGS_NO)
-                .equalsIgnoreCase(Constants.SETTINGS_YES));
-        int numDisplayCols = 3;
-
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         Bundle args = new Bundle();
-        args.putInt(Constants.ARGS_NUM_DISPLAY_COLS, numDisplayCols);
+        //args.putInt(Constants.ARGS_NUM_DISPLAY_COLS, numDisplayCols);
 
         Fragment fragment = FragmentHome.newInstance();
         fragment.setArguments(args);
@@ -149,11 +135,12 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
 
     @Override
     public void refreshFeed(String fragmentTag) {
-        this.refreshFragment(fragmentTag);
+        refreshFragment(fragmentTag);
     }
 
     @Override
     public void isHome(boolean isHome) {
         this.isHome = isHome;
     }
+
 }

@@ -117,4 +117,5 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
 
     @Override
     public void isHome(boolean isHome) { }
+
 }

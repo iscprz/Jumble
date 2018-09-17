@@ -1,26 +1,24 @@
 package com.sometimestwo.moxie;
 
 import android.arch.paging.ItemKeyedDataSource;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.sometimestwo.moxie.Model.SubmissionObj;
-import com.sometimestwo.moxie.Model.SubredditInfoObj;
+import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
-import com.sometimestwo.moxie.Utils.Helpers;
 
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.models.Listing;
-import net.dean.jraw.models.PersistedAuthData;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.models.SubredditSort;
-import net.dean.jraw.models.TimePeriod;
 import net.dean.jraw.pagination.DefaultPaginator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
 
 public class SubmissionsDataSource extends ItemKeyedDataSource<String, SubmissionObj> {
 
@@ -28,22 +26,37 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
     // For paging through Reddit submission Listings
     DefaultPaginator<Submission> mPaginator;
-    SubredditInfoObj mSubredditInfoObj;
+    MoxieInfoObj mMoxieInfoObj;
 
-    public SubmissionsDataSource(SubredditInfoObj subredditInfoObj) {
-        this.mSubredditInfoObj = subredditInfoObj;
+    public SubmissionsDataSource(MoxieInfoObj moxieInfoObj) {
+        this.mMoxieInfoObj = moxieInfoObj;
     }
+
+    /*
+        App.getAccountHelper().switchToUser(App.getTokenStore().getUsernames().get(0))
+        App.getAccountHelper().getReddit().me().getUsername()
+     */
+
 
     @Override
     public void loadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {
         RedditClient redditClient = App.getAccountHelper().getReddit();
-        mPaginator = redditClient
-                .subreddit(mSubredditInfoObj.getSubreddit())
-                .posts()
+        DefaultPaginator.Builder<Submission, SubredditSort> submissionSubredditSortBuilder;
+
+        if (redditClient.getAuthMethod().isUserless()) {
+            submissionSubredditSortBuilder = redditClient.subreddit(mMoxieInfoObj.getSubreddit()).posts();
+        } else {
+            submissionSubredditSortBuilder = redditClient.frontPage();
+        }
+
+        mPaginator =
+                 submissionSubredditSortBuilder
                 .limit(Constants.QUERY_PAGE_SIZE) // 50 posts per page
-                .sorting(mSubredditInfoObj.getmSortBy()) // top posts
-                .timePeriod(mSubredditInfoObj.getmTimePeriod()) // of all time
+                .sorting(mMoxieInfoObj.getmSortBy()) // top posts
+                .timePeriod(mMoxieInfoObj.getmTimePeriod()) // of all time
                 .build();
+        //App.getTokenStore().getUsernames().get(App.getTokenStore().getUsernames().indexOf("ambits"));
+
         new FetchInitialSubmissionsTask(callback).execute();
     }
 
@@ -119,8 +132,8 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 submissions = mPaginator.next();
                 submissionObjs = mapSubmissions(submissions);
                 // download any videos if user has selected to play GIF files through settings
-                if(true/* sharedprefs.playGifs*/){
-                    for (Submission s : submissions){
+                if (true/* sharedprefs.playGifs*/) {
+                    for (Submission s : submissions) {
                       /*  if(Helpers.getSubmissionType(s) == Helpers.MediaType.GIF){
 
                         }*/
@@ -140,12 +153,12 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         }
     }
 
-    private List<SubmissionObj> mapSubmissions(Listing<Submission> submissions){
+    private List<SubmissionObj> mapSubmissions(Listing<Submission> submissions) {
         List<SubmissionObj> res = new ArrayList<SubmissionObj>();
-        for(Submission submission : submissions){
+        for (Submission submission : submissions) {
             // filter some submissions out here
-            if(submission.isSelfPost()
-                    || submission.isNsfw() && !mSubredditInfoObj.isAllowNSFW()){
+            if (submission.isSelfPost()
+                    || submission.isNsfw() && !mMoxieInfoObj.isAllowNSFW()) {
                 continue;
             }
             SubmissionObj s = new SubmissionObj();
@@ -180,10 +193,9 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             s.setScore(submission.getScore());
             // thumbnail will be "nsfw" here if user has selected to hide NSFW thumbnails through
             // reddit preferences. If "nsfw", set postURL as thumbnail for now.
-            if("nsfw".equalsIgnoreCase(submission.getThumbnail())){
+            if ("nsfw".equalsIgnoreCase(submission.getThumbnail())) {
                 s.setThumbnail(submission.getUrl());
-            }
-            else{
+            } else {
                 s.setThumbnail(submission.getThumbnail());
             }
 

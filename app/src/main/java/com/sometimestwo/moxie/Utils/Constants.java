@@ -20,9 +20,9 @@ public class Constants {
     public final static String ARGS_NUM_DISPLAY_COLS = "ARGS_NUM_DISPLAY_COLS";
     public final static String ARGS_REDDIT_STATE_OBJ = "ARGS_REDDIT_STATE_OBJ";
     public final static String ARGS_SUBMISSION_OBJ = "ARGS_SUBMISSION_OBJ";
+    public final static String ARGS_INVALIDATE_DATASOURCE = "ARGS_INVALIDATE_DATASOURCE";
     public final static String EXTRA_SUBMISSION_OBJ = "EXTRA_SUBMISSION_OBJ";
     public final static String EXTRA_GOTO_SUBREDDIT = "EXTRA_GOTO_SUBREDDIT";
-
 
     /* Default values*/
     public final static String DEFAULT_SUBREDDIT = "pics";
@@ -40,11 +40,14 @@ public class Constants {
     public final static String TEST_CLIENT_ID = "x0CvI7eA_5Qchg";
 
     /*SharedPrefs */
-    public final static String KEY_GETPREFS_SETTINGS = "KEY_GETPREFS_SETTINGS";
+    public final static String KEY_GET_PREFS_SETTINGS = "KEY_GET_PREFS_SETTINGS";
+    public final static String KEY_GET_PREFS_LOGIN_DATA = "KEY_GET_PREFS_LOGIN_DATA";
+
     public final static String KEY_ALLOW_NSFW = "KEY_ALLOW_NSFW";
     public final static String KEY_ALLOW_HOVER_PREVIEW = "KEY_ALLOW_HOVER_PREVIEW";
     public final static String KEY_PREVIEW_SIZE = "KEY_PREVIEW_SIZE";
     public final static String KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK = "KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK";
+    public final static String KEY_CURR_USERNAME = "KEY_CURR_USERNAME";
 
 
     public final static String SETTINGS_NO = "SETTINGS_NO";

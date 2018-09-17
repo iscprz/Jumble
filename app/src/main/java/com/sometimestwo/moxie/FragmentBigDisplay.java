@@ -49,7 +49,7 @@ public class FragmentBigDisplay extends Fragment {
         unpackArgs();
 
         // Read relevant permission settings
-        SharedPreferences prefs = getContext().getSharedPreferences(Constants.KEY_GETPREFS_SETTINGS, Context.MODE_PRIVATE);
+        SharedPreferences prefs = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
 
         mPrefsAllowNSFW = prefs.getString(Constants.KEY_ALLOW_NSFW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
         mAllowCloseOnClick = prefs.getString(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);

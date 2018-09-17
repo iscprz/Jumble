@@ -1,15 +1,15 @@
 package com.sometimestwo.moxie;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+
+import com.sometimestwo.moxie.Utils.Constants;
 
 import java.lang.ref.WeakReference;
 
@@ -33,6 +33,8 @@ import java.lang.ref.WeakReference;
             - centering very tall image in large hover
             - hide toolbar on large hover preview
             - can open drawer layout while large hover previewing
+            - exo player not reloading when tabbing back into app
+
  */
 public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.ActivityHomeEventListener*/{
 
@@ -78,7 +80,17 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
         }
         @Override
         protected Boolean doInBackground(Void... voids) {
-            App.getAccountHelper().switchToUserless();
+            // Make sure the most recently logged in user is set as current user.
+            // Go Userless if no log in has been made.
+            SharedPreferences username_prefs
+                    = getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
+            String currUsername = username_prefs.getString(Constants.KEY_CURR_USERNAME, null);
+            if(currUsername != null){
+                App.getAccountHelper().switchToUser(currUsername);
+            }
+            else{
+                App.getAccountHelper().switchToUserless();
+            }
             return true;
         }
 
@@ -87,7 +99,6 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
             Activity activity = this.activity.get();
             if(activity != null){
                 activity.startActivity(new Intent(activity, ActivityHome.class));
-
             }
         }
     }

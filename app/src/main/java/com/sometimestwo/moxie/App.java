@@ -4,7 +4,7 @@ package com.sometimestwo.moxie;
 import android.app.Application;
 import android.util.Log;
 
-import com.sometimestwo.moxie.Model.SubredditInfoObj;
+import com.sometimestwo.moxie.Model.MoxieInfoObj;
 
 import net.dean.jraw.android.AndroidHelper;
 import net.dean.jraw.android.AppInfoProvider;
@@ -20,7 +20,7 @@ import java.util.UUID;
 public final class App extends Application {
     private static AccountHelper accountHelper;
     private static SharedPreferencesTokenStore tokenStore;
-    private static SubredditInfoObj currSubredditObj;
+    private static MoxieInfoObj currSubredditObj;
 
     @Override
     public void onCreate() {
@@ -33,7 +33,7 @@ public final class App extends Application {
         UUID deviceUuid = UUID.randomUUID();
 
         // represents info about a subreddit we're currently exploring
-        currSubredditObj = new SubredditInfoObj();
+        currSubredditObj = new MoxieInfoObj();
 
         // Store our access tokens and refresh tokens in shared preferences
         tokenStore = new SharedPreferencesTokenStore(getApplicationContext());
@@ -66,5 +66,5 @@ public final class App extends Application {
 
     public static AccountHelper getAccountHelper() { return accountHelper; }
     public static SharedPreferencesTokenStore getTokenStore() { return tokenStore; }
-    public static SubredditInfoObj getCurrSubredditObj() {return currSubredditObj;}
+    public static MoxieInfoObj getCurrSubredditObj() {return currSubredditObj;}
 }

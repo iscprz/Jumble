@@ -34,16 +34,17 @@
             </intent-filter>
         </activity>
         <activity android:name=".ActivityHome">
-
         </activity>
 
         <activity android:name=".ActivitySettings">
+        </activity>
 
+        <activity android:name=".ActivityNewUserLogin">
         </activity>
 
         <activity android:name=".ActivitySubredditViewer">
-
         </activity>
+
     </application>
 
 </manifest>

@@ -89,6 +89,7 @@ public class FragmentHome extends Fragment {
     private ActionBarDrawerToggle mDrawerToggle;
     private int mNumDisplayColumns;
     private String mCurrSubreddit;
+    private String mCurrUsername = null;
     private boolean isImageViewPressed = false;
     private int mActivePointerId = -1;
     private boolean isViewingSubmission = false;
@@ -97,6 +98,7 @@ public class FragmentHome extends Fragment {
 
     // settings prefs
     SharedPreferences prefs;
+    SharedPreferences curr_user_prefs;
     private boolean mIsLoggedIn = false;
     private boolean mPrefsAllowNSFW = false;
     private boolean mAllowImagePreview = false;
@@ -139,7 +141,7 @@ public class FragmentHome extends Fragment {
         public void refreshFeed(String fragmentTag);
 
         public void isHome(boolean isHome);
-    }
+        }
 
     public static FragmentHome newInstance() {
         return new FragmentHome();
@@ -148,20 +150,28 @@ public class FragmentHome extends Fragment {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        unpackArgs();
         GlideApp = Glide.with(this);
         //  mRedditClient = App.getAccountHelper().isAuthenticated() ? App.getAccountHelper().getReddit() : App.getAccountHelper().switchToUserless();
         setHasOptionsMenu(true);
-        prefs = getContext().getSharedPreferences(Constants.KEY_GETPREFS_SETTINGS, Context.MODE_PRIVATE);
+        prefs = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        curr_user_prefs = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
+
         //mPopupView = inflater.inflate(R.layout.layout_popup_preview_small,null);
         //mParentView = v.findViewById(R.id.main_content);
 
         /* Initialize any preference/settings variables */
-        validatePreferences();
+        try{
+            validatePreferences();
+        }catch (Exception e){
+            //TODO: What to do when preferences aren't found? Will this ever happen? (prob not)
+            e.printStackTrace();
+        }
+
+        unpackArgs();
 
         /* Hamburger menu*/
         setupHamburgerMenu(v);
@@ -175,18 +185,14 @@ public class FragmentHome extends Fragment {
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
-                SubmissionsViewModel submissionsViewModel = ViewModelProviders.of(FragmentHome.this).get(SubmissionsViewModel.class);
-                submissionsViewModel.invalidate();
-                mHomeEventListener.refreshFeed(TAG);
+                FragmentHome.this.refresh();
             }
         });
 
         /* Recycler view setup*/
         mRecyclerMain = (MultiClickRecyclerView) v.findViewById(R.id.recycler_zoomie_view);
-        mRecyclerMain.setLayoutManager(new GridLayoutManager(getContext(), mNumDisplayColumns));
+        mRecyclerMain.setLayoutManager(new GridLayoutManager(getContext(), 3));
         mRecyclerMain.setHasFixedSize(true);
-        //  disabler = new RecyclerViewDisabler();
 
         /* RecyclerView adapter stuff */
         final RecyclerAdapter adapter = new RecyclerAdapter(getContext());
@@ -258,12 +264,17 @@ public class FragmentHome extends Fragment {
     public void onResume() {
         super.onResume();
 
-        //toolbar setup
-        setupToolbar();
-
-        // Check if user settings have been altered.
-        // i.e. User went to settings, opted in to NSFW posts then navigated back.
-        validatePreferences();
+        try {
+            // Check if user settings have been altered.
+            // i.e. User went to settings, opted in to NSFW posts then navigated back.
+            validatePreferences();
+            // Make sure we're referencing the right user
+            validateCurrUser();
+            setupToolbar();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -327,20 +338,28 @@ public class FragmentHome extends Fragment {
 
         if (requestCode == KEY_LOG_IN) {
             if (resultCode == RESULT_OK) {
-
+                // User successfully logged in. Update the current user.
+                // Most recently logged in user will always be at the end of the usernames list
+                updateCurrentUser(App.getTokenStore().getUsernames().size() - 1);
+                refresh();
             }
         }
     }
 
     private void setupToolbar() {
-        if(isAdded()){
+        if (isAdded()) {
             mToolbar.setVisibility(View.VISIBLE);
             mToolbar.setAlpha(1);
-            mToolbar.setTitle(getResources().getString(R.string.subreddit_prefix) + mCurrSubreddit);
+            if(mCurrUsername == null){
+                mToolbar.setTitle(getResources().getString(R.string.subreddit_prefix) + mCurrSubreddit);
+            }
+            else{
+                mToolbar.setTitle("Frontpage");
+            }
 
             // set hamburger menu icon
             ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-            if(toolbar != null){
+            if (toolbar != null) {
                 toolbar.setDisplayHomeAsUpEnabled(true);
                 toolbar.setHomeAsUpIndicator(R.drawable.ic_menu);
             }
@@ -354,6 +373,7 @@ public class FragmentHome extends Fragment {
         Bundle arguments = this.getArguments();
         try {
             if (arguments != null) {
+                // mInvalidateDataSource = (boolean) arguments.getBoolean(Constants.ARGS_INVALIDATE_DATASOURCE);
                 //mNumDisplayColumns = (Integer) arguments.get(ARGS_NUM_DISPLAY_COLS);
             }
             //  mCurrSubreddit = mRedditClient.getmRedditDataRequestObj().getmSubreddit();
@@ -410,11 +430,11 @@ public class FragmentHome extends Fragment {
     /* Handles left navigation menu item selections*/
     private void handleNavItemSelection(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
-           /* case R.id.nav_log_in:
-                Intent loginIntent = new Intent(getContext(), ActivityLogin.class);
+            case R.id.nav_log_in:
+                Intent loginIntent = new Intent(getContext(), ActivityNewUserLogin.class);
                 //unlockSessionIntent.putExtra("REQUEST_UNLOCK_SESSION", true);
-                startActivityForResult(loginIntent,KEY_LOG_IN);
-                return;*/
+                startActivityForResult(loginIntent, KEY_LOG_IN);
+                return;
             case R.id.nav_menu_goto_subreddit:
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 builder.setTitle("Enter subreddit:");
@@ -463,15 +483,15 @@ public class FragmentHome extends Fragment {
                 //mHoverPreviewTitleSmall.setText(item.getTitle());
                 mHoverImagePreviewSmall.setVisibility(View.VISIBLE);
             }
-            if(item.getSubmissionType() == Constants.SubmissionType.GIF){ // and video?
+            if (item.getSubmissionType() == Constants.SubmissionType.GIF) { // and video?
 
             }
         } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
-            if(mHoverPreviewContainerLarge.getParent() != null){
-                ((ViewGroup)mHoverPreviewContainerLarge.getParent()).removeView(mHoverPreviewContainerLarge);
+            if (mHoverPreviewContainerLarge.getParent() != null) {
+                ((ViewGroup) mHoverPreviewContainerLarge.getParent()).removeView(mHoverPreviewContainerLarge);
             }
             // forcing the view to display over the entire screen
-            ViewGroup vg = (ViewGroup)(getActivity().getWindow().getDecorView().getRootView());
+            ViewGroup vg = (ViewGroup) (getActivity().getWindow().getDecorView().getRootView());
             vg.addView(mHoverPreviewContainerLarge);
 
             /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -488,7 +508,7 @@ public class FragmentHome extends Fragment {
                 mHoverImagePreviewLarge.setVisibility(View.VISIBLE);
                 mExoplayerLarge.setVisibility(View.GONE);
             }
-            if(item.getSubmissionType() == Constants.SubmissionType.GIF){ // and video?
+            if (item.getSubmissionType() == Constants.SubmissionType.GIF) { // and video?
                 initializePlayer(item.getUrl());
                 mExoplayerLarge.setVisibility(View.VISIBLE);
                 mHoverImagePreviewLarge.setVisibility(View.GONE);
@@ -505,14 +525,36 @@ public class FragmentHome extends Fragment {
 
     }
 
-    private void validatePreferences() {
-        mPrefsAllowNSFW = prefs.getString(Constants.KEY_ALLOW_NSFW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
-        mAllowImagePreview = prefs.getString(Constants.KEY_ALLOW_HOVER_PREVIEW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
-        mAllowBigDisplayClickClose = prefs.getString(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, Constants.SETTINGS_YES).equalsIgnoreCase(Constants.SETTINGS_YES);
-        mPreviewSize = prefs.getString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
-                .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
-                ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
-        mNumDisplayColumns = 3;//prefs.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
+    private void validatePreferences() throws Exception{
+        if(prefs != null) {
+            mPrefsAllowNSFW = prefs.getString(Constants.KEY_ALLOW_NSFW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
+            mAllowImagePreview = prefs.getString(Constants.KEY_ALLOW_HOVER_PREVIEW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
+            mAllowBigDisplayClickClose = prefs.getString(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, Constants.SETTINGS_YES).equalsIgnoreCase(Constants.SETTINGS_YES);
+            mPreviewSize = prefs.getString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
+                    .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
+                    ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
+            mNumDisplayColumns = 3;//prefs.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
+
+
+
+            App.getCurrSubredditObj().setAllowNSFW(mPrefsAllowNSFW);
+            App.getCurrSubredditObj().setSubreddit("pics");
+
+        }
+        else{
+            throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
+                                + "Could not find prefs KEY_GET_PREFS_SETTINGS.");
+        }
+    }
+
+    private void validateCurrUser() throws Exception{
+        if(curr_user_prefs != null){
+            mCurrUsername = curr_user_prefs.getString(Constants.KEY_CURR_USERNAME, null);
+        }
+        else{
+            throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
+                    + "Could not find prefs KEY_GET_PREFS_SETTINGS.");
+        }
     }
 
     private static DiffUtil.ItemCallback<SubmissionObj> DIFF_CALLBACK =
@@ -752,7 +794,7 @@ public class FragmentHome extends Fragment {
     }
 
     private void openSubmissionViewer(SubmissionObj submission) {
-        if(isAdded()) {
+        if (isAdded()) {
             FragmentManager fm = getActivity().getSupportFragmentManager();
             // Fragment mediaDisplayerFragment = (FragmentSubmissionViewer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
             FragmentTransaction ft = fm.beginTransaction();
@@ -764,11 +806,17 @@ public class FragmentHome extends Fragment {
             mediaDisplayerFragment.setTargetFragment(FragmentHome.this, KEY_INTENT_GOTO_SUBMISSIONVIEWER);
 
             //ft.replace(R.id.fragment_container_home, mediaDisplayerFragment,Constants.TAG_FRAG_MEDIA_DISPLAY);
-            int parentContainerId = ((ViewGroup)getView().getParent()).getId();
+            int parentContainerId = ((ViewGroup) getView().getParent()).getId();
             ft.add(parentContainerId, mediaDisplayerFragment/*, Constants.TAG_FRAG_MEDIA_DISPLAY*/);
             ft.addToBackStack(null);
             ft.commit();
         }
+    }
+
+    private void refresh() {
+        SubmissionsViewModel submissionsViewModel = ViewModelProviders.of(FragmentHome.this).get(SubmissionsViewModel.class);
+        submissionsViewModel.invalidate();
+        mHomeEventListener.refreshFeed(TAG);
     }
 
     /* Solution to closing the submission viewer instead of opening left drawerlayout*/
@@ -779,6 +827,33 @@ public class FragmentHome extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /* Updates SharedPreferences's current logged-in user.
+     *  App.getTokenStore.getUsernames() contains the list of users in the order in which they were added.
+     *  The user's index within this aforementioned list should be the same as the index in whatever
+     *  list we end up displaying the logged in users (plus 1 because the getUsernames() list has
+     *  "userless" at index 0).
+     *
+     * */
+    private void updateCurrentUser(int userIndex) {
+        if (userIndex >= App.getTokenStore().getUsernames().size()) {
+            Log.e("ACCOUNT LOGIN EXCEPTION",
+                    "Tried switching to user which is out of index. Swithcing to Userless mode");
+            userIndex = 0;
+        }
+
+        // This is where we assume the 0th username is USERLESS.....
+        String username = App.getTokenStore().getUsernames().get(userIndex);
+        App.getAccountHelper().switchToUser(username);
+
+        // update shared prefs
+        SharedPreferences usernamePrefs
+                = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
+
+        usernamePrefs.edit()
+                .putString(Constants.KEY_CURR_USERNAME, App.getTokenStore().getUsernames().get(userIndex))
+                .apply();
     }
 
     /*

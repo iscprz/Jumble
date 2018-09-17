@@ -7,7 +7,7 @@ import net.dean.jraw.models.TimePeriod;
     Representation of the current state of the user's browsing preferences such as
     currently-being-viewed subreddit, sort by option, and time period (today, this month, all time).
  */
-public class SubredditInfoObj {
+public class MoxieInfoObj {
     String subreddit;
     SubredditSort mSortBy;
     TimePeriod mTimePeriod;

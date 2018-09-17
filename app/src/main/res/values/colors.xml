@@ -8,6 +8,8 @@
     <color name="transparent">#00000000</color>
     <color name="colorBgBlackTint">#aa000000</color>
     <color name="colorBgBlackTintDarker">#ce000000</color>
+    <color name="colorBgBlackTintDarkest">#f0000000</color>
+
     <color name="colorBlack">#000000</color>
     <color name="colorGray">#404040</color>
 

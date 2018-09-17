@@ -105,10 +105,9 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
      */
     @Override
     public void openSettings() {
-        return;
-       /* Intent settingsIntent = new Intent(this,ActivitySettings.class);
+        Intent settingsIntent = new Intent(this,ActivitySettings.class);
         //settingsIntent.putExtra()
-        startActivityForResult(settingsIntent,Constants.INTENT_SETTINGS);*/
+        startActivityForResult(settingsIntent,Constants.INTENT_SETTINGS);
     }
 
     @Override

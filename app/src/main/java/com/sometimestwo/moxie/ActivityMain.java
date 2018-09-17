@@ -24,7 +24,7 @@ import java.lang.ref.WeakReference;
             - view pager
             - invalid subreddit
             - exoplayer releases
-
+            - crash after token expires
             settings options:
             - browse mode (no comments, upvoting , etc) for lurkers
             - hide progress bar on exoplayer

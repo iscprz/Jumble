@@ -170,7 +170,7 @@ public class FragmentHome extends Fragment {
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
 
         /* Refresh layout setup*/
-        mRefreshLayout = v.findViewById(R.id.recycler_refresh);
+        mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.recycler_refresh);
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -466,6 +466,18 @@ public class FragmentHome extends Fragment {
 
             }
         } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+            if(mHoverPreviewContainerLarge.getParent() != null){
+                ((ViewGroup)mHoverPreviewContainerLarge.getParent()).removeView(mHoverPreviewContainerLarge);
+            }
+            // forcing the view to display over the entire screen
+            ViewGroup vg = (ViewGroup)(getActivity().getWindow().getDecorView().getRootView());
+            vg.addView(mHoverPreviewContainerLarge);
+
+            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                Window w = getActivity().getWindow(); // in Activity's onCreate() for instance
+                w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            }*/
+
             mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
             mHoverPreviewContainerSmall.setVisibility(View.GONE);
             // fade the toolbar while we're in large previewer
@@ -602,7 +614,6 @@ public class FragmentHome extends Fragment {
                 //TODO: handle Constants.THUMBNAIL_NOT_FOUND
 
                 // Finally load thumbnail into recyclerview
-                //loadThumbNailIntoRV(thumbnail,holder);
                 GlideApp.load(thumbnail)
                         .apply(new RequestOptions().centerCrop().diskCacheStrategy(DiskCacheStrategy.ALL))
                         .into(holder.thumbnailImageView);

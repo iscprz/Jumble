@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -103,15 +104,12 @@ public class FragmentSubmissionViewer extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        BigImageViewer.initialize(GlideImageLoader.with(getContext()));
 
         View v = inflater.inflate(R.layout.submission_viewer, container, false);
 
         /* Toolbar setup*/
         mToolbar = (Toolbar) v.findViewById(R.id.submission_viewer_toolbar);
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
-
-        //mBigImageView = (BigImageView) v.findViewById(R.id.big_image_viewer);
 
         mSubmissionTitle = (TextView) v.findViewById(R.id.submission_viewer_title);
 
@@ -120,8 +118,9 @@ public class FragmentSubmissionViewer extends Fragment {
         mImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                closeMediaPlayer();
+                openBigMediaDisplay();
             }
+               // closeMediaPlayer();
         });
         /*mBigImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -337,5 +336,19 @@ public class FragmentSubmissionViewer extends Fragment {
                     break;
             }
         }
+    }
+
+    public void openBigMediaDisplay(){
+        FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+
+        Fragment bigDisplayFragment = FragmentBigDisplay.newInstance();
+        Bundle args = new Bundle();
+        args.putSerializable(Constants.ARGS_SUBMISSION_OBJ, mCurrSubmission);
+        bigDisplayFragment.setArguments(args);
+
+        int parentContainerId = ((ViewGroup) getView().getParent()).getId();
+        ft.add(parentContainerId, bigDisplayFragment/*, Constants.TAG*/);
+        ft.addToBackStack(null);
+        ft.commit();
     }
 }

@@ -15,7 +15,7 @@
         <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/submission_viewer_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/media_viewer_toolbar_height"
+            android:layout_height="@dimen/toolbar_height"
             android:background="@color/colorThemeDarkPrimaryDark"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
@@ -25,10 +25,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/submission_viewer_toolbar"
-            android:layout_marginTop="10dp"
             android:gravity="center"
-            android:paddingBottom="20dp"
-            android:paddingRight="10dp"
+            android:padding="10dp"
             android:textColor="@color/colorWhite"
             android:textSize="16sp" />
 
@@ -251,16 +249,6 @@
 </ScrollView>
 
 
-    <!--
-        <com.github.piasy.biv.view.BigImageView xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/big_image_viewer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:layout_below="@id/media_viewer_title"
-            app:failureImageInitScaleType="center"
-            app:optimizeDisplay="true" />
-    -->
+
 
 

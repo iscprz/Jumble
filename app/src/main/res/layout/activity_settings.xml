@@ -10,7 +10,7 @@
         android:id="@+id/settings_back"
         android:layout_width="50dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/ic_white_back" />
+        android:background="@drawable/ic_white_back_medium" />
 
     <!-- Section Title: NSFW -->
     <TextView

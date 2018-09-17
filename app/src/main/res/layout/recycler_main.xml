@@ -9,8 +9,7 @@
     <com.sometimestwo.moxie.MultiClickRecyclerView
         android:id="@+id/recycler_zoomie_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="match_parent" />
 
     <!-- Large preview container that gets hidden/unhidden-->
     <include layout="@layout/layout_hover_previewer_large"/>

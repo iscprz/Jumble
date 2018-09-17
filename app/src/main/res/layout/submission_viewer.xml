@@ -16,7 +16,7 @@
             android:id="@+id/submission_viewer_toolbar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/toolbar_height"
-            android:background="@color/colorThemeDarkPrimaryDark"
+            android:background="@color/transparent"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
         <!-- Title -->

@@ -218,7 +218,7 @@ public class FragmentSubmissionViewer extends Fragment {
             //toolbar.setTitle(getResources().getString(R.string.toolbar_title_albums));
             toolbar.setDisplayHomeAsUpEnabled(true);
             toolbar.setHomeAsUpIndicator(R.drawable.ic_back_arrow);
-            toolbar.setTitle(mCurrSubmission.getSubreddit());
+            toolbar.setTitle("/r/" + mCurrSubmission.getSubreddit());
         }
         mToolbar.setAlpha(1);
     }
@@ -229,6 +229,7 @@ public class FragmentSubmissionViewer extends Fragment {
         releaseExoPlayer();
         try {
             FragmentManager fm = getActivity().getSupportFragmentManager();
+
             fm.popBackStack();
         } catch (Exception e) {
             e.printStackTrace();

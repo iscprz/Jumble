@@ -79,16 +79,17 @@ public class FragmentBigDisplay extends Fragment {
             @Override
             public void onClick(View view) {
                 int sdk = android.os.Build.VERSION.SDK_INT;
-                if(sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
+                if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
                     android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
                     clipboard.setText(mCurrSubmission.getUrl());
                 } else {
                     android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-                    android.content.ClipData clip = android.content.ClipData.newPlainText(mCurrSubmission.getTitle(),mCurrSubmission.getUrl());
+                    android.content.ClipData clip = android.content.ClipData.newPlainText(mCurrSubmission.getTitle(), mCurrSubmission.getUrl());
                     clipboard.setPrimaryClip(clip);
                 }
                 Toast.makeText(getContext(), getContext().getResources()
-                        .getString(R.string.toast_copied_to_clipboard), Toast.LENGTH_SHORT).show();            }
+                        .getString(R.string.toast_copied_to_clipboard), Toast.LENGTH_SHORT).show();
+            }
         });
         /* Toolbar Share button*/
         mButtonShare = (ImageView) v.findViewById(R.id.big_display_button_share);
@@ -103,7 +104,7 @@ public class FragmentBigDisplay extends Fragment {
         mBigImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mAllowCloseOnClick) {
+                if (mAllowCloseOnClick) {
                     closeMediaPlayer();
                 }
             }
@@ -121,11 +122,11 @@ public class FragmentBigDisplay extends Fragment {
         super.onResume();
     }
 
-    private void unpackArgs(){
-        try{
+    private void unpackArgs() {
+        try {
             // Submission to be viewed
             mCurrSubmission = (SubmissionObj) this.getArguments().get(Constants.ARGS_SUBMISSION_OBJ);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -1,8 +1,6 @@
 package com.sometimestwo.moxie;
 
 import android.arch.paging.ItemKeyedDataSource;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -42,11 +40,19 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     public void loadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {
         RedditClient redditClient = App.getAccountHelper().getReddit();
         DefaultPaginator.Builder<Submission, SubredditSort> submissionSubredditSortBuilder;
+        String subredditRequested = mMoxieInfoObj.getCurrSubreddit();
+        String defaultSubreddit = "pics";
 
-        if (redditClient.getAuthMethod().isUserless()) {
-            submissionSubredditSortBuilder = redditClient.subreddit(mMoxieInfoObj.getSubreddit()).posts();
-        } else {
+        if(subredditRequested != null){
+            submissionSubredditSortBuilder = redditClient.subreddit(subredditRequested).posts();
+        }
+        // logged in with no request - display user's front page
+        else if(!redditClient.getAuthMethod().isUserless()){
             submissionSubredditSortBuilder = redditClient.frontPage();
+        }
+        // USERLESS and no subreddit request - display default
+        else{
+            submissionSubredditSortBuilder = redditClient.subreddit(defaultSubreddit).posts();
         }
 
         mPaginator =

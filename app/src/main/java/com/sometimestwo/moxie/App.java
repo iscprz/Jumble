@@ -66,5 +66,5 @@ public final class App extends Application {
 
     public static AccountHelper getAccountHelper() { return accountHelper; }
     public static SharedPreferencesTokenStore getTokenStore() { return tokenStore; }
-    public static MoxieInfoObj getCurrSubredditObj() {return currSubredditObj;}
+    public static MoxieInfoObj getMoxieInfoObj() {return currSubredditObj;}
 }

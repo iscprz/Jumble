@@ -150,6 +150,8 @@ public class FragmentHome extends Fragment {
         public void refreshFeed(String fragmentTag, boolean invalidateData);
 
         public void isHome(boolean isHome);
+
+        public void goBack();
     }
 
     public static FragmentHome newInstance() {
@@ -328,12 +330,12 @@ public class FragmentHome extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                // hacky workaround for handling conflict with opening drawer
-                // instead of going back when viewing a submission
-                if (!isViewingSubmission) {
+                // Hacky workaround for handling conflict with opening drawer.
+                // Only offer the hamburger menu option if we're at the home screen
+                if (!isViewingSubmission && mCurrSubreddit == null) {
                     mDrawerLayout.openDrawer(GravityCompat.START);
                 } else {
-                    goBack();
+                    mHomeEventListener.goBack();
                 }
                 return true;
         }
@@ -359,6 +361,7 @@ public class FragmentHome extends Fragment {
                 // User successfully logged in. Update the current user.
                 // Most recently logged in user will always be at the end of the usernames list
                 updateCurrentUser(App.getTokenStore().getUsernames().size() - 1);
+                App.getMoxieInfoObj().setCurrSubreddit(null);
                 refresh(true);
             }
         }
@@ -368,7 +371,7 @@ public class FragmentHome extends Fragment {
         if (isAdded()) {
             mToolbar.setVisibility(View.VISIBLE);
             mToolbar.setAlpha(1);
-            if (mCurrUsername == null) {
+            if (mCurrSubreddit != null) {
                 mToolbar.setTitle(getResources().getString(R.string.subreddit_prefix) + mCurrSubreddit);
             } else {
                 mToolbar.setTitle("frontpage");
@@ -378,11 +381,9 @@ public class FragmentHome extends Fragment {
             ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
             if (toolbar != null) {
                 toolbar.setDisplayHomeAsUpEnabled(true);
-                toolbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+                toolbar.setHomeAsUpIndicator(mCurrSubreddit == null ? R.drawable.ic_menu : R.drawable.ic_white_back_arrow);
             }
         }
-
-
     }
 
     private void unpackArgs() {
@@ -391,17 +392,11 @@ public class FragmentHome extends Fragment {
         try {
             if (arguments != null) {
                 mInvalidateDataSource = (boolean) arguments.getBoolean(Constants.ARGS_INVALIDATE_DATASOURCE);
-                //mNumDisplayColumns = (Integer) arguments.get(ARGS_NUM_DISPLAY_COLS);
+                mCurrSubreddit = (String) arguments.getString(Constants.ARGS_CURR_SUBREDDIT,null);
             }
             //  mCurrSubreddit = mRedditClient.getmRedditDataRequestObj().getmSubreddit();
         } catch (NullPointerException npe) {
             throw new NullPointerException("Null ptr exception trying to unpack arguments in " + TAG);
-        }
-
-        // default to /r/pics as failsafe if nothing was passed to us
-        mCurrSubreddit = App.getCurrSubredditObj().getSubreddit();
-        if (mCurrSubreddit == null || "".equals(mCurrSubreddit)) {
-            mCurrSubreddit = Constants.DEFAULT_SUBREDDIT;
         }
     }
 
@@ -416,19 +411,15 @@ public class FragmentHome extends Fragment {
                 R.string.drawer_close  /* "close drawer" description for accessibility */
         ) {
             public void onDrawerClosed(View view) {
-                setupToolbar();
-                //getActivity().getSupportActionBar().setTitle(mTitle);
                 //supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 
             public void onDrawerOpened(View drawerView) {
-                setupToolbar();
                 //supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
 
         mDrawerLayout.addDrawerListener(mDrawerToggle);
-
 
         NavigationView navigationView = (NavigationView) v.findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
@@ -503,7 +494,7 @@ public class FragmentHome extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String requestedSubreddit = input.getText().toString();
-                        App.getCurrSubredditObj().setSubreddit(requestedSubreddit);
+                        App.getMoxieInfoObj().setCurrSubreddit(requestedSubreddit);
 
                         Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
                         visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, requestedSubreddit);
@@ -605,8 +596,8 @@ public class FragmentHome extends Fragment {
             mNumDisplayColumns = 3;//prefs.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
 
 
-            App.getCurrSubredditObj().setAllowNSFW(mPrefsAllowNSFW);
-            App.getCurrSubredditObj().setSubreddit("pics");
+            App.getMoxieInfoObj().setAllowNSFW(mPrefsAllowNSFW);
+            //App.getMoxieInfoObj().setSubreddit("pics");
 
         } else {
             throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
@@ -901,15 +892,6 @@ public class FragmentHome extends Fragment {
         submissionsViewModel.invalidate();
     }
 
-    /* Solution to closing the submission viewer instead of opening left drawerlayout*/
-    private void goBack() {
-        try {
-            FragmentManager fm = getActivity().getSupportFragmentManager();
-            fm.popBackStack();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     /* Updates SharedPreferences's current logged-in user.
      *  App.getTokenStore.getUsernames() contains the list of users in the order in which they were added.

@@ -10,8 +10,6 @@ import android.arch.paging.PagedList;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
-import net.dean.jraw.models.Submission;
-
 public class SubmissionsViewModel extends ViewModel {
     //creating livedata for PagedList  and PagedKeyedDataSource
     LiveData<PagedList<SubmissionObj>> postsPagedList;
@@ -21,7 +19,7 @@ public class SubmissionsViewModel extends ViewModel {
     //constructor
     public SubmissionsViewModel() {
         //getting our data source factory
-         submissionsDataSourceFactory = new SubmissionsDataSourceFactory(App.getCurrSubredditObj());
+         submissionsDataSourceFactory = new SubmissionsDataSourceFactory(App.getMoxieInfoObj());
 
         //getting the live data source from data source factory
         liveDataSource = submissionsDataSourceFactory.getItemLiveDataSource();

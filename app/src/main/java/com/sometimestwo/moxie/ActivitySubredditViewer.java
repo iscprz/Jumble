@@ -23,7 +23,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Bundle args = new Bundle();
-//        args.putInt(Constants.ARGS_NUM_DISPLAY_COLS,numDisplayCols);
+        args.putString(Constants.ARGS_CURR_SUBREDDIT,mCurrSubbredit);
         Fragment fragment = FragmentHome.newInstance();
         fragment.setArguments(args);
         ft.add(R.id.fragment_container_subreddit_viewer, fragment, Constants.TAG_FRAG_SUBREDDIT_VIEWER);
@@ -118,4 +118,11 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
     @Override
     public void isHome(boolean isHome) { }
 
+    /*
+    * This gets called when we are viewing a subreddit and would like to leave the subreddit.
+    */
+    @Override
+    public void goBack() {
+        onBackPressed();
+    }
 }

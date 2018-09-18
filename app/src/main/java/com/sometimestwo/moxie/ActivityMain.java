@@ -84,6 +84,8 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
                     = getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
             String currUsername = username_prefs.getString(Constants.KEY_CURR_USERNAME, null);
             if(currUsername != null){
+                //TODO CRASH HERE ON TAB BACK IN:
+                //                    Caused by: java.lang.IllegalStateException: No unexpired OAuthData or refresh token available for user '<userless>'
                 App.getAccountHelper().switchToUser(currUsername);
             }
             else{

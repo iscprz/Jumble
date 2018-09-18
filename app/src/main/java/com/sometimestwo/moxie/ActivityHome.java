@@ -174,4 +174,8 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
         this.isHome = isHome;
     }
 
+    @Override
+    public void goBack() {
+        super.onBackPressed();
+    }
 }

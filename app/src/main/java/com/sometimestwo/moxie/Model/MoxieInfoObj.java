@@ -8,7 +8,7 @@ import net.dean.jraw.models.TimePeriod;
     currently-being-viewed subreddit, sort by option, and time period (today, this month, all time).
  */
 public class MoxieInfoObj {
-    String subreddit;
+    String mCurrSubreddit;
     SubredditSort mSortBy;
     TimePeriod mTimePeriod;
     boolean allowNSFW = false;
@@ -29,12 +29,12 @@ public class MoxieInfoObj {
         this.mTimePeriod = mTimePeriod;
     }
 
-    public String getSubreddit() {
-        return subreddit;
+    public String getCurrSubreddit() {
+        return mCurrSubreddit;
     }
 
-    public void setSubreddit(String subreddit) {
-        this.subreddit = subreddit;
+    public void setCurrSubreddit(String subreddit) {
+        this.mCurrSubreddit = subreddit;
     }
 
     public boolean isAllowNSFW() {

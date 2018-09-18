@@ -15,12 +15,7 @@ import java.lang.ref.WeakReference;
 
 /*
         TODOS:
-            - toolbar random button
-            - animated gifs
-            - pinch zoomies
             - double tap to upvote
-            - long press to show title of post
-            - media viewer image options (download, etc)
             - view pager
             - invalid subreddit
             - exoplayer releases
@@ -28,6 +23,9 @@ import java.lang.ref.WeakReference;
             settings options:
             - browse mode (no comments, upvoting , etc) for lurkers
             - hide progress bar on exoplayer
+            -NSFW icon
+            - play gif icon
+            - When large previewer fails to load, loads previously successful image instead
 
             layout issues:
             - centering very tall image in large hover

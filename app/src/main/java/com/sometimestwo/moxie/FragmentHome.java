@@ -30,6 +30,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -81,6 +82,10 @@ public class FragmentHome extends Fragment {
     public final static String TAG = Constants.TAG_FRAG_HOME;
     public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
     private final static int KEY_LOG_IN = 2;
+
+    private DisplayMetrics mDisplayMetrics;
+    private int mScreenWidth;
+    private int mScreenHeight;
 
     private RequestManager GlideApp;
     private SwipeRefreshLayout mRefreshLayout;
@@ -145,7 +150,7 @@ public class FragmentHome extends Fragment {
         public void refreshFeed(String fragmentTag, boolean invalidateData);
 
         public void isHome(boolean isHome);
-        }
+    }
 
     public static FragmentHome newInstance() {
         return new FragmentHome();
@@ -167,11 +172,15 @@ public class FragmentHome extends Fragment {
         //mPopupView = inflater.inflate(R.layout.layout_popup_preview_small,null);
         //mParentView = v.findViewById(R.id.main_content);
 
+        /* Set screen dimensions for resizing dialogs */
+        mScreenWidth = getResources().getDisplayMetrics().widthPixels;
+        mScreenHeight = getResources().getDisplayMetrics().heightPixels;
+
         /* Initialize any preference/settings variables */
-        try{
+        try {
             validatePreferences();
             validateCurrUser();
-        }catch (Exception e){
+        } catch (Exception e) {
             //TODO: What to do when preferences aren't found? Will this ever happen? (prob not)
             e.printStackTrace();
         }
@@ -203,7 +212,7 @@ public class FragmentHome extends Fragment {
         final RecyclerAdapter adapter = new RecyclerAdapter(getContext());
 
         /* Viewmodel fetching and data updating */
-        if(mInvalidateDataSource){
+        if (mInvalidateDataSource) {
             // This is true when we are refreshing a page whether it be from a sipe refresh,
             // a new user log in, or user log out
             invalidateData();
@@ -281,8 +290,7 @@ public class FragmentHome extends Fragment {
             // Make sure we're referencing the right user
             //validateCurrUser();
             setupToolbar();
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -360,11 +368,10 @@ public class FragmentHome extends Fragment {
         if (isAdded()) {
             mToolbar.setVisibility(View.VISIBLE);
             mToolbar.setAlpha(1);
-            if(mCurrUsername == null){
+            if (mCurrUsername == null) {
                 mToolbar.setTitle(getResources().getString(R.string.subreddit_prefix) + mCurrSubreddit);
-            }
-            else{
-                mToolbar.setTitle("Frontpage");
+            } else {
+                mToolbar.setTitle("frontpage");
             }
 
             // set hamburger menu icon
@@ -383,7 +390,7 @@ public class FragmentHome extends Fragment {
         Bundle arguments = this.getArguments();
         try {
             if (arguments != null) {
-                 mInvalidateDataSource = (boolean) arguments.getBoolean(Constants.ARGS_INVALIDATE_DATASOURCE);
+                mInvalidateDataSource = (boolean) arguments.getBoolean(Constants.ARGS_INVALIDATE_DATASOURCE);
                 //mNumDisplayColumns = (Integer) arguments.get(ARGS_NUM_DISPLAY_COLS);
             }
             //  mCurrSubreddit = mRedditClient.getmRedditDataRequestObj().getmSubreddit();
@@ -436,26 +443,42 @@ public class FragmentHome extends Fragment {
                     }
                 });
 
+        /* Log out button */
         mButtonLogout = (TextView) v.findViewById(R.id.navbar_button_logout);
         mButtonLogout.setVisibility(mCurrUsername == null ? View.GONE : View.VISIBLE);
         mButtonLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new AlertDialog.Builder(getContext(), R.style.AppCompatAlertDialogStyle)
-                        .setTitle("Confirm log out")
-                        .setMessage("Really log out?")
-                        .setIcon(R.drawable.ic_white_log_out)
-                        .setPositiveButton(R.string.log_out, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                // Update user SharedPrefs's username to null(userless)
-                                curr_user_prefs.edit().putString(Constants.KEY_CURR_USERNAME, null).apply();
-                                App.getAccountHelper().logout();
-                                mDrawerLayout.closeDrawer(navigationView);
-                                new FetchUserlessAccountTask().execute();
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, null)
-                        .show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.TransparentDialog);
+                builder.setTitle("Confirm log out");
+                builder.setMessage("Really log out?");
+                builder.setIcon(R.drawable.ic_white_log_out);
+                builder.setPositiveButton(R.string.log_out, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        // Update user SharedPrefs's username to null(userless)
+                        curr_user_prefs.edit().putString(Constants.KEY_CURR_USERNAME, null).apply();
+                        App.getAccountHelper().logout();
+                        mDrawerLayout.closeDrawer(navigationView);
+                        new FetchUserlessAccountTask().execute();
+                    }
+                });
+                builder.setNegativeButton(android.R.string.no, null);
+                AlertDialog alertDialog = builder.create();
+
+                // button color setup
+                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialogInterface) {
+                        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                                .setTextColor(getResources().getColor(R.color.colorWhite));
+                        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                                .setTextColor(getResources().getColor(R.color.colorWhite));
+                    }
+                });
+
+                // resize the alert dialog
+                alertDialog.show();
+                alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
             }
         });
     }
@@ -469,11 +492,12 @@ public class FragmentHome extends Fragment {
                 startActivityForResult(loginIntent, KEY_LOG_IN);
                 return;
             case R.id.nav_menu_goto_subreddit:
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.TransparentDialog);
                 builder.setTitle("Enter subreddit:");
 
-                final EditText input = new EditText(getContext());
+                EditText input = new EditText(getContext());
                 input.setInputType(InputType.TYPE_CLASS_TEXT);
+                input.setTextColor(getResources().getColor(R.color.colorWhite));
                 builder.setView(input);
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
@@ -492,9 +516,21 @@ public class FragmentHome extends Fragment {
                         dialog.cancel();
                     }
                 });
-                builder.show();
-                return;
+                AlertDialog alertDialog = builder.create();
 
+                // button color setup
+                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialogInterface) {
+                        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                                .setTextColor(getResources().getColor(R.color.colorWhite));
+                        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                                .setTextColor(getResources().getColor(R.color.colorWhite));
+                    }
+                });
+                alertDialog.show();
+                alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
+                return;
             case R.id.nav_settings:
                 mHomeEventListener.openSettings();
                 return;
@@ -558,8 +594,8 @@ public class FragmentHome extends Fragment {
 
     }
 
-    private void validatePreferences() throws Exception{
-        if(prefs != null) {
+    private void validatePreferences() throws Exception {
+        if (prefs != null) {
             mPrefsAllowNSFW = prefs.getString(Constants.KEY_ALLOW_NSFW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
             mAllowImagePreview = prefs.getString(Constants.KEY_ALLOW_HOVER_PREVIEW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
             mAllowBigDisplayClickClose = prefs.getString(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, Constants.SETTINGS_YES).equalsIgnoreCase(Constants.SETTINGS_YES);
@@ -569,24 +605,22 @@ public class FragmentHome extends Fragment {
             mNumDisplayColumns = 3;//prefs.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
 
 
-
             App.getCurrSubredditObj().setAllowNSFW(mPrefsAllowNSFW);
             App.getCurrSubredditObj().setSubreddit("pics");
 
-        }
-        else{
+        } else {
             throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
-                                + "Could not find prefs KEY_GET_PREFS_SETTINGS.");
+                    + "Could not find prefs KEY_GET_PREFS_SETTINGS.");
         }
     }
 
     /* Checking we have the correct user logged in. "Correct user" is determined by what we have
-    *  saved in SharedPrefs.
-    *
-    *  Null means userless.
+     *  saved in SharedPrefs.
+     *
+     *  Null means userless.
      */
-    private void validateCurrUser() throws Exception{
-        if(curr_user_prefs != null){
+    private void validateCurrUser() throws Exception {
+        if (curr_user_prefs != null) {
             mCurrUsername = curr_user_prefs.getString(Constants.KEY_CURR_USERNAME, null);
 
             /*if(mCurrUsername != null){
@@ -595,8 +629,7 @@ public class FragmentHome extends Fragment {
             else{
                 App.getAccountHelper().switchToUser(Constants.USERNAME_USERLESS);
             }*/
-        }
-        else{
+        } else {
             throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
                     + "Could not find prefs KEY_GET_PREFS_SETTINGS.");
         }
@@ -862,7 +895,7 @@ public class FragmentHome extends Fragment {
         mHomeEventListener.refreshFeed(TAG, true);
     }
 
-    private void invalidateData(){
+    private void invalidateData() {
         SubmissionsViewModel submissionsViewModel
                 = ViewModelProviders.of(FragmentHome.this).get(SubmissionsViewModel.class);
         submissionsViewModel.invalidate();
@@ -995,7 +1028,6 @@ public class FragmentHome extends Fragment {
     }
 
 
-
     /*************************Async network tasks *******************************************/
 
     /* Set's our reddit client to userless and refreshes Home on completion*/
@@ -1012,12 +1044,12 @@ public class FragmentHome extends Fragment {
         }
     }
 
-     /*
-        [IMGUR SPECIFIC FUNCTION]
-        Takes indirect Imgur url such as https://imgur.com/7Ogk88I, fetches direct link from
-        Imgur API, and sets item's URL to direct link.
-        We also are setting the item's submission type here. Might need to do this elsewhere.
-     */
+    /*
+       [IMGUR SPECIFIC FUNCTION]
+       Takes indirect Imgur url such as https://imgur.com/7Ogk88I, fetches direct link from
+       Imgur API, and sets item's URL to direct link.
+       We also are setting the item's submission type here. Might need to do this elsewhere.
+    */
     public void fixIndirectImgurUrl(SubmissionObj item, String imgurHash) {
         ImgurClient imgurClient = new ImgurClient();
 
@@ -1093,8 +1125,5 @@ public class FragmentHome extends Fragment {
                     }
                 });
     }
-
-
-
 
 }

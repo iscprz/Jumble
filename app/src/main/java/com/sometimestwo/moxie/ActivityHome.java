@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 
@@ -35,7 +36,7 @@ import com.sometimestwo.moxie.Utils.Constants;
             - hide toolbar on large hover preview
  */
 public class ActivityHome extends AppCompatActivity implements FragmentHome.HomeEventListener,
-FragmentSubmissionViewer.SubmissionDisplayerEventListener{
+        FragmentSubmissionViewer.SubmissionDisplayerEventListener {
 
     private final String TAG = ActivityHome.class.getSimpleName();
 
@@ -43,10 +44,19 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
     // This allows us to know if we should handle onBackPressed() or not
     private boolean isHome = true;
 
+    //screen size metrics for flexibility in displaying dialogs
+    private DisplayMetrics mDisplayMetrics;
+    private int mScreenWidth;
+    private int mScreenHeight;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        mScreenWidth = getResources().getDisplayMetrics().widthPixels;
+        mScreenHeight = getResources().getDisplayMetrics().heightPixels;
+
         init();
     }
 
@@ -90,25 +100,40 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
     @Override
     public void onBackPressed() {
         // If we're at home we prompt user if they really want to exit, else just pop back stack
-        if(isHome){
-            new AlertDialog.Builder(this, R.style.AppCompatAlertDialogStyle)
-                    .setTitle("Confirm exit")
-                    .setMessage("Really exit app?")
-                    .setIcon(R.drawable.ic_white_exclamation)
-                    .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            ActivityHome.this.exitApp();
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, null)
-                    .show();
-        }
-        else{
+        if (isHome) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.TransparentDialog);
+            builder.setTitle("Confirm exit");
+            builder.setMessage("Really exit app?");
+            builder.setIcon(R.drawable.ic_white_exclamation);
+
+            builder.setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    ActivityHome.this.exitApp();
+                }
+            });
+            builder.setNegativeButton(android.R.string.no, null);
+            AlertDialog alertDialog = builder.create();
+
+            // button color setup
+            alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                @Override
+                public void onShow(DialogInterface dialogInterface) {
+                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                            .setTextColor(getResources().getColor(R.color.colorWhite));
+                    alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                            .setTextColor(getResources().getColor(R.color.colorWhite));
+                }
+            });
+
+            // resize the alert dialog
+            alertDialog.show();
+            alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
+        } else {
             getSupportFragmentManager().popBackStack();
         }
     }
 
-    public void exitApp(){
+    public void exitApp() {
         super.onBackPressed();
     }
 
@@ -117,12 +142,12 @@ FragmentSubmissionViewer.SubmissionDisplayerEventListener{
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constants.INTENT_SETTINGS) {
             if (resultCode == RESULT_OK) {
-                refreshFragment(Constants.TAG_FRAG_HOME,false);
+                refreshFragment(Constants.TAG_FRAG_HOME, false);
                 Log.e(TAG, "Returned from settings activity");
             }
             // Setting was changed that requires data to be invalidated(refreshed)
-            else if(resultCode == Constants.RESULT_OK_INVALIDATE_DATA){
-                refreshFragment(Constants.TAG_FRAG_HOME,true);
+            else if (resultCode == Constants.RESULT_OK_INVALIDATE_DATA) {
+                refreshFragment(Constants.TAG_FRAG_HOME, true);
             }
         }
 

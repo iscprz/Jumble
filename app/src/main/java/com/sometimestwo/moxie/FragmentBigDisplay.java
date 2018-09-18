@@ -87,8 +87,8 @@ public class FragmentBigDisplay extends Fragment {
                     android.content.ClipData clip = android.content.ClipData.newPlainText(mCurrSubmission.getTitle(), mCurrSubmission.getUrl());
                     clipboard.setPrimaryClip(clip);
                 }
-                Toast.makeText(getContext(), getContext().getResources()
-                        .getString(R.string.toast_copied_to_clipboard), Toast.LENGTH_SHORT).show();
+               /* Toast.makeText(getContext(), getContext().getResources()
+                        .getString(R.string.toast_copied_to_clipboard), Toast.LENGTH_SHORT).show();*/
             }
         });
         /* Toolbar Share button*/

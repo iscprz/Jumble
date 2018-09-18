@@ -16,15 +16,14 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
     public final String TAG = this.getClass().getCanonicalName();
 
     private String mCurrSubbredit;
-    // activity hosts a 404 page
-    private boolean mIs404 = false;
+    private boolean mIs404 = false;    // activity hosts a 404 page
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subreddit_viewer);
         unpackExtras();
 
-        displaySubreddit();
+        displaySubreddit(true);
     }
 
     @Override
@@ -89,23 +88,24 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
         }
     }
 
-    private void displaySubreddit() {
+    private void displaySubreddit(boolean invalidateData) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Bundle args = new Bundle();
         args.putString(Constants.ARGS_CURR_SUBREDDIT, mCurrSubbredit);
+        args.putBoolean(Constants.ARGS_INVALIDATE_DATASOURCE, invalidateData);
         Fragment fragment = FragmentHome.newInstance();
         fragment.setArguments(args);
         ft.add(R.id.fragment_container_subreddit_viewer, fragment, Constants.TAG_FRAG_SUBREDDIT_VIEWER);
         ft.commit();
     }
 
-    protected void retrySubredditLoad() {
-        Fragment fragment404 = getSupportFragmentManager().findFragmentByTag(Constants.TAG_FRAG_404);
+    protected void retrySubredditLoad(String fragmentTag, boolean invalidateData) {
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(fragmentTag);
         final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         try {
-            ft.remove(fragment404).commit();
+            ft.remove(fragment).commit();
             // try displaying subreddit again after removing 404 fragment
-            displaySubreddit();
+            displaySubreddit(invalidateData);
         } catch (NullPointerException e) {
             throw new NullPointerException(this.toString()
                     + ". Could not refresh fragment! Probably provided incorrect fragment tag. " +
@@ -123,18 +123,15 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
         startActivityForResult(settingsIntent, Constants.INTENT_SETTINGS);
     }
 
+    // Called on refresh swipe
     @Override
-    public void refreshFeed(String fragmentTag, boolean invalidateData) {
-        //invalidateData is not relevant in this activity but is here for sake of interface
-        this.retrySubredditLoad();
+    public void refreshFeed(boolean invalidateData) {
+        this.retrySubredditLoad(Constants.TAG_FRAG_SUBREDDIT_VIEWER, invalidateData);
     }
 
     @Override
     public void isHome(boolean isHome) { }
 
-    /*
-     * This gets called when we are viewing a subreddit and would like to leave the subreddit.
-     */
     @Override
     public void goBack() {
         onBackPressed();
@@ -147,8 +144,9 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
         this.mIs404 = is404;
     }
 
+    // Called on Retry button click
     @Override
     public void refresh404(String tag) {
-        retrySubredditLoad();
+        this.retrySubredditLoad(tag,true);
     }
 }

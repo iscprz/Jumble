@@ -165,8 +165,8 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
     }
 
     @Override
-    public void refreshFeed(String fragmentTag, boolean invalidateData) {
-        refreshFragment(fragmentTag, invalidateData);
+    public void refreshFeed( boolean invalidateData) {
+        refreshFragment(Constants.TAG_FRAG_HOME, invalidateData);
     }
 
     @Override

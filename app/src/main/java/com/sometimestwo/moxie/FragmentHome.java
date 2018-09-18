@@ -148,7 +148,7 @@ public class FragmentHome extends Fragment {
     public interface HomeEventListener {
         public void openSettings();
 
-        public void refreshFeed(String fragmentTag, boolean invalidateData);
+        public void refreshFeed(boolean invalidateData);
 
         public void isHome(boolean isHome);
 
@@ -917,7 +917,7 @@ public class FragmentHome extends Fragment {
     }
 
     private void refresh(boolean invalidateData) {
-        mHomeEventListener.refreshFeed(TAG, true);
+        mHomeEventListener.refreshFeed(invalidateData);
     }
 
     private void invalidateData() {

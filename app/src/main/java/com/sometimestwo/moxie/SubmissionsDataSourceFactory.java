@@ -39,6 +39,8 @@ public class SubmissionsDataSourceFactory extends DataSource.Factory {
 
     /* For refreshing*/
     public void invalidate(){
-        postLiveDataSource.getValue().invalidate();
+        if(postLiveDataSource.getValue() != null){
+            postLiveDataSource.getValue().invalidate();
+        }
     }
 }

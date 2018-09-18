@@ -14,6 +14,16 @@ import java.util.Date;
 *  See net.dean.jraw.models.Submission for field details
 */
 public class SubmissionObj implements Serializable{
+    public SubmissionObj(){}
+
+    // For quick instantiation of submission list when we encounter empty subreddit
+    public SubmissionObj(Boolean isSubredditEmpty) {
+        this.isSubredditEmpty = isSubredditEmpty;
+    }
+
+    //Notifies us when we've tried requesting data from a non-existant subreddit (0 submissions)
+    private boolean isSubredditEmpty = false;
+
     private String author;
     private Date dateCreated;
     private String domain;
@@ -48,6 +58,13 @@ public class SubmissionObj implements Serializable{
     private boolean loadingData;
     private int score;
 
+    public boolean isSubredditEmpty() {
+        return isSubredditEmpty;
+    }
+
+    public void setSubredditEmpty(boolean subredditEmpty) {
+        isSubredditEmpty = subredditEmpty;
+    }
 
     public String getAuthor() {
         return author;

@@ -10,6 +10,7 @@ import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
 import net.dean.jraw.RedditClient;
+import net.dean.jraw.http.NetworkException;
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.models.SubredditSort;
@@ -25,6 +26,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     // For paging through Reddit submission Listings
     DefaultPaginator<Submission> mPaginator;
     MoxieInfoObj mMoxieInfoObj;
+    private boolean mIs404 = false;
 
     public SubmissionsDataSource(MoxieInfoObj moxieInfoObj) {
         this.mMoxieInfoObj = moxieInfoObj;
@@ -43,24 +45,24 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         String subredditRequested = mMoxieInfoObj.getCurrSubreddit();
         String defaultSubreddit = "pics";
 
-        if(subredditRequested != null){
+        if (subredditRequested != null) {
             submissionSubredditSortBuilder = redditClient.subreddit(subredditRequested).posts();
         }
         // logged in with no request - display user's front page
-        else if(!redditClient.getAuthMethod().isUserless()){
+        else if (!redditClient.getAuthMethod().isUserless()) {
             submissionSubredditSortBuilder = redditClient.frontPage();
         }
         // USERLESS and no subreddit request - display default
-        else{
+        else {
             submissionSubredditSortBuilder = redditClient.subreddit(defaultSubreddit).posts();
         }
 
         mPaginator =
-                 submissionSubredditSortBuilder
-                .limit(Constants.QUERY_PAGE_SIZE) // 50 posts per page
-                .sorting(mMoxieInfoObj.getmSortBy()) // top posts
-                .timePeriod(mMoxieInfoObj.getmTimePeriod()) // of all time
-                .build();
+                submissionSubredditSortBuilder
+                        .limit(Constants.QUERY_PAGE_SIZE) // 50 posts per page
+                        .sorting(mMoxieInfoObj.getmSortBy()) // top posts
+                        .timePeriod(mMoxieInfoObj.getmTimePeriod()) // of all time
+                        .build();
         //App.getTokenStore().getUsernames().get(App.getTokenStore().getUsernames().indexOf("ambits"));
 
         new FetchInitialSubmissionsTask(callback).execute();
@@ -74,7 +76,9 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     //this will load the next page
     @Override
     public void loadAfter(@NonNull final LoadParams<String> params, @NonNull final LoadCallback<SubmissionObj> callback) {
-        new FetchSubmissionsTask(callback).execute();
+        if (!mIs404) {
+            new FetchSubmissionsTask(callback).execute();
+        }
     }
 
     @NonNull
@@ -102,7 +106,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             try {
                 submissions = mPaginator.next();
                 submissionObjs = mapSubmissions(submissions);
-            } catch (Exception e) {
+            } catch (NetworkException e) {
                 Log.e(SubmissionsDataSource.class.getSimpleName(),
                         " Failed to request initial submissions from reddit: " + e.getMessage());
             }
@@ -161,6 +165,14 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
     private List<SubmissionObj> mapSubmissions(Listing<Submission> submissions) {
         List<SubmissionObj> res = new ArrayList<SubmissionObj>();
+
+        // If the requested subreddit has 0 posts (non-existant)
+        if (submissions == null || submissions.size() < 1) {
+            res.add(new SubmissionObj(true));
+            mIs404 = true;
+            return res;
+        }
+        mIs404 = false;
         for (Submission submission : submissions) {
             // filter some submissions out here
             if (submission.isSelfPost()
@@ -168,6 +180,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 continue;
             }
             SubmissionObj s = new SubmissionObj();
+            s.setSubredditEmpty(false);
             s.setAuthor(submission.getAuthor());
             s.setUrl(submission.getUrl());
             s.setDomain(submission.getDomain());

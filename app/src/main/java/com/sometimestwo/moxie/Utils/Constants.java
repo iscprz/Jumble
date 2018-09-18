@@ -13,7 +13,7 @@ public class Constants {
     /* Fragment tags */
     public final static String TAG_FRAG_HOME = "TAG_FRAGMENT_HOME";
     public final static String TAG_FRAG_SUBREDDIT_VIEWER = "TAG_FRAG_SUBREDDIT_VIEWER";
-    public final static String TAG_ACTIVITY_MEDIA_VIEWER = "TAG_ACTIVITY_MEDIA_VIEWER";
+    public final static String TAG_FRAG_404 = "TAG_FRAG_404";
     public final static String TAG_FRAG_MEDIA_DISPLAY = "TAG_FRAG_MEDIA_DISPLAY";
 
     /* Arguments, Extras and Result codes*/

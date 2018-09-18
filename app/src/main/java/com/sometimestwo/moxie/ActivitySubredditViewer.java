@@ -10,24 +10,21 @@ import android.view.Menu;
 import com.sometimestwo.moxie.Utils.Constants;
 
 public class ActivitySubredditViewer extends AppCompatActivity implements FragmentHome.HomeEventListener,
-        FragmentSubmissionViewer.SubmissionDisplayerEventListener {
+        FragmentSubmissionViewer.SubmissionDisplayerEventListener,
+        Fragment404.Fragment404EventListener {
 
     public final String TAG = this.getClass().getCanonicalName();
 
     private String mCurrSubbredit;
+    // activity hosts a 404 page
+    private boolean mIs404 = false;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subreddit_viewer);
         unpackExtras();
 
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        Bundle args = new Bundle();
-        args.putString(Constants.ARGS_CURR_SUBREDDIT,mCurrSubbredit);
-        Fragment fragment = FragmentHome.newInstance();
-        fragment.setArguments(args);
-        ft.add(R.id.fragment_container_subreddit_viewer, fragment, Constants.TAG_FRAG_SUBREDDIT_VIEWER);
-        ft.commit();
+        displaySubreddit();
     }
 
     @Override
@@ -76,7 +73,13 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+        // if activity is hosting a 404 page, we want to leave entire
+        // activity not just pop 404 page off backstack
+        if (mIs404) {
+            finish();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     public void unpackExtras() {
@@ -86,17 +89,27 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
         }
     }
 
-    protected void refreshFragment(String fragmentTag, boolean invalidateData) {
-        Fragment frg = getSupportFragmentManager().findFragmentByTag(fragmentTag);
+    private void displaySubreddit() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        Bundle args = new Bundle();
+        args.putString(Constants.ARGS_CURR_SUBREDDIT, mCurrSubbredit);
+        Fragment fragment = FragmentHome.newInstance();
+        fragment.setArguments(args);
+        ft.add(R.id.fragment_container_subreddit_viewer, fragment, Constants.TAG_FRAG_SUBREDDIT_VIEWER);
+        ft.commit();
+    }
+
+    protected void retrySubredditLoad() {
+        Fragment fragment404 = getSupportFragmentManager().findFragmentByTag(Constants.TAG_FRAG_404);
         final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         try {
-            ft.detach(frg);
-            ft.attach(frg);
-            ft.commit();
+            ft.remove(fragment404).commit();
+            // try displaying subreddit again after removing 404 fragment
+            displaySubreddit();
         } catch (NullPointerException e) {
             throw new NullPointerException(this.toString()
                     + ". Could not refresh fragment! Probably provided incorrect fragment tag. " +
-                    " Fragment tag provided: " + fragmentTag);
+                    " Fragment tag provided: " + Constants.TAG_FRAG_404);
         }
     }
 
@@ -105,24 +118,37 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
      */
     @Override
     public void openSettings() {
-        Intent settingsIntent = new Intent(this,ActivitySettings.class);
+        Intent settingsIntent = new Intent(this, ActivitySettings.class);
         //settingsIntent.putExtra()
-        startActivityForResult(settingsIntent,Constants.INTENT_SETTINGS);
+        startActivityForResult(settingsIntent, Constants.INTENT_SETTINGS);
     }
 
     @Override
     public void refreshFeed(String fragmentTag, boolean invalidateData) {
-        this.refreshFragment(fragmentTag, invalidateData);
+        //invalidateData is not relevant in this activity but is here for sake of interface
+        this.retrySubredditLoad();
     }
 
     @Override
     public void isHome(boolean isHome) { }
 
     /*
-    * This gets called when we are viewing a subreddit and would like to leave the subreddit.
-    */
+     * This gets called when we are viewing a subreddit and would like to leave the subreddit.
+     */
     @Override
     public void goBack() {
         onBackPressed();
+    }
+
+    /* Marks this activity as being an activity that hosts a 404 page. This will be useful when
+     *  handling Back button presses to leave activity instead of only popping "404 message" */
+    @Override
+    public void set404(boolean is404) {
+        this.mIs404 = is404;
+    }
+
+    @Override
+    public void refresh404(String tag) {
+        retrySubredditLoad();
     }
 }

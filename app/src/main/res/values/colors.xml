@@ -13,6 +13,7 @@
     <color name="colorBlack">#000000</color>
     <color name="colorGray">#979797</color>
     <color name="colorDarkGray">#404040</color>
+    <color name="colorLinkBlue">#5e93ed</color>
 
     <color name="redic">#60ff6dd1</color>
     <color name="test_media_viewer_comments">#8949ff00</color>

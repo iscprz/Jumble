@@ -178,4 +178,9 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
     public void goBack() {
         super.onBackPressed();
     }
+
+    @Override
+    public void set404(boolean is404) {
+        // This is added for the sake of being useful in ActivitySubredditViewer
+    }
 }

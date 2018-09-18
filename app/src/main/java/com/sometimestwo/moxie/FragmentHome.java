@@ -102,6 +102,7 @@ public class FragmentHome extends Fragment {
     private GestureDetector mGestureDetector;
     private ProgressBar mProgressBar;
     private boolean mInvalidateDataSource = false;
+    private boolean is404 = false;
 
     // settings prefs
     SharedPreferences prefs;
@@ -152,6 +153,8 @@ public class FragmentHome extends Fragment {
         public void isHome(boolean isHome);
 
         public void goBack();
+
+        public void set404(boolean is404);
     }
 
     public static FragmentHome newInstance() {
@@ -392,7 +395,7 @@ public class FragmentHome extends Fragment {
         try {
             if (arguments != null) {
                 mInvalidateDataSource = (boolean) arguments.getBoolean(Constants.ARGS_INVALIDATE_DATASOURCE);
-                mCurrSubreddit = (String) arguments.getString(Constants.ARGS_CURR_SUBREDDIT,null);
+                mCurrSubreddit = (String) arguments.getString(Constants.ARGS_CURR_SUBREDDIT, null);
             }
             //  mCurrSubreddit = mRedditClient.getmRedditDataRequestObj().getmSubreddit();
         } catch (NullPointerException npe) {
@@ -659,12 +662,28 @@ public class FragmentHome extends Fragment {
         @SuppressLint("ClickableViewAccessibility")
         @Override
         public void onBindViewHolder(@NonNull final ItemViewHolder holder, int position) {
-            SubmissionObj item = getItem(position);
+            // empty subreddit, nothing to display
+            if (is404) { return; }
+            SubmissionObj item = (getItem(position) == null ? new SubmissionObj(true) : getItem(position));
+
+            // Workaround for checking if requested subreddit is empty (or invalid).
+            // If invalid subreddit, there should exist only 1 element and this field will be true
+            // Note: The adapter continues calling onBindViewHolder for as many items as we
+            // usually display on one recyclerview fetch (50?).
+            // is404 prevents more 404 pages from being added to the backstack
+            if (item.isSubredditEmpty()) {
+                is404 = true;
+                mHomeEventListener.set404(true);
+                // the requested subreddit was empty. Display something meaningful
+                display404();
+                return;
+            }
             // Waiting for API response
             String thumbnail = Constants.THUMBNAIL_NOT_FOUND;
             item.setSubmissionType(Helpers.getSubmissionType(item.getUrl()));
 
             if (item != null && !item.isSelfPost()) {
+                is404 = false;
                 // Imgur
                 if (item.getDomain().contains("imgur")) {
                     // try setting the submission type here. Imgur links will have .jpg/.gifv
@@ -862,24 +881,39 @@ public class FragmentHome extends Fragment {
         }
     }
 
+    private void display404() {
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment emptySubredditFragment = Fragment404.newInstance();
+
+        /* Bundle args = new Bundle();
+        args.putSerializable(Constants.EXTRA_SUBMISSION_OBJ, submission);
+        mediaDisplayerFragment.setArguments(args);
+        */
+
+        int parentContainerId = ((ViewGroup) getView().getParent()).getId();
+        ft.add(parentContainerId, emptySubredditFragment, Constants.TAG_FRAG_404);
+        ft.addToBackStack(null);
+        ft.commit();
+    }
+
     private void openSubmissionViewer(SubmissionObj submission) {
-        if (isAdded()) {
-            FragmentManager fm = getActivity().getSupportFragmentManager();
-            // Fragment mediaDisplayerFragment = (FragmentSubmissionViewer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
-            FragmentTransaction ft = fm.beginTransaction();
-            Fragment mediaDisplayerFragment = FragmentSubmissionViewer.newInstance();
-            Bundle args = new Bundle();
-            args.putSerializable(Constants.EXTRA_SUBMISSION_OBJ, submission);
-            mediaDisplayerFragment.setArguments(args);
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        // Fragment mediaDisplayerFragment = (FragmentSubmissionViewer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
+        FragmentTransaction ft = fm.beginTransaction();
+        Fragment mediaDisplayerFragment = FragmentSubmissionViewer.newInstance();
+        Bundle args = new Bundle();
+        args.putSerializable(Constants.EXTRA_SUBMISSION_OBJ, submission);
+        mediaDisplayerFragment.setArguments(args);
 
-            mediaDisplayerFragment.setTargetFragment(FragmentHome.this, KEY_INTENT_GOTO_SUBMISSIONVIEWER);
+        mediaDisplayerFragment.setTargetFragment(FragmentHome.this, KEY_INTENT_GOTO_SUBMISSIONVIEWER);
 
-            //ft.replace(R.id.fragment_container_home, mediaDisplayerFragment,Constants.TAG_FRAG_MEDIA_DISPLAY);
-            int parentContainerId = ((ViewGroup) getView().getParent()).getId();
-            ft.add(parentContainerId, mediaDisplayerFragment/*, Constants.TAG_FRAG_MEDIA_DISPLAY*/);
-            ft.addToBackStack(null);
-            ft.commit();
-        }
+        //ft.replace(R.id.fragment_container_home, mediaDisplayerFragment,Constants.TAG_FRAG_MEDIA_DISPLAY);
+        int parentContainerId = ((ViewGroup) getView().getParent()).getId();
+        ft.add(parentContainerId, mediaDisplayerFragment/*, Constants.TAG_FRAG_MEDIA_DISPLAY*/);
+        ft.addToBackStack(null);
+        ft.commit();
+
     }
 
     private void refresh(boolean invalidateData) {

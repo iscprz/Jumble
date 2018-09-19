@@ -34,7 +34,7 @@ import java.lang.ref.WeakReference;
             - exo player not reloading when tabbing back into app
 
  */
-public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.ActivityHomeEventListener*/{
+public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.ActivityHomeEventListener*/ {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -73,23 +73,33 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
     private class FetchRedditUser extends AsyncTask<Void, Void, Boolean> {
         private final WeakReference<ActivityMain> activity;
 
-        public FetchRedditUser(ActivityMain activity){
+        public FetchRedditUser(ActivityMain activity) {
             this.activity = new WeakReference<>(activity);
         }
+
         @Override
         protected Boolean doInBackground(Void... voids) {
             // Make sure the most recently logged in user is set as current user.
             // Go Userless if no log in has been made.
             SharedPreferences username_prefs
                     = getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
-            String currUsername = username_prefs.getString(Constants.KEY_CURR_USERNAME, null);
-            if(currUsername != null){
-                //TODO CRASH HERE ON TAB BACK IN:
-                //                    Caused by: java.lang.IllegalStateException: No unexpired OAuthData or refresh token available for user '<userless>'
-                App.getAccountHelper().switchToUser(currUsername);
-            }
-            else{
+            String currUsername = username_prefs.getString(Constants.KEY_CURR_USERNAME, Constants.USERNAME_USERLESS);
+
+            if (Constants.USERNAME_USERLESS.equalsIgnoreCase(currUsername)) {
                 App.getAccountHelper().switchToUserless();
+            } else {
+                // TODO CRASH HERE ON TAB BACK IN:
+                // Caused by: java.lang.IllegalStateException: No unexpired OAuthData or refresh token available for user '<userless>'
+                App.getAccountHelper().switchToUser(currUsername);
+
+                // check authentication stuff and redo if necessary
+                // https://mattbdean.gitbooks.io/jraw/content/v/v1.1.0/oauth2.html
+
+                //App.getAccountHelper().isAuthenticated()
+                 /*AuthManager authManager = redditClient.getAuthManager();
+                if (authManager.canRenew()) {
+                    authManager.renew();
+                }*/
             }
             return true;
         }
@@ -97,7 +107,7 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
         @Override
         protected void onPostExecute(Boolean b) {
             Activity activity = this.activity.get();
-            if(activity != null){
+            if (activity != null) {
                 activity.startActivity(new Intent(activity, ActivityHome.class));
             }
         }

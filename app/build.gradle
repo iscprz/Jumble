@@ -31,6 +31,7 @@ android {
 dependencies {
     def view_model_version = "1.1.0"
     def glide_version = "4.6.1"
+
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:28.0.0-rc01'
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
@@ -78,10 +79,11 @@ dependencies {
     // fixes error: Cannot fit requested classes in a single dex file. Try supplying a main-dex list.
     implementation 'com.android.support:multidex:1.0.3'
 
-    //gfycat
-    implementation 'com.gfycat.android:gfycat-core:0.6.1'
-    implementation 'com.gfycat.android:gfycat-webp-player:0.5.+' // Gfycat WebP player dependency
-    implementation 'com.gfycat.android:gfycat-gif-player:0.5.+'  // Gfycat GIF player dependency
+    implementation 'com.android.support:animated-vector-drawable:28.0.0-rc02'
+    implementation group: 'com.android.support', name: 'support-media-compat', version: '28.0.0-alpha1'    //gfycat
+    //implementation 'com.gfycat.android:gfycat-core:0.6.1'
+    //implementation 'com.gfycat.android:gfycat-webp-player:0.5.+' // Gfycat WebP player dependency
+    //implementation 'com.gfycat.android:gfycat-gif-player:0.5.+'  // Gfycat GIF player dependency
 
 
 }

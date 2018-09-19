@@ -50,6 +50,10 @@ public class Constants {
     public final static String KEY_PREVIEW_SIZE = "KEY_PREVIEW_SIZE";
     public final static String KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK = "KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK";
     public final static String KEY_CURR_USERNAME = "KEY_CURR_USERNAME";
+    // Workaround for JRAW not fully logging users out. We keep track of number of "active users".
+    // An active user is an account that is logged in and has never logged out.
+    // An inactive user is a user that has logged out but remains in JRAW's account helper (dunno why yet)
+   // public final static String KEY_NUM_ACTIVE_USERS = "KEY_NUM_ACTIVE_USERS";
 
     public final static String SETTINGS_NO = "SETTINGS_NO";
     public final static String SETTINGS_YES = "SETTINGS_YES";
@@ -64,6 +68,8 @@ public class Constants {
     public final static String[] VALID_GIF_EXTENSION = {"gifv", "gif"};
     public final static String THUMBNAIL_NOT_FOUND = "THUMBNAIL_NOT_FOUND";
     public final static String USERNAME_USERLESS = "<userless>";
+    public final static String USERNAME_USERLESS_PRETTY = "Guest";
+
 
     /* Enums*/
     public enum HoverPreviewSize{

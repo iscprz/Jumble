@@ -6,6 +6,10 @@
         <item name="colorPrimary">@color/colorThemeDarkPrimary</item>
         <item name="colorPrimaryDark">@color/colorThemeDarkPrimaryDark</item>
         <item name="colorAccent">@color/colorWhite</item>
+<!--
+        <item name="android:popupMenuStyle"></item>
+-->
+
     </style>
 
     <style name="AppThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
@@ -25,8 +29,13 @@
     </style>
 
     <style name="ThemeNavViewHeader">
-        <item name="android:textSize">18sp</item>
+        <item name="android:textSize">20sp</item>
         <item name="android:textColor">@color/colorWhite</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+<!--    <style name="PopupTheme" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:itemBackground">@color/colorWhite</item>
+    </style>-->
 </resources>

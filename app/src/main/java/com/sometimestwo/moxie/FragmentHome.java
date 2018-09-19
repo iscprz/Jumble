@@ -27,6 +27,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
@@ -34,6 +35,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -41,6 +43,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -73,6 +76,8 @@ import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Helpers;
 
+import java.util.List;
+
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -92,6 +97,7 @@ public class FragmentHome extends Fragment {
     private MultiClickRecyclerView mRecyclerMain;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
+    private NavigationView mNavigationView;
     private ActionBarDrawerToggle mDrawerToggle;
     private int mNumDisplayColumns;
     private String mCurrSubreddit;
@@ -127,6 +133,11 @@ public class FragmentHome extends Fragment {
     private TextView mHoverPreviewTitleLarge;
     private ImageView mHoverImagePreviewLarge;
    // private GfycatPlayer mHoverPreviewGfycatLarge;
+
+    /* Navigation view */
+    private LinearLayout mNavViewHeader;
+    private TextView mNavViewHeaderTitle;
+    private ImageView mNavViewDropDown;
 
     // log out button
     private TextView mButtonLogout;
@@ -193,8 +204,8 @@ public class FragmentHome extends Fragment {
 
         unpackArgs();
 
-        /* Hamburger menu*/
-        setupHamburgerMenu(v);
+        /* Navigation menu on left*/
+        setupNavigationMenu(v);
 
         /* Toolbar setup*/
         mToolbar = (Toolbar) v.findViewById(R.id.toolbar_main);
@@ -368,6 +379,7 @@ public class FragmentHome extends Fragment {
                 // User successfully logged in. Update the current user.
                 // Most recently logged in user will always be at the end of the usernames list
                 updateCurrentUser(App.getTokenStore().getUsernames().size() - 1);
+
                 App.getMoxieInfoObj().setCurrSubreddit(null);
                 refresh(true);
             }
@@ -407,8 +419,8 @@ public class FragmentHome extends Fragment {
         }
     }
 
-    /* Hamburger menu*/
-    private void setupHamburgerMenu(View v) {
+    /* Left drawer/navigation view */
+    private void setupNavigationMenu(View v) {
         mDrawerLayout = v.findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(
                 getActivity(),                  /* host Activity */
@@ -428,8 +440,8 @@ public class FragmentHome extends Fragment {
 
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
-        NavigationView navigationView = (NavigationView) v.findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(
+        mNavigationView = (NavigationView) v.findViewById(R.id.nav_view);
+        mNavigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
@@ -441,9 +453,17 @@ public class FragmentHome extends Fragment {
                     }
                 });
 
+        /* Navigation view menu */
+        Menu navViewMenu = mNavigationView.getMenu();
+
+        /* Navigation menu header*/
+        View navViewHeader = mNavigationView.getHeaderView(0);
+        setupNavViewHeader(navViewHeader);
+
         /* Log out button */
         mButtonLogout = (TextView) v.findViewById(R.id.navbar_button_logout);
-        mButtonLogout.setVisibility(mCurrUsername == null ? View.GONE : View.VISIBLE);
+        // hide logout button if we're in Guest mode
+        mButtonLogout.setVisibility(Constants.USERNAME_USERLESS.equalsIgnoreCase(mCurrUsername)? View.GONE : View.VISIBLE);
         mButtonLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -453,11 +473,10 @@ public class FragmentHome extends Fragment {
                 builder.setIcon(R.drawable.ic_white_log_out);
                 builder.setPositiveButton(R.string.log_out, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        // Update user SharedPrefs's username to null(userless)
-                        curr_user_prefs.edit().putString(Constants.KEY_CURR_USERNAME, null).apply();
+                        // log out, switch to userless, and clean up
                         App.getAccountHelper().logout();
-                        mDrawerLayout.closeDrawer(navigationView);
-                        new FetchUserlessAccountTask().execute();
+                        App.getAccountHelper().switchToUserless();
+                        switchOrLogoutCleanup(Constants.USERNAME_USERLESS);
                     }
                 });
                 builder.setNegativeButton(android.R.string.no, null);
@@ -481,10 +500,77 @@ public class FragmentHome extends Fragment {
         });
     }
 
+    private void setupNavViewHeader(View navViewHeader){
+        mNavViewHeaderTitle = (TextView) navViewHeader.findViewById(R.id.navview_header_text_title);
+        mNavViewHeaderTitle.setText(mCurrUsername.equalsIgnoreCase(Constants.USERNAME_USERLESS)
+                ? Constants.USERNAME_USERLESS_PRETTY : mCurrUsername);
+        mNavViewHeaderTitle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mNavViewDropDown.callOnClick();
+            }
+        });
+
+        mNavViewDropDown= navViewHeader.findViewById(R.id.navview_header_expand);
+        mNavViewDropDown.setVisibility(App.getTokenStore().getUsernames().size() > 1 ? View.VISIBLE : View.GONE);
+        mNavViewDropDown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PopupMenu popup = new PopupMenu(getContext(), mNavViewDropDown/*,Gravity.LEFT,R.style.PopupTheme,0*/);
+                //Inflating the Popup using xml file
+                popup.getMenuInflater()
+                        .inflate(R.menu.menu_navview_header, popup.getMenu());
+
+                // populate with usernames that are currently logged in - up to 3, excluding Guest
+                populateNavUserDropdown(popup);
+
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    public boolean onMenuItemClick(MenuItem item) {
+                        String clickedUsername = item.getTitle().toString();
+
+                        // User will see "Guest" as option but we know it as "<userless>"
+                        if(Constants.USERNAME_USERLESS_PRETTY.equalsIgnoreCase(clickedUsername)){
+                            //clickedUsername = Constants.USERNAME_USERLESS;
+                            App.getAccountHelper().switchToUserless();
+                            switchOrLogoutCleanup(Constants.USERNAME_USERLESS);
+                        }
+                        else{
+                            App.getAccountHelper().switchToUser(clickedUsername);
+                            switchOrLogoutCleanup(clickedUsername);
+                        }
+
+                        mDrawerLayout.closeDrawer(mNavigationView);
+                        return true;
+                    }
+                });
+                popup.show(); //showing popup menu
+
+                // repopulate drop down so that it shows correct user info next time
+                populateNavUserDropdown(popup);
+            }
+        });
+    }
+
+    // Populates the drop down in navigation view's header
+    // with a list of currently logged-in users
+    private void populateNavUserDropdown(PopupMenu popupMenu){
+        List<String> usernames = App.getTokenStore().getUsernames();
+        int popupMenuIndex = 0;
+        for(String username : usernames) {
+            if (!username.equalsIgnoreCase(mCurrUsername)) {
+                MenuItem item = popupMenu.getMenu().getItem(popupMenuIndex);
+                item.setVisible(true);
+                item.setTitle(username.equalsIgnoreCase(Constants.USERNAME_USERLESS)
+                        ? Constants.USERNAME_USERLESS_PRETTY : username);
+                popupMenuIndex++;
+            }
+        }
+    }
+
     /* Handles left navigation menu item selections*/
     private void handleNavItemSelection(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
-            case R.id.nav_log_in:
+            case R.id.nav_add_account:
                 Intent loginIntent = new Intent(getContext(), ActivityNewUserLogin.class);
                 //unlockSessionIntent.putExtra("REQUEST_UNLOCK_SESSION", true);
                 startActivityForResult(loginIntent, KEY_LOG_IN);
@@ -604,14 +690,12 @@ public class FragmentHome extends Fragment {
         }
     }
 
-    /* Checking we have the correct user logged in. "Correct user" is determined by what we have
-     *  saved in SharedPrefs.
-     *
-     *  Null means userless.
+    /* Checking we have the correct user logged in. "Correct user" is
+     *  determined by what we have saved in SharedPrefs.
      */
     private void validateCurrUser() throws Exception {
         if (curr_user_prefs != null) {
-            mCurrUsername = curr_user_prefs.getString(Constants.KEY_CURR_USERNAME, null);
+            mCurrUsername = curr_user_prefs.getString(Constants.KEY_CURR_USERNAME, Constants.USERNAME_USERLESS);
         } else {
             throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
                     + "Could not find prefs KEY_GET_PREFS_SETTINGS.");
@@ -928,6 +1012,21 @@ public class FragmentHome extends Fragment {
         submissionsViewModel.invalidate();
     }
 
+    // Cleans up some details after we've switched accounts or logged out of an account
+    private void switchOrLogoutCleanup(String newCurrUser){
+        mCurrUsername = newCurrUser;
+        // update current user
+        curr_user_prefs.edit().putString(Constants.KEY_CURR_USERNAME, newCurrUser).apply();
+
+        // Workaround for JRAW not fully logging users out. We keep track of number of "active users".
+        // An active user is an account that is logged in and has never logged out.
+        // An inactive user is a user that has logged out but remains in JRAW's account helper (dunno why yet)
+        //int numActiveUsers = curr_user_prefs.getInt(Constants.KEY_NUM_ACTIVE_USERS,0);
+        //curr_user_prefs.edit().putInt(Constants.KEY_NUM_ACTIVE_USERS, numActiveUsers-1).apply();
+
+        mDrawerLayout.closeDrawer(mNavigationView);
+        refresh(true);
+    }
 
     /* Updates SharedPreferences's current logged-in user.
      *  App.getTokenStore.getUsernames() contains the list of users in the order in which they were added.
@@ -948,12 +1047,18 @@ public class FragmentHome extends Fragment {
         App.getAccountHelper().switchToUser(username);
 
         // update shared prefs
-        SharedPreferences usernamePrefs
+        SharedPreferences loginDataPrefs
                 = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
 
-        usernamePrefs.edit()
-                .putString(Constants.KEY_CURR_USERNAME, App.getTokenStore().getUsernames().get(userIndex))
-                .apply();
+        // Workaround for JRAW not fully logging users out. We keep track of number of "active users".
+        // An active user is an account that is logged in and has never logged out.
+        // An inactive user is a user that has logged out but remains in JRAW's account helper (dunno why yet)
+        //int numActiveUsers = loginDataPrefs.getInt(Constants.KEY_NUM_ACTIVE_USERS,0);
+        //loginDataPrefs.edit().putInt(Constants.KEY_NUM_ACTIVE_USERS, numActiveUsers+1).apply();
+
+        loginDataPrefs.edit()
+                .putString(Constants.KEY_CURR_USERNAME, App.getTokenStore().getUsernames().get(userIndex)).apply();
+
     }
 
     /*
@@ -1048,19 +1153,20 @@ public class FragmentHome extends Fragment {
 
     /*************************Async network tasks *******************************************/
 
-    /* Set's our reddit client to userless and refreshes Home on completion*/
+/*    *//* Set's our reddit client to userless and refreshes Home on completion*//*
     private class FetchUserlessAccountTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
+           // App.getAccountHelper().logout();
             App.getAccountHelper().switchToUserless();
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            refresh(true);
+            switchOrLogoutCleanup(Constants.USERNAME_USERLESS);
         }
-    }
+    }*/
 
     /*
        [IMGUR SPECIFIC FUNCTION]

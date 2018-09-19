@@ -1,18 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/navview_header_container"
     android:layout_width="match_parent"
-    android:layout_height="60dp"
+    android:layout_height="@dimen/navview_header_height"
     android:background="?attr/colorPrimaryDark"
+    android:clickable="true"
+    android:gravity="bottom"
+    android:orientation="horizontal"
     android:padding="16dp"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark"
-    android:orientation="vertical"
-    android:gravity="bottom">
+    android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <TextView
+        android:id="@+id/navview_header_text_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Moxie"
+        android:layout_weight=".9"
+        android:textAppearance="@style/ThemeNavViewHeader" />
 
-        android:textAppearance="@style/ThemeNavViewHeader"/>
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight=".1"
+        android:clickable="true">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/navview_header_expand"
+            android:layout_gravity="bottom"
+            android:background="@drawable/ic_down_arrow"
+            android:scaleType="centerInside" />
+    </FrameLayout>
 
 </LinearLayout>

@@ -1,6 +1,6 @@
 package com.sometimestwo.moxie.Model;
 
-import com.gfycat.core.gfycatapi.pojo.Gfycat;
+//import com.gfycat.core.gfycatapi.pojo.Gfycat;
 import com.sometimestwo.moxie.Utils.Constants;
 
 import net.dean.jraw.models.CommentSort;

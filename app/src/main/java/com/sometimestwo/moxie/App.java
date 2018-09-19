@@ -4,9 +4,9 @@ package com.sometimestwo.moxie;
 import android.app.Application;
 import android.util.Log;
 
-import com.gfycat.core.GfyCoreInitializationBuilder;
-import com.gfycat.core.GfyCoreInitializer;
-import com.gfycat.core.GfycatApplicationInfo;
+//import com.gfycat.core.GfyCoreInitializationBuilder;
+//import com.gfycat.core.GfyCoreInitializer;
+//import com.gfycat.core.GfycatApplicationInfo;
 import com.sometimestwo.moxie.Model.MoxieInfoObj;
 
 import net.dean.jraw.android.AndroidHelper;

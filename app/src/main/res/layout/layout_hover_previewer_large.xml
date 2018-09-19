@@ -33,16 +33,18 @@
             android:layout_gravity="center"
             android:visibility="visible" />
 
+        <!-- Image displayer -->
         <ImageView
-            android:id="@+id/hover_imageview_large"
+            android:id="@+id/large_previewer_imageview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
             android:scaleType="fitStart"
             android:visibility="gone" />
 
+        <!-- Gif? -->
         <com.google.android.exoplayer2.ui.PlayerView
-            android:id="@+id/exoplayer_large"
+            android:id="@+id/large_previewer_exoplayer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"
@@ -51,6 +53,16 @@
             app:player_layout_id="@layout/exo_player_view_preview_large"
             app:show_buffering="true"
             app:use_controller="true" />
+
+      <!--  &lt;!&ndash; Gfycat &ndash;&gt;
+        <com.gfycat.webp.view.GfycatWebpView
+            android:id="@+id/large_previewer_gfycat"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:visibility="gone"
+
+            app:autoplay="true"
+            app:shouldLoadPreview="true" />-->
     </FrameLayout>
 
 

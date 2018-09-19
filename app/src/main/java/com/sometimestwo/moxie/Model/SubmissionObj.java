@@ -1,5 +1,6 @@
 package com.sometimestwo.moxie.Model;
 
+import com.gfycat.core.gfycatapi.pojo.Gfycat;
 import com.sometimestwo.moxie.Utils.Constants;
 
 import net.dean.jraw.models.CommentSort;
@@ -47,6 +48,7 @@ public class SubmissionObj implements Serializable{
     private CommentSort suggestedSort;
     private String thumbnail;
     private boolean hasThumbnail;
+    private String previewUrl;
     private String title;
     private String url;
     private boolean isVisited;
@@ -57,6 +59,9 @@ public class SubmissionObj implements Serializable{
     // object is in the process of getting filled through async API call
     private boolean loadingData;
     private int score;
+
+    // Only used if item is a gfycat link
+    //private Gfycat gfycatObj;
 
     public boolean isSubredditEmpty() {
         return isSubredditEmpty;
@@ -242,6 +247,14 @@ public class SubmissionObj implements Serializable{
         this.hasThumbnail = hasThumbnail;
     }
 
+    public String getPreviewUrl() {
+        return previewUrl;
+    }
+
+    public void setPreviewUrl(String previewUrl) {
+        this.previewUrl = previewUrl;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -313,4 +326,12 @@ public class SubmissionObj implements Serializable{
     public void setScore(int score) {
         this.score = score;
     }
+
+    /*public Gfycat getGfycatObj() {
+        return gfycatObj;
+    }
+
+    public void setGfycatObj(Gfycat gfycatObj) {
+        this.gfycatObj = gfycatObj;
+    }*/
 }

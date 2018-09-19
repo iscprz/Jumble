@@ -18,6 +18,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    packagingOptions{
+        exclude 'META-INF/rxjava.properties'
+    }
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -73,6 +77,11 @@ dependencies {
 
     // fixes error: Cannot fit requested classes in a single dex file. Try supplying a main-dex list.
     implementation 'com.android.support:multidex:1.0.3'
+
+    //gfycat
+    implementation 'com.gfycat.android:gfycat-core:0.6.1'
+    implementation 'com.gfycat.android:gfycat-webp-player:0.5.+' // Gfycat WebP player dependency
+    implementation 'com.gfycat.android:gfycat-gif-player:0.5.+'  // Gfycat GIF player dependency
 
 
 }

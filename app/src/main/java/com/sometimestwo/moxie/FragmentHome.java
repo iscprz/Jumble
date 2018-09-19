@@ -126,6 +126,7 @@ public class FragmentHome extends Fragment {
     private FrameLayout mHoverPreviewMediaContainerLarge;
     private TextView mHoverPreviewTitleLarge;
     private ImageView mHoverImagePreviewLarge;
+   // private GfycatPlayer mHoverPreviewGfycatLarge;
 
     // log out button
     private TextView mButtonLogout;
@@ -248,17 +249,20 @@ public class FragmentHome extends Fragment {
         mHoverPreviewContainerLarge = (RelativeLayout) v.findViewById(R.id.hover_view_container_large);
         mHoverPreviewMediaContainerLarge = (FrameLayout) v.findViewById(R.id.hover_view_large_image_container);
         mHoverPreviewTitleLarge = (TextView) v.findViewById(R.id.hover_view_title_large);
-        mHoverImagePreviewLarge = (ImageView) v.findViewById(R.id.hover_imageview_large);
+        mHoverImagePreviewLarge = (ImageView) v.findViewById(R.id.large_previewer_imageview);
 
         /* Exo player */
         //mExoplayerContainerLarge = (FrameLayout) v.findViewById(R.id.container_exoplayer_large);
-        mExoplayerLarge = (PlayerView) v.findViewById(R.id.exoplayer_large);
+        mExoplayerLarge = (PlayerView) v.findViewById(R.id.large_previewer_exoplayer);
 
         bandwidthMeter = new DefaultBandwidthMeter();
         mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(), Util.getUserAgent(getContext(), "Moxie"), (TransferListener<? super DataSource>) bandwidthMeter);
         window = new Timeline.Window();
         //ivHideControllerButton = findViewById(R.id.exo_controller);
         // progressBar = findViewById(R.id.progress_bar);
+
+        /* Gfycat player*/
+       // mHoverPreviewGfycatLarge = (GfycatPlayer) v.findViewById(R.id.large_previewer_gfycat);
 
         return v;
     }
@@ -580,14 +584,6 @@ public class FragmentHome extends Fragment {
         }
     }
 
-    private void saveRecyclerViewState() {
-
-    }
-
-    private void restoreRecyclerViewState() {
-
-    }
-
     private void validatePreferences() throws Exception {
         if (prefs != null) {
             mPrefsAllowNSFW = prefs.getString(Constants.KEY_ALLOW_NSFW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
@@ -616,13 +612,6 @@ public class FragmentHome extends Fragment {
     private void validateCurrUser() throws Exception {
         if (curr_user_prefs != null) {
             mCurrUsername = curr_user_prefs.getString(Constants.KEY_CURR_USERNAME, null);
-
-            /*if(mCurrUsername != null){
-                App.getAccountHelper().switchToUser(mCurrUsername);
-            }
-            else{
-                App.getAccountHelper().switchToUser(Constants.USERNAME_USERLESS);
-            }*/
         } else {
             throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
                     + "Could not find prefs KEY_GET_PREFS_SETTINGS.");
@@ -645,7 +634,6 @@ public class FragmentHome extends Fragment {
 
     public class RecyclerAdapter extends PagedListAdapter<SubmissionObj, RecyclerAdapter.ItemViewHolder> {
         private Context mContext;
-
 
         RecyclerAdapter(Context mContext) {
             super(DIFF_CALLBACK);
@@ -686,9 +674,6 @@ public class FragmentHome extends Fragment {
                 is404 = false;
                 // Imgur
                 if (item.getDomain().contains("imgur")) {
-                    // try setting the submission type here. Imgur links will have .jpg/.gifv
-                    // appended to them if linked directly. Don't worry about indirect links here.
-
                     // Check if submission type is null. This will happen if the item's URL is
                     // to a non-direct image/gif link such as https://imgur.com/qTadRtq
                     if (item.getSubmissionType() == null) {
@@ -721,6 +706,17 @@ public class FragmentHome extends Fragment {
                 }
                 //gfycat
                 else if (item.getDomain().contains("gfycat")) {
+                   /* String testID = "PhysicalAdmirableBeagle";
+                    Subscription subscription = GfyCore.getFeedManager()
+                            .getGfycat(testID)
+                            .cache()
+                            .subscribe();
+                    FeedIdentifier feedIdentifier = PublicFeedIdentifier.fromSingleItem(testID);
+                    Observable<FeedData> feedDataObservable =
+                            GfyCore.getFeedManager().observeGfycats(getContext(), feedIdentifier);
+
+                    Observable<FeedData> first = feedDataObservable.first();*/
+
                     thumbnail = item.getThumbnail();
                 }
                 //youtube
@@ -803,6 +799,12 @@ public class FragmentHome extends Fragment {
                                         .into(mHoverImagePreviewLarge);
                                 // make sure the gif/video player isn't showing
                             } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
+                                /*if(item.getDomain().contains("gfycat")){
+                                    mHoverPreviewGfycatLarge.setShouldLoadPreview(true);
+                                    //mHoverPreviewGfycatLarge.setOnStartAnimationListener
+                                    //mHoverPreviewGfycatLarge.setupGfycat(gfycatObject);
+                                    mHoverPreviewGfycatLarge.play();
+                                }*/
                                 //TODO: Settings option to disable exoplayer controller?
                                 // set up exoplayer to play gif
                                 initializePlayer(item.getUrl());

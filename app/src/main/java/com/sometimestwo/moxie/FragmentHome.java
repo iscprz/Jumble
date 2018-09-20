@@ -106,7 +106,7 @@ public class FragmentHome extends Fragment {
     private ActionBarDrawerToggle mDrawerToggle;
     private int mNumDisplayColumns;
     private String mCurrSubreddit;
-    private String mCurrUsername = null;
+    //private String mCurrUsername = null;
     private boolean isImageViewPressed = false;
     private int mActivePointerId = -1;
     private boolean isViewingSubmission = false;
@@ -117,7 +117,6 @@ public class FragmentHome extends Fragment {
 
     // settings prefs
     SharedPreferences prefs;
-    SharedPreferences curr_user_prefs;
     private boolean mIsLoggedIn = false;
     private boolean mPrefsAllowNSFW = false;
     private boolean mAllowImagePreview = false;
@@ -189,7 +188,6 @@ public class FragmentHome extends Fragment {
         //  mRedditClient = App.getAccountHelper().isAuthenticated() ? App.getAccountHelper().getReddit() : App.getAccountHelper().switchToUserless();
         setHasOptionsMenu(true);
         prefs = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
-        curr_user_prefs = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -205,7 +203,6 @@ public class FragmentHome extends Fragment {
         /* Initialize any preference/settings variables */
         try {
             validatePreferences();
-            validateCurrUser();
         } catch (Exception e) {
             //TODO: What to do when preferences aren't found? Will this ever happen? (prob not)
             e.printStackTrace();
@@ -386,7 +383,6 @@ public class FragmentHome extends Fragment {
         if (requestCode == KEY_LOG_IN) {
             if (resultCode == RESULT_OK) {
                 // User successfully logged in. Update the current user.
-                // Most recently logged in user will always be at the end of the usernames list
                 updateCurrentUser(App.getTokenStore().getUsernames().size() - 1);
 
                 App.getMoxieInfoObj().setCurrSubreddit(null);
@@ -467,11 +463,13 @@ public class FragmentHome extends Fragment {
         /* Log out button */
         mButtonLogout = (TextView) v.findViewById(R.id.navbar_button_logout);
         // hide logout button if we're in Guest mode
-        mButtonLogout.setVisibility(Constants.USERNAME_USERLESS.equalsIgnoreCase(mCurrUsername) ? View.GONE : View.VISIBLE);
+        mButtonLogout.setVisibility(Constants.USERNAME_USERLESS
+                .equalsIgnoreCase(App.getAccountHelper().getReddit().getAuthManager().currentUsername())
+                ? View.GONE : View.VISIBLE);
         mButtonLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                confirmLogout(mCurrUsername);
+                confirmLogout(App.getAccountHelper().getReddit().getAuthManager().currentUsername());
             }
         });
     }
@@ -650,48 +648,13 @@ public class FragmentHome extends Fragment {
 
     private void setupNavViewHeader(View navViewHeader) {
         mNavViewHeaderTitle = (TextView) navViewHeader.findViewById(R.id.navview_header_text_title);
-        mNavViewHeaderTitle.setText(mCurrUsername.equalsIgnoreCase(Constants.USERNAME_USERLESS)
-                ? Constants.USERNAME_USERLESS_PRETTY : mCurrUsername);
-
-
-       /* mNavViewDropDown= navViewHeader.findViewById(R.id.navview_header_expand);
-        mNavViewDropDown.setVisibility(App.getTokenStore().getUsernames().size() > 1 ? View.VISIBLE : View.GONE);
-        mNavViewDropDown.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                PopupMenu popup = new PopupMenu(getContext(), mNavViewDropDown*//*,Gravity.LEFT,R.style.PopupTheme,0*//*);
-                //Inflating the Popup using xml file
-                popup.getMenuInflater()
-                        .inflate(R.menu.menu_navview_header, popup.getMenu());
-
-                // populate with usernames that are currently logged in - up to 3, excluding Guest
-                populateNavUserDropdown(popup);
-
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    public boolean onMenuItemClick(MenuItem item) {
-                        String clickedUsername = item.getTitle().toString();
-
-                        // User will see "Guest" as option but we know it as "<userless>"
-                        if(Constants.USERNAME_USERLESS_PRETTY.equalsIgnoreCase(clickedUsername)){
-                            //clickedUsername = Constants.USERNAME_USERLESS;
-                            App.getAccountHelper().switchToUserless();
-                            switchOrLogoutCleanup(Constants.USERNAME_USERLESS);
-                        }
-                        else{
-                            App.getAccountHelper().switchToUser(clickedUsername);
-                            switchOrLogoutCleanup(clickedUsername);
-                        }
-
-                        mDrawerLayout.closeDrawer(mNavigationView);
-                        return true;
-                    }
-                });
-                popup.show(); //showing popup menu
-
-                // repopulate drop down so that it shows correct user info next time
-                populateNavUserDropdown(popup);
-            }
-        });*/
+        if(Constants.USERNAME_USERLESS
+                .equalsIgnoreCase(App.getAccountHelper().getReddit().getAuthManager().currentUsername())){
+            mNavViewHeaderTitle.setText(Constants.USERNAME_USERLESS_PRETTY);
+        }
+        else{
+            mNavViewHeaderTitle.setText(App.getAccountHelper().getReddit().getAuthManager().currentUsername());
+        }
     }
 
     /*
@@ -755,18 +718,6 @@ public class FragmentHome extends Fragment {
             App.getMoxieInfoObj().setAllowNSFW(mPrefsAllowNSFW);
             //App.getMoxieInfoObj().setSubreddit("pics");
 
-        } else {
-            throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
-                    + "Could not find prefs KEY_GET_PREFS_SETTINGS.");
-        }
-    }
-
-    /* Checking we have the correct user logged in. "Correct user" is
-     *  determined by what we have saved in SharedPrefs.
-     */
-    private void validateCurrUser() throws Exception {
-        if (curr_user_prefs != null) {
-            mCurrUsername = curr_user_prefs.getString(Constants.KEY_CURR_USERNAME, Constants.USERNAME_USERLESS);
         } else {
             throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
                     + "Could not find prefs KEY_GET_PREFS_SETTINGS.");
@@ -1119,18 +1070,8 @@ public class FragmentHome extends Fragment {
         alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
     }
 
-    // Cleans up some details after we've switched accounts or logged out of an account
+    // Clean up any lingering views, media players, prefs, etc
     private void switchOrLogoutCleanup(String newCurrUser) {
-        mCurrUsername = newCurrUser;
-        // update current user
-        curr_user_prefs.edit().putString(Constants.KEY_CURR_USERNAME, newCurrUser).apply();
-
-        // Workaround for JRAW not fully logging users out. We keep track of number of "active users".
-        // An active user is an account that is logged in and has never logged out.
-        // An inactive user is a user that has logged out but remains in JRAW's account helper (dunno why yet)
-        //int numActiveUsers = curr_user_prefs.getInt(Constants.KEY_NUM_ACTIVE_USERS,0);
-        //curr_user_prefs.edit().putInt(Constants.KEY_NUM_ACTIVE_USERS, numActiveUsers-1).apply();
-
         mDrawerLayout.closeDrawer(mNavigationView);
         refresh(true);
     }
@@ -1152,19 +1093,6 @@ public class FragmentHome extends Fragment {
         // This is where we assume the 0th username is USERLESS.....
         String username = App.getTokenStore().getUsernames().get(userIndex);
         App.getAccountHelper().switchToUser(username);
-
-        // update shared prefs
-        SharedPreferences loginDataPrefs
-                = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
-
-        // Workaround for JRAW not fully logging users out. We keep track of number of "active users".
-        // An active user is an account that is logged in and has never logged out.
-        // An inactive user is a user that has logged out but remains in JRAW's account helper (dunno why yet)
-        //int numActiveUsers = loginDataPrefs.getInt(Constants.KEY_NUM_ACTIVE_USERS,0);
-        //loginDataPrefs.edit().putInt(Constants.KEY_NUM_ACTIVE_USERS, numActiveUsers+1).apply();
-
-        loginDataPrefs.edit()
-                .putString(Constants.KEY_CURR_USERNAME, App.getTokenStore().getUsernames().get(userIndex)).apply();
 
     }
 

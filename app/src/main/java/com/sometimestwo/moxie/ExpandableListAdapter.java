@@ -128,8 +128,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     }
 
     private Drawable getMenuIcon(View convertView, String headerTitle) {
-        SharedPreferences login_prefs = convertView.getContext().getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
-        String currLoggedInUser = login_prefs.getString(Constants.KEY_CURR_USERNAME, Constants.USERNAME_USERLESS);
+        String currLoggedInUser = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
 
         if (convertView.getResources().getString(R.string.menu_accounts).equalsIgnoreCase(headerTitle)) {
             return convertView.getResources().getDrawable(R.drawable.ic_white_accounts);
@@ -172,8 +171,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     }*/
 
     private int getMenuItemTextColor(View convertView, String headerTitle) {
-        SharedPreferences login_prefs = convertView.getContext().getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
-        String currLoggedInUser = login_prefs.getString(Constants.KEY_CURR_USERNAME, Constants.USERNAME_USERLESS);
+        String currLoggedInUser = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
 
         // swap username ugly to pretty for sake of comparing sharedpref details and menu item
         if(Constants.USERNAME_USERLESS.equalsIgnoreCase(currLoggedInUser)){

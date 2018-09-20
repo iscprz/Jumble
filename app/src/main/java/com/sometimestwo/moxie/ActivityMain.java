@@ -81,28 +81,23 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
 
         @Override
         protected Boolean doInBackground(Void... voids) {
-            // Make sure the most recently logged in user is set as current user.
-            // Go Userless if no log in has been made.
-            SharedPreferences username_prefs
-                    = getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
-            String currUsername = username_prefs.getString(Constants.KEY_CURR_USERNAME, Constants.USERNAME_USERLESS);
 
-            if (Constants.USERNAME_USERLESS.equalsIgnoreCase(currUsername)) {
+           /*   if(App.getAccountHelper().isAuthenticated()){
+              String currUsername = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
+                //App.getAccountHelper().switchToUser(currUsername);
+            }
+            else if(!App.getAccountHelper().isAuthenticated()
+                    || Constants.USERNAME_USERLESS.equalsIgnoreCase(App.getAccountHelper().getReddit().getAuthManager().currentUsername())) {
                 App.getAccountHelper().switchToUserless();
-            } else {
+
+            }*/
                 // TODO CRASH HERE ON TAB BACK IN:
                 // Caused by: java.lang.IllegalStateException: No unexpired OAuthData or refresh token available for user '<userless>'
-                App.getAccountHelper().switchToUser(currUsername);
-
                 // check authentication stuff and redo if necessary
                 // https://mattbdean.gitbooks.io/jraw/content/v/v1.1.0/oauth2.html
 
-                //App.getAccountHelper().isAuthenticated()
-                 /*AuthManager authManager = redditClient.getAuthManager();
-                if (authManager.canRenew()) {
-                    authManager.renew();
-                }*/
-            }
+
+                App.getAccountHelper().switchToUserless();
             return true;
         }
 

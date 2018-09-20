@@ -44,16 +44,10 @@ public class Constants {
 
     /*SharedPrefs */
     public final static String KEY_GET_PREFS_SETTINGS = "KEY_GET_PREFS_SETTINGS";
-    public final static String KEY_GET_PREFS_LOGIN_DATA = "KEY_GET_PREFS_LOGIN_DATA";
     public final static String KEY_ALLOW_NSFW = "KEY_ALLOW_NSFW";
     public final static String KEY_ALLOW_HOVER_PREVIEW = "KEY_ALLOW_HOVER_PREVIEW";
     public final static String KEY_PREVIEW_SIZE = "KEY_PREVIEW_SIZE";
     public final static String KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK = "KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK";
-    public final static String KEY_CURR_USERNAME = "KEY_CURR_USERNAME";
-    // Workaround for JRAW not fully logging users out. We keep track of number of "active users".
-    // An active user is an account that is logged in and has never logged out.
-    // An inactive user is a user that has logged out but remains in JRAW's account helper (dunno why yet)
-   // public final static String KEY_NUM_ACTIVE_USERS = "KEY_NUM_ACTIVE_USERS";
 
     public final static String SETTINGS_NO = "SETTINGS_NO";
     public final static String SETTINGS_YES = "SETTINGS_YES";

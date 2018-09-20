@@ -30,7 +30,7 @@
             android:gravity="end"
             android:paddingRight="20dp"
             android:text="@string/log_out"
-            android:textColor="@color/colorWhite"
+            android:textColor="@color/colorLightBlue"
             android:textSize="20sp" />
     </FrameLayout>
 </android.support.design.widget.NavigationView>

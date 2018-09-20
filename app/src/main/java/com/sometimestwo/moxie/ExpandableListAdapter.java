@@ -180,7 +180,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
             currLoggedInUser = Constants.USERNAME_USERLESS_PRETTY;
         }
         if (currLoggedInUser.equalsIgnoreCase(headerTitle)) {
-            return convertView.getResources().getColor(R.color.colorUserIcon);
+            return convertView.getResources().getColor(R.color.colorLightBlue);
         }
         else{
             return convertView.getResources().getColor(R.color.colorWhite);

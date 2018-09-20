@@ -9,6 +9,8 @@
     <string name="drawer_close">Close navigation drawer</string>
     <string name="subreddit_prefix">/r/</string>
     <string name="log_out">Log out</string>
+    <string name="remove">Remove</string>
+
     <!-- Toasts-->
     <string name="toast_settings_saved">Settings saved</string>
     <string name="toast_settings_logout_success">Successfully logged out</string>

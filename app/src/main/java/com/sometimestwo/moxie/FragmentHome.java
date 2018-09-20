@@ -40,6 +40,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
@@ -454,7 +455,7 @@ public class FragmentHome extends Fragment {
         prepareMenuData();
         populateExpandableList();
         // Expand usernames
-        //expandableListView.expandGroup(0);
+        expandableListView.expandGroup(0);
 
         /* Navigation view menu */
         Menu navViewMenu = mNavigationView.getMenu();
@@ -464,43 +465,15 @@ public class FragmentHome extends Fragment {
         setupNavViewHeader(navViewHeader);
 
         /* Log out button */
-       /* mButtonLogout = (TextView) v.findViewById(R.id.navbar_button_logout);
+        mButtonLogout = (TextView) v.findViewById(R.id.navbar_button_logout);
         // hide logout button if we're in Guest mode
-        mButtonLogout.setVisibility(Constants.USERNAME_USERLESS.equalsIgnoreCase(mCurrUsername)? View.GONE : View.VISIBLE);
+        mButtonLogout.setVisibility(Constants.USERNAME_USERLESS.equalsIgnoreCase(mCurrUsername) ? View.GONE : View.VISIBLE);
         mButtonLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.TransparentDialog);
-                builder.setTitle("Confirm log out");
-                builder.setMessage("Really log out?");
-                builder.setIcon(R.drawable.ic_white_log_out);
-                builder.setPositiveButton(R.string.log_out, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        // log out, switch to userless, and clean up
-                        App.getAccountHelper().logout();
-                        App.getAccountHelper().switchToUserless();
-                        switchOrLogoutCleanup(Constants.USERNAME_USERLESS);
-                    }
-                });
-                builder.setNegativeButton(android.R.string.no, null);
-                AlertDialog alertDialog = builder.create();
-
-                // button color setup
-                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-                    @Override
-                    public void onShow(DialogInterface dialogInterface) {
-                        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                                .setTextColor(getResources().getColor(R.color.colorWhite));
-                        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-                                .setTextColor(getResources().getColor(R.color.colorWhite));
-                    }
-                });
-
-                // resize the alert dialog
-                alertDialog.show();
-                alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
+                confirmLogout(mCurrUsername);
             }
-        });*/
+        });
     }
 
 
@@ -653,6 +626,26 @@ public class FragmentHome extends Fragment {
                 return false;
             }
         });
+        expandableListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long id) {
+                if (ExpandableListView.getPackedPositionType(id) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+                    int groupPosition = ExpandableListView.getPackedPositionGroup(id);
+                    int childPosition = ExpandableListView.getPackedPositionChild(id);
+
+                    ExpandableMenuModel model = childList.get(headerList.get(groupPosition)).get(childPosition);
+                    String longClickedItem = model.menuName;
+
+                    // only care about handling long clicks for user names
+                    if (App.getTokenStore().getUsernames().contains(longClickedItem)) {
+                        confirmLogout(longClickedItem);
+                    }
+
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     private void setupNavViewHeader(View navViewHeader) {
@@ -700,62 +693,6 @@ public class FragmentHome extends Fragment {
             }
         });*/
     }
-
-    /* Handles left navigation menu item selections*/
-/*    private void handleNavItemSelection(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case R.id.menu_add_account:
-                Intent loginIntent = new Intent(getContext(), ActivityNewUserLogin.class);
-                //unlockSessionIntent.putExtra("REQUEST_UNLOCK_SESSION", true);
-                startActivityForResult(loginIntent, KEY_LOG_IN);
-                return;
-            case R.id.nav_menu_goto_subreddit:
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.TransparentDialog);
-                builder.setTitle("Enter subreddit:");
-
-                EditText input = new EditText(getContext());
-                input.setInputType(InputType.TYPE_CLASS_TEXT);
-                input.setTextColor(getResources().getColor(R.color.colorWhite));
-                builder.setView(input);
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String requestedSubreddit = input.getText().toString();
-                        App.getMoxieInfoObj().setCurrSubreddit(requestedSubreddit);
-
-                        Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
-                        visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, requestedSubreddit);
-                        startActivity(visitSubredditIntent);
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-                AlertDialog alertDialog = builder.create();
-
-                // button color setup
-                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-                    @Override
-                    public void onShow(DialogInterface dialogInterface) {
-                        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                                .setTextColor(getResources().getColor(R.color.colorWhite));
-                        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-                                .setTextColor(getResources().getColor(R.color.colorWhite));
-                    }
-                });
-                alertDialog.show();
-                alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
-                return;
-            case R.id.nav_settings:
-                mHomeEventListener.openSettings();
-                return;
-            default:
-                Log.e(TAG, "Nav item selection not found! Entered default case!");
-        }
-    }*/
 
     /*
         Hover preview set up. Hides any views that aren't needed and unhides the ones we need.
@@ -1148,6 +1085,40 @@ public class FragmentHome extends Fragment {
         submissionsViewModel.invalidate();
     }
 
+    // Prompts user to confirm log out and proceeds to remove account
+    private void confirmLogout(String username) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.TransparentDialog);
+        builder.setTitle("Confirm log out");
+        builder.setMessage("Remove user " + username + "?");
+        builder.setIcon(R.drawable.ic_white_log_out);
+        builder.setPositiveButton(R.string.remove, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // log out, switch to userless, and clean up
+                //App.getAccountHelper().logout();
+                App.getTokenStore().deleteLatest(username);
+                App.getTokenStore().deleteRefreshToken(username);
+                new FetchUserlessAccountTask().execute();
+            }
+        });
+        builder.setNegativeButton(android.R.string.no, null);
+        AlertDialog alertDialog = builder.create();
+
+        // button color setup
+        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                        .setTextColor(getResources().getColor(R.color.colorWhite));
+                alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                        .setTextColor(getResources().getColor(R.color.colorWhite));
+            }
+        });
+
+        // resize the alert dialog
+        alertDialog.show();
+        alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
+    }
+
     // Cleans up some details after we've switched accounts or logged out of an account
     private void switchOrLogoutCleanup(String newCurrUser) {
         mCurrUsername = newCurrUser;
@@ -1289,7 +1260,7 @@ public class FragmentHome extends Fragment {
 
     /*************************Async network tasks *******************************************/
 
-        //* Set's our reddit client to userless and refreshes Home on completion*//*
+    //* Set's our reddit client to userless and refreshes Home on completion*//*
     private class FetchUserlessAccountTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {

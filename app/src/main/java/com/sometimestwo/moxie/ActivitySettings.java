@@ -6,14 +6,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sometimestwo.moxie.Utils.Constants;
@@ -62,14 +60,14 @@ public class ActivitySettings extends Activity {
 
         // NSFW
         mCheckboxAllowNSFW = (CheckBox) findViewById(R.id.settings_allow_nsfw_checkbox);
-        boolean allowNSFW = prefs_settings.getBoolean(Constants.KEY_ALLOW_NSFW, false);
+        boolean allowNSFW = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
         mCheckboxAllowNSFW.setChecked(allowNSFW);
         mCheckboxAllowNSFW.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //boolean newValue = mCheckboxAllowNSFW.isChecked();
                 //mCheckboxAllowNSFW.setChecked(!oldValue);
-                prefs_settings_editor.putBoolean(Constants.KEY_ALLOW_NSFW, b);
+                prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_NSFW, b);
                 mModified = true;
                 mNeedsRefresh = true;
             }
@@ -86,13 +84,13 @@ public class ActivitySettings extends Activity {
 
         /* Close big display on click*/
         mCheckboxAllowBigDisplayCloseClick = (CheckBox) findViewById(R.id.settings_bigdisplay_closeclick_checkbox);
-        boolean closeOnClick = prefs_settings.getBoolean(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        boolean closeOnClick = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
         mCheckboxAllowBigDisplayCloseClick.setChecked(closeOnClick);
         mCheckboxAllowBigDisplayCloseClick.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //boolean newValue = mCheckboxAllowBigDisplayCloseClick.isChecked();
-                prefs_settings_editor.putBoolean(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, b);
+                prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, b);
                 mModified = true;
             }
         });
@@ -108,13 +106,13 @@ public class ActivitySettings extends Activity {
 
         /* Previewing */
         mCheckboxPreviewImage = (CheckBox) findViewById(R.id.settings_allow_previewer_checkbox);
-        boolean allowPreviewImage = prefs_settings.getBoolean(Constants.KEY_ALLOW_HOVER_PREVIEW, false);
+        boolean allowPreviewImage = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, false);
         mCheckboxPreviewImage.setChecked(allowPreviewImage);
         mCheckboxPreviewImage.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //boolean newValue = mCheckboxPreviewImage.isChecked();
-                prefs_settings_editor.putBoolean(Constants.KEY_ALLOW_HOVER_PREVIEW, b);
+                prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, b);
                 mModified = true;
             }
         });
@@ -130,8 +128,8 @@ public class ActivitySettings extends Activity {
 
         /* Preview size radio buttons */
         mRadioGroupPreviewSize = (RadioGroup) findViewById(R.id.radio_group_preview_size);
-        String previewSizeSelection = prefs_settings.getString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
-        // check prefs for what user has selected for preview size and initialize radio buttons accordingly
+        String previewSizeSelection = prefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
+        // check sharedprefs_settings for what user has selected for preview size and initialize radio buttons accordingly
         mRadioGroupPreviewSize.check(previewSizeSelection.equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                 ? R.id.radio_preview_size_option_small : R.id.radio_preview_size_option_large);
 
@@ -139,13 +137,13 @@ public class ActivitySettings extends Activity {
 
         /* Display media icons */
         mCheckboxMediaIcon = (CheckBox) findViewById(R.id.settings_media_icon_checkbox);
-        boolean allowMediaIcons = prefs_settings.getBoolean(Constants.KEY_SETTINGS_ALLOW_MEDIA_ICON, true);
+        boolean allowMediaIcons = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_MEDIA_ICON, true);
         mCheckboxMediaIcon.setChecked(allowMediaIcons);
         mCheckboxMediaIcon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //boolean newValue = mCheckboxPreviewImage.isChecked();
-                prefs_settings_editor.putBoolean(Constants.KEY_SETTINGS_ALLOW_MEDIA_ICON, b);
+                prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_MEDIA_ICON, b);
                 mModified = true;
             }
         });
@@ -200,13 +198,13 @@ public class ActivitySettings extends Activity {
         switch (view.getId()) {
             case R.id.radio_preview_size_option_large:
                 if (checked) {
-                    prefs_settings_editor.putString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE);
+                    prefs_settings_editor.putString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE);
                     mModified = true;
                 }
                 break;
             case R.id.radio_preview_size_option_small:
                 if (checked) {
-                    prefs_settings_editor.putString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
+                    prefs_settings_editor.putString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
                     mModified = true;
                 }
                 break;

@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
@@ -51,8 +50,8 @@ public class FragmentBigDisplay extends Fragment {
         // Read relevant permission settings
         SharedPreferences prefs = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
 
-        mPrefsAllowNSFW = prefs.getBoolean(Constants.KEY_ALLOW_NSFW, false);
-        mAllowCloseOnClick = prefs.getBoolean(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        mPrefsAllowNSFW = prefs.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
+        mAllowCloseOnClick = prefs.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
     }
 
     @Nullable

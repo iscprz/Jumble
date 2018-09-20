@@ -36,26 +36,19 @@ public class Constants {
     public static final int QUERY_PAGE_SIZE = 50;
     //public static final int QUERY_LOAD_LIMIT = 50;
 
-    /* API */
-    public final static String API_GRANT_TYPE = "https://oauth.reddit.com/grants/installed_client";
-    public final static String API_CONTENT_TYPE = "application/x-www-form-urlencoded";
-    public final static String[] API_SCOPES = {"read", "identity","vote"};
-    public final static String TEST_CLIENT_ID = "x0CvI7eA_5Qchg";
 
     /*SharedPrefs */
     public final static String KEY_GET_PREFS_SETTINGS = "KEY_GET_PREFS_SETTINGS";
-    public final static String KEY_ALLOW_NSFW = "KEY_ALLOW_NSFW";
-    public final static String KEY_ALLOW_HOVER_PREVIEW = "KEY_ALLOW_HOVER_PREVIEW";
-    public final static String KEY_PREVIEW_SIZE = "KEY_PREVIEW_SIZE";
-    public final static String KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK = "KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK";
-    public final static String KEY_SETTINGS_ALLOW_MEDIA_ICON = "KEY_SETTINGS_ALLOW_MEDIA_ICON";
-
-    public final static String SETTINGS_NO = "SETTINGS_NO";
-    public final static String SETTINGS_YES = "SETTINGS_YES";
+    public final static String SETTINGS_ALLOW_NSFW = "SETTINGS_ALLOW_NSFW";
+    public final static String SETTINGS_ALLOW_HOVER_PREVIEW = "SETTINGS_ALLOW_HOVER_PREVIEW";
+    public final static String SETTINGS_PREVIEW_SIZE = "SETTINGS_PREVIEW_SIZE";
+    public final static String SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK = "SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK";
+    public final static String SETTINGS_ALLOW_MEDIA_ICON = "SETTINGS_ALLOW_MEDIA_ICON";
     public final static String SETTINGS_PREVIEW_SIZE_SMALL = "SETTINGS_PREVIEW_SIZE_SMALL";
     public final static String SETTINGS_PREVIEW_SIZE_LARGE = "SETTINGS_PREVIEW_SIZE_LARGE";
+    public final static String MOST_RECENT_USER = "MOST_RECENT_USER";
 
-    /* Exception tags*/
+
 
     /* Misc*/
     public final static String[] VALID_MEDIA_EXTENSION = {"jpg", "jpeg", "png","gifv" , "gif"};

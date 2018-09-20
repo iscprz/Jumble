@@ -114,8 +114,8 @@ public class FragmentHome extends Fragment {
     private boolean mInvalidateDataSource = false;
     private boolean is404 = false;
 
-    // settings prefs
-    SharedPreferences prefs;
+    // settings sharedprefs_settings
+    SharedPreferences sharedprefs_settings;
     private boolean mIsLoggedIn = false;
     private boolean mAllowNSFW = false;
     private boolean mAllowImagePreview = false;
@@ -186,7 +186,7 @@ public class FragmentHome extends Fragment {
         GlideApp = Glide.with(this);
         //  mRedditClient = App.getAccountHelper().isAuthenticated() ? App.getAccountHelper().getReddit() : App.getAccountHelper().switchToUserless();
         setHasOptionsMenu(true);
-        prefs = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        sharedprefs_settings = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -704,15 +704,15 @@ public class FragmentHome extends Fragment {
     }
 
     private void validatePreferences() throws Exception {
-        if (prefs != null) {
+        if (sharedprefs_settings != null) {
 
-            mAllowNSFW = prefs.getBoolean(Constants.KEY_ALLOW_NSFW, false);
-            mAllowImagePreview = prefs.getBoolean(Constants.KEY_ALLOW_HOVER_PREVIEW, true);
-            mAllowBigDisplayClickClose = prefs.getBoolean(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
-            mPreviewSize = prefs.getString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
+            mAllowNSFW = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
+            mAllowImagePreview = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true);
+            mAllowBigDisplayClickClose = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+            mPreviewSize = sharedprefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                     .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                     ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
-            mNumDisplayColumns = 3;//prefs.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
+            mNumDisplayColumns = 3;//sharedprefs_settings.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
 
 
             App.getMoxieInfoObj().setAllowNSFW(mAllowNSFW);
@@ -720,7 +720,7 @@ public class FragmentHome extends Fragment {
 
         } else {
             throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
-                    + "Could not find prefs KEY_GET_PREFS_SETTINGS.");
+                    + "Could not find sharedprefs_settings KEY_GET_PREFS_SETTINGS.");
         }
     }
 
@@ -1070,9 +1070,11 @@ public class FragmentHome extends Fragment {
         alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
     }
 
-    // Clean up any lingering views, media players, prefs, etc
+    // Clean up any lingering views, media players, sharedprefs_settings, etc
     private void switchOrLogoutCleanup(String newCurrUser) {
         mDrawerLayout.closeDrawer(mNavigationView);
+        // Update most recent user to new user
+        sharedprefs_settings.edit().putString(Constants.MOST_RECENT_USER, newCurrUser).apply();
         refresh(true);
     }
 
@@ -1094,6 +1096,8 @@ public class FragmentHome extends Fragment {
         String username = App.getTokenStore().getUsernames().get(userIndex);
         App.getAccountHelper().switchToUser(username);
 
+        // update the most recent logged in user in sharedprefs
+        sharedprefs_settings.edit().putString(Constants.MOST_RECENT_USER, username).commit();
     }
 
     /*

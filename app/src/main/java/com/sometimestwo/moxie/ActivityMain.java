@@ -40,42 +40,47 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
 
     private final String TAG = this.getClass().getSimpleName();
 
+    private SharedPreferences prefs_settings;
+    private SharedPreferences.Editor prefs_settings_editor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.drawer_layout);
         setContentView(R.layout.activity_main);
 
-        /***************** Set default settings/preferences if never initialized ******************/
-        SharedPreferences prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
-        SharedPreferences.Editor prefs_settings_editor =
+        /* Set default settings/preferences if never initialized.
+         *
+         * This is more of a precautionary mesaure to ensure we don't find null preferences later.
+         */
+        prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        prefs_settings_editor =
                  this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE)
                 .edit();
 
         // Hover previewer size - defaults to small
-        if(prefs_settings.getString(Constants.KEY_PREVIEW_SIZE,null) == null) {
-            prefs_settings_editor.putString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE);
+        if(prefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE,null) == null) {
+            prefs_settings_editor.putString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE);
         }
 
         // Allow media icons - defaults to true
-        if(prefs_settings.getBoolean(Constants.KEY_SETTINGS_ALLOW_MEDIA_ICON, true) == true){
-            prefs_settings_editor.putBoolean(Constants.KEY_SETTINGS_ALLOW_MEDIA_ICON, true);
+        if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_MEDIA_ICON, true) == true){
+            prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_MEDIA_ICON, true);
         }
 
         // Allow NSFW
-        if(prefs_settings.getBoolean(Constants.KEY_ALLOW_NSFW, false) == false){
-            prefs_settings_editor.putBoolean(Constants.KEY_ALLOW_NSFW, false);
+        if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false) == false){
+            prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
         }
 
         // Allow hover previewer - default to yes
-        if(prefs_settings.getBoolean(Constants.KEY_ALLOW_HOVER_PREVIEW, true) == true){
-            prefs_settings_editor.putBoolean(Constants.KEY_ALLOW_HOVER_PREVIEW, true);
+        if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true) == true){
+            prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true);
         }
 
-
         // Allow tap-to-close big display
-        if(prefs_settings.getBoolean(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, false) == false){
-            prefs_settings_editor.putBoolean(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false) == false){
+            prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
         }
 
         prefs_settings_editor.commit();
@@ -116,6 +121,21 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
 
         @Override
         protected Boolean doInBackground(Void... voids) {
+            // Load most recently logged in user
+            String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
+
+            if(!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)){
+                App.getAccountHelper().switchToUser(mostRecentUser);
+               /* if(!App.getAccountHelper().isAuthenticated()){
+
+                    Log.e("STARTUP_ERROR", "User " + mostRecentUser + " was not authenticated.");
+                }
+                else{
+                }*/
+            }
+            else{
+                App.getAccountHelper().switchToUserless();
+            }
 
            /*   if(App.getAccountHelper().isAuthenticated()){
               String currUsername = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
@@ -132,7 +152,6 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
                 // https://mattbdean.gitbooks.io/jraw/content/v/v1.1.0/oauth2.html
 
 
-                App.getAccountHelper().switchToUserless();
             return true;
         }
 

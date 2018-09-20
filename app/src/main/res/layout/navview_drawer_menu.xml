@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/navview_header_height"
-        android:dividerHeight="0dp"
+        android:dividerHeight="@null"
         android:groupIndicator="@null" />
 
     <FrameLayout

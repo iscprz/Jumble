@@ -22,7 +22,7 @@
         android:layout_marginTop="15dp"
         android:text="@string/error_404_retry"
         android:textSize="20sp"
-        android:textColor="@color/colorLinkBlue"
+        android:textColor="@color/colorSoftBlue"
         android:gravity="center"/>
 
 

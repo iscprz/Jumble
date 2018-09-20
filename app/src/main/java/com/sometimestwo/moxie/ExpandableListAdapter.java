@@ -1,9 +1,11 @@
 package com.sometimestwo.moxie;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
+import android.text.SpannableString;
+import android.text.style.UnderlineSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.sometimestwo.moxie.Model.ExpandableMenuModel;
+import com.sometimestwo.moxie.Utils.Constants;
 
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +46,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     public View getChildView(int groupPosition, final int childPosition,
                              boolean isLastChild, View convertView, ViewGroup parent) {
 
-        final String childText = getChild(groupPosition, childPosition).menuName;
+        final String menuItem = getChild(groupPosition, childPosition).menuName;
 
         if (convertView == null) {
             LayoutInflater infalInflater = (LayoutInflater) this.context
@@ -51,9 +54,22 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
             convertView = infalInflater.inflate(R.layout.list_group_child, null);
         }
 
-        TextView txtListChild = convertView.findViewById(R.id.lblListItem);
+        // for changing the item's background color
+        /*LinearLayout itemContainer = convertView.findViewById(R.id.expand_list_item_container);
+        if(getMenuContainerColor(convertView, menuItem) != -1){
+            itemContainer.setBackgroundColor(getMenuContainerColor(convertView, menuItem));
+        }*/
 
-        txtListChild.setText(childText);
+        TextView txtListChild = convertView.findViewById(R.id.expand_list_item);
+        txtListChild.setText(menuItem);
+        txtListChild.setTextColor(getMenuItemTextColor(convertView,menuItem));
+        if((convertView.getResources().getString(R.string.menu_add_account).equalsIgnoreCase(menuItem))){
+            SpannableString content = new SpannableString(menuItem);
+            content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
+            txtListChild.setText(content);
+        }
+        ImageView childLeftIconImageView = convertView.findViewById(R.id.list_child_icon_left);
+        childLeftIconImageView.setBackground(getMenuIcon(convertView, menuItem));
         return convertView;
     }
 
@@ -92,12 +108,12 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = infalInflater.inflate(R.layout.list_group_header, null);
         }
-        TextView lblListHeader = convertView.findViewById(R.id.lblListHeader);
+        TextView lblListHeader = convertView.findViewById(R.id.expand_list_header);
         lblListHeader.setTypeface(null, Typeface.BOLD);
         lblListHeader.setText(headerTitle);
 
         ImageView lblListHeaderIcon = convertView.findViewById(R.id.list_group_icon);
-        lblListHeaderIcon.setBackground(getMenuHeaderIcon(convertView,headerTitle));
+        lblListHeaderIcon.setBackground(getMenuIcon(convertView, headerTitle));
         return convertView;
     }
 
@@ -111,18 +127,64 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         return true;
     }
 
-    private Drawable getMenuHeaderIcon(View convertView, String headerTitle){
-        if(convertView.getResources().getString(R.string.menu_accounts).equalsIgnoreCase(headerTitle)){
-            return convertView.getResources().getDrawable(R.drawable.ic_white_person_no_bg);
-        }
-        else if(convertView.getResources().getString(R.string.menu_goto_subreddit).equalsIgnoreCase(headerTitle)) {
+    private Drawable getMenuIcon(View convertView, String headerTitle) {
+        SharedPreferences login_prefs = convertView.getContext().getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
+        String currLoggedInUser = login_prefs.getString(Constants.KEY_CURR_USERNAME, Constants.USERNAME_USERLESS);
+
+        if (convertView.getResources().getString(R.string.menu_accounts).equalsIgnoreCase(headerTitle)) {
+            return convertView.getResources().getDrawable(R.drawable.ic_white_accounts);
+        } else if (convertView.getResources().getString(R.string.menu_goto_subreddit).equalsIgnoreCase(headerTitle)) {
             return convertView.getResources().getDrawable(R.drawable.ic_send_it);
-        }
-        else if(convertView.getResources().getString(R.string.menu_settings).equalsIgnoreCase(headerTitle)) {
+        } else if (convertView.getResources().getString(R.string.menu_settings).equalsIgnoreCase(headerTitle)) {
             return convertView.getResources().getDrawable(R.drawable.ic_white_settings);
-        }
-        else{
+        } else if (convertView.getResources().getString(R.string.menu_add_account).equalsIgnoreCase(headerTitle)) {
+            return convertView.getResources().getDrawable(R.drawable.ic_white_add_account);
+        } else if ((Constants.USERNAME_USERLESS_PRETTY).equalsIgnoreCase(headerTitle)) {
+            if((Constants.USERNAME_USERLESS).equalsIgnoreCase(currLoggedInUser)){
+                return convertView.getResources().getDrawable(R.drawable.ic_blue_person_filled);
+            }
+            return convertView.getResources().getDrawable(R.drawable.ic_white_person_unfilled);
+        } else if (App.getTokenStore().getUsernames().contains(headerTitle)) {
+            if(headerTitle.equalsIgnoreCase(currLoggedInUser)){
+                return convertView.getResources().getDrawable(R.drawable.ic_blue_person_filled);
+            }
+            return convertView.getResources().getDrawable(R.drawable.ic_white_person_filled);
+        } else {
             return null;
         }
     }
+
+ /*   private int getMenuContainerColor(View convertView, String headerTitle) {
+        SharedPreferences login_prefs = convertView.getContext().getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
+        String currLoggedInUser = login_prefs.getString(Constants.KEY_CURR_USERNAME, Constants.USERNAME_USERLESS);
+
+        // swap username ugly to pretty for sake of comparing sharedpref details and menu item
+        if(Constants.USERNAME_USERLESS.equalsIgnoreCase(currLoggedInUser)){
+            currLoggedInUser = Constants.USERNAME_USERLESS_PRETTY;
+        }
+        if (currLoggedInUser.equalsIgnoreCase(headerTitle)) {
+            Log.e("TINT_USER","headerTitle = " + headerTitle + ". currLoggedInUser = " + currLoggedInUser);
+            return convertView.getResources().getColor(R.color.colorBlueTrans);
+        }
+        else{
+            return convertView.getResources().getColor(R.color.transparent);
+        }
+    }*/
+
+    private int getMenuItemTextColor(View convertView, String headerTitle) {
+        SharedPreferences login_prefs = convertView.getContext().getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
+        String currLoggedInUser = login_prefs.getString(Constants.KEY_CURR_USERNAME, Constants.USERNAME_USERLESS);
+
+        // swap username ugly to pretty for sake of comparing sharedpref details and menu item
+        if(Constants.USERNAME_USERLESS.equalsIgnoreCase(currLoggedInUser)){
+            currLoggedInUser = Constants.USERNAME_USERLESS_PRETTY;
+        }
+        if (currLoggedInUser.equalsIgnoreCase(headerTitle)) {
+            return convertView.getResources().getColor(R.color.colorUserIcon);
+        }
+        else{
+            return convertView.getResources().getColor(R.color.colorWhite);
+        }
+    }
+
 }

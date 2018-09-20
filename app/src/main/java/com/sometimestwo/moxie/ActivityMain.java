@@ -33,6 +33,8 @@ import java.lang.ref.WeakReference;
             - can open drawer layout while large hover previewing
             - exo player not reloading when tabbing back into app
 
+            names:
+            Unfold
  */
 public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.ActivityHomeEventListener*/ {
 

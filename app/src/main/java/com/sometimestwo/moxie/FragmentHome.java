@@ -445,29 +445,16 @@ public class FragmentHome extends Fragment {
                 //supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
-
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         mNavigationView = (NavigationView) v.findViewById(R.id.nav_view);
-        mNavigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        // set item as selected to persist highlight
-                        //menuItem.setChecked(true);
-                        handleNavItemSelection(menuItem);
-                        mDrawerLayout.closeDrawers();
-                        return true;
-                    }
-                });
-
 
         /* expandable nav */
         expandableListView = v.findViewById(R.id.expandableListView);
         prepareMenuData();
         populateExpandableList();
         // Expand usernames
-        expandableListView.expandGroup(0);
+        //expandableListView.expandGroup(0);
 
         /* Navigation view menu */
         Menu navViewMenu = mNavigationView.getMenu();
@@ -657,7 +644,7 @@ public class FragmentHome extends Fragment {
                         }
                     }
                     // clicked "Add account" to add a new acc
-                    else if (getResources().getString(R.string.add_account).equalsIgnoreCase(clickedMenuItemName)) {
+                    else if (getResources().getString(R.string.menu_add_account).equalsIgnoreCase(clickedMenuItemName)) {
                         Intent loginIntent = new Intent(getContext(), ActivityNewUserLogin.class);
                         //unlockSessionIntent.putExtra("REQUEST_UNLOCK_SESSION", true);
                         startActivityForResult(loginIntent, KEY_LOG_IN);
@@ -715,9 +702,9 @@ public class FragmentHome extends Fragment {
     }
 
     /* Handles left navigation menu item selections*/
-    private void handleNavItemSelection(MenuItem menuItem) {
+/*    private void handleNavItemSelection(MenuItem menuItem) {
         switch (menuItem.getItemId()) {
-            case R.id.nav_add_account:
+            case R.id.menu_add_account:
                 Intent loginIntent = new Intent(getContext(), ActivityNewUserLogin.class);
                 //unlockSessionIntent.putExtra("REQUEST_UNLOCK_SESSION", true);
                 startActivityForResult(loginIntent, KEY_LOG_IN);
@@ -768,7 +755,7 @@ public class FragmentHome extends Fragment {
             default:
                 Log.e(TAG, "Nav item selection not found! Entered default case!");
         }
-    }
+    }*/
 
     /*
         Hover preview set up. Hides any views that aren't needed and unhides the ones we need.

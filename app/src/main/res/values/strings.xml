@@ -2,10 +2,9 @@
     <string name="app_name">Moxie</string>
     <string name="menu_accounts">Accounts</string>
     <string name="menu_log_in">Log in</string>
-    <string name="menu_add_account">Add account</string>
     <string name="menu_goto_subreddit">Go to subreddit...</string>
     <string name="menu_settings">Settings</string>
-    <string name="add_account">Add account</string>
+    <string name="menu_add_account"><u>Add account</u></string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="subreddit_prefix">/r/</string>

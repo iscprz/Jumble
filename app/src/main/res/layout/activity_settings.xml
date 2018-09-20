@@ -3,14 +3,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorDarkGray"
+    android:background="@color/colorBgBlackTintDarkest"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/settings_back"
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"
-        android:background="@drawable/ic_white_back_medium" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_height">
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight=".1">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/settings_button_back"
+                android:layout_gravity="center"
+                android:background="@drawable/ic_white_back_arrow"
+                android:clickable="true"/>
+        </FrameLayout>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight=".9"/>
+    </LinearLayout>
 
     <!-- Section Title: NSFW -->
     <TextView
@@ -21,32 +39,65 @@
         android:text="Allow NSFW"
         android:textColor="@color/colorWhite" />
 
-    <!-- NSFW -->
-    <RelativeLayout
+    <!--......... Settings Block: Allow NSFW ..............-->
+    <LinearLayout
+        android:id="@+id/settings_block_allow_nsfw"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginLeft="15dp">
+        android:layout_height="@dimen/settings_block_max_height"
+        android:clickable="true">
 
-        <TextView
-            android:id="@+id/settings_textview_nsfw"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@+id/settings_allow_nsfw_container"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginTop="10dp"
-            android:text="Allow NSFW posts"
-            android:textColor="@color/colorWhite"
-            android:textSize="16sp" />
+            android:layout_weight=".9">
 
-        <CheckBox
-            android:id="@+id/settings_checkbox_nsfw"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            android:buttonTint="@color/colorWhite"
-            android:gravity="center|end" />
-    </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-    <!-- Section Title: Click actions -->
+                <TextView
+                    android:id="@+id/settings_title_allow_nsfw"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:paddingLeft="@dimen/settings_padding_left"
+                    android:text="Display NSFW submissions"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="16sp" />
+
+                <!-- Subtitle-->
+                <TextView
+                    android:id="@+id/settings_allow_nsfw_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/settings_title_allow_nsfw"
+                    android:paddingLeft="@dimen/settings_padding_left"
+                    android:text="Allow Not Safe For Work (NSFW) content to be displayed"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/settings_allow_nsfw_checkbox_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight=".1">
+
+            <CheckBox
+                android:id="@+id/settings_allow_nsfw_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:buttonTint="@color/colorWhite" />
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
+    <!--................................ Section Title: Click actions ......................... -->
     <TextView
         android:id="@+id/settings_section_title_previews"
         android:layout_width="match_parent"
@@ -55,81 +106,127 @@
         android:text="Click actions"
         android:textColor="@color/colorWhite" />
 
-    <RelativeLayout
+
+    <!--......... Settings Block: Big display close-to-click ..............-->
+    <LinearLayout
+        android:id="@+id/settings_block_bigdisplay_closeclick"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginLeft="15dp">
+        android:layout_height="@dimen/settings_block_max_height"
+        android:clickable="true">
 
-        <TextView
-            android:id="@+id/settings_textview_bigdisplay_close"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@+id/settings_bigdisplay_closeclick_container"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginTop="10dp"
-            android:text="Tap full size image to close"
-            android:textColor="@color/colorWhite"
-            android:textSize="16sp" />
+            android:layout_weight=".9">
 
-        <CheckBox
-            android:id="@+id/settings_checkbox_bigdisplay_close"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            android:buttonTint="@color/colorWhite"
-            android:gravity="center|end" />
-    </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-    <!-- Allow Images preview-->
-    <RelativeLayout
+                <TextView
+                    android:id="@+id/settings_title_bigdisplay_closeclick"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:paddingLeft="@dimen/settings_padding_left"
+                    android:text="Tap-to-close full size images/gifs"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="16sp" />
+
+                <!-- Subtitle-->
+                <TextView
+                    android:id="@+id/settings_bigdisplay_closeclick_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/settings_title_bigdisplay_closeclick"
+                    android:paddingLeft="@dimen/settings_padding_left"
+                    android:text="Tap on image/gif when in full size to close and go back"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/settings_bigdisplay_closeclick_checkbox_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight=".1">
+
+            <CheckBox
+                android:id="@+id/settings_bigdisplay_closeclick_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:buttonTint="@color/colorWhite" />
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
+
+
+    <!--........... Settings Block: Preview on long press ................-->
+    <LinearLayout
+        android:id="@+id/settings_block_allow_previewer"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginLeft="15dp">
+        android:layout_height="@dimen/settings_block_max_height"
+        android:clickable="true">
 
-        <TextView
-            android:id="@+id/settings_textview_image_preview"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:id="@+id/settings_allow_previewer_container"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginTop="10dp"
-            android:text="Preview submission on long press"
-            android:textColor="@color/colorWhite"
-            android:textSize="16sp" />
+            android:layout_weight=".9">
 
-        <CheckBox
-            android:id="@+id/settings_checkbox_image_preview"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            android:buttonTint="@color/colorWhite"
-            android:gravity="center|end" />
-    </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-    <!-- Allow GIF preview-->
-<!--    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginLeft="15dp">
+                <TextView
+                    android:id="@+id/settings_title_allow_previewer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:paddingLeft="@dimen/settings_padding_left"
+                    android:text="Preview submission on long press"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/settings_textview_gif_preview"
-            android:layout_width="wrap_content"
+                <!-- Icons subtitle-->
+                <TextView
+                    android:id="@+id/settings_allow_previewer_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/settings_title_allow_previewer"
+                    android:paddingLeft="@dimen/settings_padding_left"
+                    android:text="Long press submission thumbnail to preview title and media"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/settings_allow_previewer_checkbox_container"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginTop="10dp"
-            android:text="Preview GIFs on long press"
-            android:textColor="@color/colorWhite"
-            android:textSize="16sp" />
+            android:layout_weight=".1">
 
-        <CheckBox
-            android:id="@+id/settings_checkbox_gif_preview"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            android:buttonTint="@color/colorWhite"
-            android:gravity="center|end" />
-    </RelativeLayout>-->
 
-    <!-- Display large hover??-->
+            <CheckBox
+                android:id="@+id/settings_allow_previewer_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:buttonTint="@color/colorWhite" />
+        </RelativeLayout>
+
+    </LinearLayout>
+
+
+    <!-- Previewer size Radio buttons-->
     <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/radio_group_preview_size"
         android:layout_width="match_parent"
@@ -154,28 +251,73 @@
             android:textColor="@color/colorWhite" />
     </RadioGroup>
 
-    <RelativeLayout
+    <!--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Section Title: Click actions^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
+    <TextView
+        android:id="@+id/settings_section_title_appearance"
         android:layout_width="match_parent"
-        android:layout_height="50dp">
+        android:layout_height="20dp"
+        android:background="@color/colorBlack"
+        android:paddingLeft="10dp"
+        android:text="@string/title_appearance"
+        android:textColor="@color/colorWhite" />
 
-        <TextView
-            android:id="@+id/settings_1"
-            android:layout_width="wrap_content"
+    <!--.............. Settings Block: Display media icon .................-->
+    <LinearLayout
+        android:id="@+id/settings_block_display_media_icon"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/settings_block_max_height"
+        android:clickable="true">
+
+        <RelativeLayout
+            android:id="@+id/settings_media_icon_text_container"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginTop="10dp"
-            android:text="TEST settings_1"
-            android:textColor="@color/colorWhite"
-            android:textSize="16sp" />
+            android:layout_weight=".9">
 
-        <CheckBox
-            android:id="@+id/settings_checkbox_settings1"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentTop="true"
-            android:buttonTint="@color/colorWhite"
-            android:gravity="center|end" />
-    </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
+                <TextView
+                    android:id="@+id/settings_title_appearance_icons"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:paddingLeft="@dimen/settings_padding_left"
+                    android:text="Show media type icon"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="16sp" />
+
+                <!-- Icons subtitle-->
+                <TextView
+                    android:id="@+id/settings_appearance_icons_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/settings_title_appearance_icons"
+                    android:paddingLeft="@dimen/settings_padding_left"
+                    android:text="Overlay icons such as Imgur, Youtube, Gfycat on submission thumbnails"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/settings_media_icon_checkbox_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight=".1">
+
+
+            <CheckBox
+                android:id="@+id/settings_media_icon_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:buttonTint="@color/colorWhite" />
+        </RelativeLayout>
+
+
+    </LinearLayout>
 
 </LinearLayout>

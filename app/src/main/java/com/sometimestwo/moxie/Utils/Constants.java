@@ -48,6 +48,7 @@ public class Constants {
     public final static String KEY_ALLOW_HOVER_PREVIEW = "KEY_ALLOW_HOVER_PREVIEW";
     public final static String KEY_PREVIEW_SIZE = "KEY_PREVIEW_SIZE";
     public final static String KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK = "KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK";
+    public final static String KEY_SETTINGS_ALLOW_MEDIA_ICON = "KEY_SETTINGS_ALLOW_MEDIA_ICON";
 
     public final static String SETTINGS_NO = "SETTINGS_NO";
     public final static String SETTINGS_YES = "SETTINGS_YES";

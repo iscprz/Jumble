@@ -2,4 +2,6 @@
 <resources>
     <dimen name="toolbar_height">45dp</dimen>
     <dimen name="navview_header_height">60dp</dimen>
+    <dimen name="settings_block_max_height">75dp</dimen>
+    <dimen name="settings_padding_left">10dp</dimen>
 </resources>

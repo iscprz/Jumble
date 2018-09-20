@@ -27,7 +27,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
@@ -118,7 +117,7 @@ public class FragmentHome extends Fragment {
     // settings prefs
     SharedPreferences prefs;
     private boolean mIsLoggedIn = false;
-    private boolean mPrefsAllowNSFW = false;
+    private boolean mAllowNSFW = false;
     private boolean mAllowImagePreview = false;
     private boolean mAllowBigDisplayClickClose = true;
     // private boolean mAllowGifPreview = false;
@@ -706,16 +705,17 @@ public class FragmentHome extends Fragment {
 
     private void validatePreferences() throws Exception {
         if (prefs != null) {
-            mPrefsAllowNSFW = prefs.getString(Constants.KEY_ALLOW_NSFW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
-            mAllowImagePreview = prefs.getString(Constants.KEY_ALLOW_HOVER_PREVIEW, Constants.SETTINGS_NO).equalsIgnoreCase(Constants.SETTINGS_YES);
-            mAllowBigDisplayClickClose = prefs.getString(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, Constants.SETTINGS_YES).equalsIgnoreCase(Constants.SETTINGS_YES);
+
+            mAllowNSFW = prefs.getBoolean(Constants.KEY_ALLOW_NSFW, false);
+            mAllowImagePreview = prefs.getBoolean(Constants.KEY_ALLOW_HOVER_PREVIEW, true);
+            mAllowBigDisplayClickClose = prefs.getBoolean(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
             mPreviewSize = prefs.getString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                     .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                     ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
             mNumDisplayColumns = 3;//prefs.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
 
 
-            App.getMoxieInfoObj().setAllowNSFW(mPrefsAllowNSFW);
+            App.getMoxieInfoObj().setAllowNSFW(mAllowNSFW);
             //App.getMoxieInfoObj().setSubreddit("pics");
 
         } else {

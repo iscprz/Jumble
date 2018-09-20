@@ -45,6 +45,41 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.drawer_layout);
         setContentView(R.layout.activity_main);
+
+        /***************** Set default settings/preferences if never initialized ******************/
+        SharedPreferences prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor prefs_settings_editor =
+                 this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE)
+                .edit();
+
+        // Hover previewer size - defaults to small
+        if(prefs_settings.getString(Constants.KEY_PREVIEW_SIZE,null) == null) {
+            prefs_settings_editor.putString(Constants.KEY_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE);
+        }
+
+        // Allow media icons - defaults to true
+        if(prefs_settings.getBoolean(Constants.KEY_SETTINGS_ALLOW_MEDIA_ICON, true) == true){
+            prefs_settings_editor.putBoolean(Constants.KEY_SETTINGS_ALLOW_MEDIA_ICON, true);
+        }
+
+        // Allow NSFW
+        if(prefs_settings.getBoolean(Constants.KEY_ALLOW_NSFW, false) == false){
+            prefs_settings_editor.putBoolean(Constants.KEY_ALLOW_NSFW, false);
+        }
+
+        // Allow hover previewer - default to yes
+        if(prefs_settings.getBoolean(Constants.KEY_ALLOW_HOVER_PREVIEW, true) == true){
+            prefs_settings_editor.putBoolean(Constants.KEY_ALLOW_HOVER_PREVIEW, true);
+        }
+
+
+        // Allow tap-to-close big display
+        if(prefs_settings.getBoolean(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, false) == false){
+            prefs_settings_editor.putBoolean(Constants.KEY_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        }
+
+        prefs_settings_editor.commit();
+
         new FetchRedditUser(this).execute();
     }
 

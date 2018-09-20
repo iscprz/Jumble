@@ -648,8 +648,7 @@ public class FragmentHome extends Fragment {
                             || Constants.USERNAME_USERLESS_PRETTY.equalsIgnoreCase(clickedMenuItemName)) {
                         // user has selected to switch to userless mode
                         if (Constants.USERNAME_USERLESS_PRETTY.equalsIgnoreCase(clickedMenuItemName)) {
-                            App.getAccountHelper().switchToUserless();
-                            switchOrLogoutCleanup(Constants.USERNAME_USERLESS);
+                            new FetchUserlessAccountTask().execute();
                         }
                         // user selected a non-guest account to log in to
                         else {
@@ -1303,11 +1302,10 @@ public class FragmentHome extends Fragment {
 
     /*************************Async network tasks *******************************************/
 
-    /*    *//* Set's our reddit client to userless and refreshes Home on completion*//*
+        //* Set's our reddit client to userless and refreshes Home on completion*//*
     private class FetchUserlessAccountTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
-           // App.getAccountHelper().logout();
             App.getAccountHelper().switchToUserless();
             return null;
         }
@@ -1316,7 +1314,7 @@ public class FragmentHome extends Fragment {
         protected void onPostExecute(Void aVoid) {
             switchOrLogoutCleanup(Constants.USERNAME_USERLESS);
         }
-    }*/
+    }
 
     /*
        [IMGUR SPECIFIC FUNCTION]

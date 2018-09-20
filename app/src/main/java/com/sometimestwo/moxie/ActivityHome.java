@@ -1,9 +1,7 @@
 package com.sometimestwo.moxie;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -57,31 +55,26 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
         mScreenWidth = getResources().getDisplayMetrics().widthPixels;
         mScreenHeight = getResources().getDisplayMetrics().heightPixels;
 
-        init();
+        loadHome(false);
     }
 
-    private void init() {
-        FragmentManager fm = getSupportFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-        Bundle args = new Bundle();
-        //args.putInt(Constants.ARGS_NUM_DISPLAY_COLS, numDisplayCols);
-
+    private void loadHome(boolean invalidateData) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Fragment fragment = FragmentHome.newInstance();
+        Bundle args = new Bundle();
+        args.putBoolean(Constants.ARGS_INVALIDATE_DATASOURCE, invalidateData);
         fragment.setArguments(args);
         ft.add(R.id.fragment_container_home, fragment, Constants.TAG_FRAG_HOME);
         ft.commit();
     }
 
+    // Actually removes current fragment and creates new one
     protected void refreshFragment(String fragmentTag, boolean invalidateData) {
-        Fragment frg = getSupportFragmentManager().findFragmentByTag(fragmentTag);
-        Bundle args = new Bundle();
-        args.putBoolean(Constants.ARGS_INVALIDATE_DATASOURCE, invalidateData);
-        frg.setArguments(args);
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(fragmentTag);
         final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         try {
-            ft.detach(frg);
-            ft.attach(frg);
-            ft.commit();
+            ft.remove(fragment).commit();
+            loadHome(invalidateData);
         } catch (NullPointerException e) {
             throw new NullPointerException(this.toString()
                     + ". Could not refresh fragment! Probably provided incorrect fragment tag. " +

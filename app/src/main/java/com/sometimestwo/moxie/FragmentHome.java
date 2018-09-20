@@ -41,6 +41,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -72,10 +73,13 @@ import com.google.android.exoplayer2.util.Util;
 import com.sometimestwo.moxie.Imgur.client.ImgurClient;
 import com.sometimestwo.moxie.Imgur.response.images.ImgurSubmission;
 import com.sometimestwo.moxie.Imgur.response.images.SubmissionRoot;
+import com.sometimestwo.moxie.Model.ExpandableMenuModel;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Helpers;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import io.reactivex.disposables.Disposable;
@@ -132,12 +136,16 @@ public class FragmentHome extends Fragment {
     private FrameLayout mHoverPreviewMediaContainerLarge;
     private TextView mHoverPreviewTitleLarge;
     private ImageView mHoverImagePreviewLarge;
-   // private GfycatPlayer mHoverPreviewGfycatLarge;
+    // private GfycatPlayer mHoverPreviewGfycatLarge;
 
     /* Navigation view */
     private LinearLayout mNavViewHeader;
     private TextView mNavViewHeaderTitle;
     private ImageView mNavViewDropDown;
+    ExpandableListAdapter expandableListAdapter;
+    ExpandableListView expandableListView;
+    List<ExpandableMenuModel> headerList = new ArrayList<>();
+    HashMap<ExpandableMenuModel, List<ExpandableMenuModel>> childList = new HashMap<>();
 
     // log out button
     private TextView mButtonLogout;
@@ -273,7 +281,7 @@ public class FragmentHome extends Fragment {
         // progressBar = findViewById(R.id.progress_bar);
 
         /* Gfycat player*/
-       // mHoverPreviewGfycatLarge = (GfycatPlayer) v.findViewById(R.id.large_previewer_gfycat);
+        // mHoverPreviewGfycatLarge = (GfycatPlayer) v.findViewById(R.id.large_previewer_gfycat);
 
         return v;
     }
@@ -453,6 +461,14 @@ public class FragmentHome extends Fragment {
                     }
                 });
 
+
+        /* expandable nav */
+        expandableListView = v.findViewById(R.id.expandableListView);
+        prepareMenuData();
+        populateExpandableList();
+        // Expand usernames
+        expandableListView.expandGroup(0);
+
         /* Navigation view menu */
         Menu navViewMenu = mNavigationView.getMenu();
 
@@ -461,7 +477,7 @@ public class FragmentHome extends Fragment {
         setupNavViewHeader(navViewHeader);
 
         /* Log out button */
-        mButtonLogout = (TextView) v.findViewById(R.id.navbar_button_logout);
+       /* mButtonLogout = (TextView) v.findViewById(R.id.navbar_button_logout);
         // hide logout button if we're in Guest mode
         mButtonLogout.setVisibility(Constants.USERNAME_USERLESS.equalsIgnoreCase(mCurrUsername)? View.GONE : View.VISIBLE);
         mButtonLogout.setOnClickListener(new View.OnClickListener() {
@@ -497,26 +513,174 @@ public class FragmentHome extends Fragment {
                 alertDialog.show();
                 alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
             }
-        });
+        });*/
     }
 
-    private void setupNavViewHeader(View navViewHeader){
-        mNavViewHeaderTitle = (TextView) navViewHeader.findViewById(R.id.navview_header_text_title);
-        mNavViewHeaderTitle.setText(mCurrUsername.equalsIgnoreCase(Constants.USERNAME_USERLESS)
-                ? Constants.USERNAME_USERLESS_PRETTY : mCurrUsername);
-        mNavViewHeaderTitle.setOnClickListener(new View.OnClickListener() {
+
+    private void prepareMenuData() {
+        List<ExpandableMenuModel> childModelsList = new ArrayList<>();
+
+        ExpandableMenuModel expandableMenuModel = new ExpandableMenuModel(
+                getResources().getString(R.string.menu_accounts),
+                true,
+                true);
+        headerList.add(expandableMenuModel);
+
+        // Always offer Guest option
+        ExpandableMenuModel childModel = new ExpandableMenuModel(Constants.USERNAME_USERLESS_PRETTY, false, false);
+        childModelsList.add(childModel);
+
+        // Fill account names
+        for (String username : App.getTokenStore().getUsernames()) {
+            // ignore Userless account
+            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(username)) {
+                childModel = new ExpandableMenuModel(username, false, false);
+                childModelsList.add(childModel);
+            }
+        }
+
+        // add option to add new account
+        childModel = new ExpandableMenuModel(
+                getResources().getString(R.string.menu_add_account),
+                false,
+                false);
+        childModelsList.add(childModel);
+        childList.put(expandableMenuModel, childModelsList);
+
+        // add option to go to subreddit
+        expandableMenuModel = new ExpandableMenuModel(
+                getResources().getString(R.string.menu_goto_subreddit),
+                true,
+                false);
+        headerList.add(expandableMenuModel);
+        childList.put(expandableMenuModel, null);
+
+        // add option to open settings
+        expandableMenuModel = new ExpandableMenuModel(
+                getResources().getString(R.string.menu_settings),
+                true,
+                false);
+        headerList.add(expandableMenuModel);
+        childList.put(expandableMenuModel, null);
+    }
+
+    private void populateExpandableList() {
+
+        expandableListAdapter = new ExpandableListAdapter(getContext(), headerList, childList);
+        expandableListView.setAdapter(expandableListAdapter);
+
+        expandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
-            public void onClick(View view) {
-                mNavViewDropDown.callOnClick();
+            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+
+                if (headerList.get(groupPosition).isGroup) {
+                    if (!headerList.get(groupPosition).hasChildren) {
+                        String clickedItemTitle = headerList.get(groupPosition).menuName;
+                        // log in
+                        if (getResources().getString(R.string.menu_log_in)
+                                .equalsIgnoreCase(clickedItemTitle)) {
+                            mDrawerLayout.closeDrawer(mNavigationView);
+                        } else if (getResources().getString(R.string.menu_add_account)
+                                .equalsIgnoreCase(clickedItemTitle)) {
+                            mDrawerLayout.closeDrawer(mNavigationView);
+                        }
+                        // go to subreddit
+                        else if (getResources().getString(R.string.menu_goto_subreddit)
+                                .equalsIgnoreCase(clickedItemTitle)) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.TransparentDialog);
+                            builder.setTitle("Enter subreddit:");
+
+                            EditText input = new EditText(getContext());
+                            input.setInputType(InputType.TYPE_CLASS_TEXT);
+                            input.setTextColor(getResources().getColor(R.color.colorWhite));
+                            builder.setView(input);
+                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    String requestedSubreddit = input.getText().toString();
+                                    App.getMoxieInfoObj().setCurrSubreddit(requestedSubreddit);
+
+                                    Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
+                                    visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, requestedSubreddit);
+                                    startActivity(visitSubredditIntent);
+                                }
+                            });
+                            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.cancel();
+                                }
+                            });
+                            AlertDialog alertDialog = builder.create();
+
+                            // button color setup
+                            alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                                @Override
+                                public void onShow(DialogInterface dialogInterface) {
+                                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                                            .setTextColor(getResources().getColor(R.color.colorWhite));
+                                    alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                                            .setTextColor(getResources().getColor(R.color.colorWhite));
+                                }
+                            });
+                            alertDialog.show();
+                            alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
+
+                            mDrawerLayout.closeDrawer(mNavigationView);
+                        } else if (getResources().getString(R.string.menu_settings)
+                                .equalsIgnoreCase(clickedItemTitle)) {
+                            mHomeEventListener.openSettings();
+                        }
+                    }
+                }
+                return false;
             }
         });
 
-        mNavViewDropDown= navViewHeader.findViewById(R.id.navview_header_expand);
+        expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                if (childList.get(headerList.get(groupPosition)) != null) {
+                    ExpandableMenuModel model = childList.get(headerList.get(groupPosition)).get(childPosition);
+                    String clickedMenuItemName = model.menuName;
+                    // A username in Accounts tab was clicked
+                    if (App.getTokenStore().getUsernames().contains(clickedMenuItemName)
+                            || Constants.USERNAME_USERLESS_PRETTY.equalsIgnoreCase(clickedMenuItemName)) {
+                        // user has selected to switch to userless mode
+                        if (Constants.USERNAME_USERLESS_PRETTY.equalsIgnoreCase(clickedMenuItemName)) {
+                            App.getAccountHelper().switchToUserless();
+                            switchOrLogoutCleanup(Constants.USERNAME_USERLESS);
+                        }
+                        // user selected a non-guest account to log in to
+                        else {
+                            App.getAccountHelper().switchToUser(clickedMenuItemName);
+                            switchOrLogoutCleanup(clickedMenuItemName);
+                        }
+                    }
+                    // clicked "Add account" to add a new acc
+                    else if (getResources().getString(R.string.add_account).equalsIgnoreCase(clickedMenuItemName)) {
+                        Intent loginIntent = new Intent(getContext(), ActivityNewUserLogin.class);
+                        //unlockSessionIntent.putExtra("REQUEST_UNLOCK_SESSION", true);
+                        startActivityForResult(loginIntent, KEY_LOG_IN);
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    private void setupNavViewHeader(View navViewHeader) {
+        mNavViewHeaderTitle = (TextView) navViewHeader.findViewById(R.id.navview_header_text_title);
+        mNavViewHeaderTitle.setText(mCurrUsername.equalsIgnoreCase(Constants.USERNAME_USERLESS)
+                ? Constants.USERNAME_USERLESS_PRETTY : mCurrUsername);
+
+
+       /* mNavViewDropDown= navViewHeader.findViewById(R.id.navview_header_expand);
         mNavViewDropDown.setVisibility(App.getTokenStore().getUsernames().size() > 1 ? View.VISIBLE : View.GONE);
         mNavViewDropDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PopupMenu popup = new PopupMenu(getContext(), mNavViewDropDown/*,Gravity.LEFT,R.style.PopupTheme,0*/);
+                PopupMenu popup = new PopupMenu(getContext(), mNavViewDropDown*//*,Gravity.LEFT,R.style.PopupTheme,0*//*);
                 //Inflating the Popup using xml file
                 popup.getMenuInflater()
                         .inflate(R.menu.menu_navview_header, popup.getMenu());
@@ -548,23 +712,7 @@ public class FragmentHome extends Fragment {
                 // repopulate drop down so that it shows correct user info next time
                 populateNavUserDropdown(popup);
             }
-        });
-    }
-
-    // Populates the drop down in navigation view's header
-    // with a list of currently logged-in users
-    private void populateNavUserDropdown(PopupMenu popupMenu){
-        List<String> usernames = App.getTokenStore().getUsernames();
-        int popupMenuIndex = 0;
-        for(String username : usernames) {
-            if (!username.equalsIgnoreCase(mCurrUsername)) {
-                MenuItem item = popupMenu.getMenu().getItem(popupMenuIndex);
-                item.setVisible(true);
-                item.setTitle(username.equalsIgnoreCase(Constants.USERNAME_USERLESS)
-                        ? Constants.USERNAME_USERLESS_PRETTY : username);
-                popupMenuIndex++;
-            }
-        }
+        });*/
     }
 
     /* Handles left navigation menu item selections*/
@@ -735,7 +883,9 @@ public class FragmentHome extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull final ItemViewHolder holder, int position) {
             // empty subreddit, nothing to display
-            if (is404) { return; }
+            if (is404) {
+                return;
+            }
             SubmissionObj item = (getItem(position) == null ? new SubmissionObj(true) : getItem(position));
 
             // Workaround for checking if requested subreddit is empty (or invalid).
@@ -1013,7 +1163,7 @@ public class FragmentHome extends Fragment {
     }
 
     // Cleans up some details after we've switched accounts or logged out of an account
-    private void switchOrLogoutCleanup(String newCurrUser){
+    private void switchOrLogoutCleanup(String newCurrUser) {
         mCurrUsername = newCurrUser;
         // update current user
         curr_user_prefs.edit().putString(Constants.KEY_CURR_USERNAME, newCurrUser).apply();
@@ -1153,7 +1303,7 @@ public class FragmentHome extends Fragment {
 
     /*************************Async network tasks *******************************************/
 
-/*    *//* Set's our reddit client to userless and refreshes Home on completion*//*
+    /*    *//* Set's our reddit client to userless and refreshes Home on completion*//*
     private class FetchUserlessAccountTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {

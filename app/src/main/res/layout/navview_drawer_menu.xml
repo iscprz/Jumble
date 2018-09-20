@@ -4,12 +4,18 @@
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:layout_gravity="start"
-    android:background="@color/colorBgBlackTint"
     android:fitsSystemWindows="true"
     app:headerLayout="@layout/nav_header"
-    app:itemIconTint="@color/colorWhite"
-    app:itemTextColor="@color/colorWhite"
-    app:menu="@menu/drawer_view">
+    android:background="@color/colorBgBlackTint">
+  <!--  app:itemIconTint="@color/colorWhite"
+    app:itemTextColor="@color/colorWhite"-->
+    <ExpandableListView
+        android:id="@+id/expandableListView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/navview_header_height"
+        android:dividerHeight="0dp"
+        android:groupIndicator="@null" />
 
     <FrameLayout
         android:layout_width="match_parent"

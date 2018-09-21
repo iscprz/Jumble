@@ -63,10 +63,7 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
             prefs_settings_editor.putString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE);
         }
 
-        // Allow media icons - defaults to true
-        if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_MEDIA_ICON, true) == true){
-            prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_MEDIA_ICON, true);
-        }
+
 
         // Allow NSFW
         if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false) == false){
@@ -88,6 +85,15 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
             prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
         }
 
+        // Allow domain icons - defaults to false
+        if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false) == false){
+            prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false);
+        }
+
+        // Allow filetype icons - defaults to false
+        if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false) == false){
+            prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false);
+        }
         prefs_settings_editor.commit();
 
         new FetchRedditUser(this).execute();

@@ -44,9 +44,13 @@ public class ActivitySettings extends Activity {
     private LinearLayout mBlockBigDisplayCloseClick;
     private CheckBox mCheckboxAllowBigDisplayCloseClick;
 
-    // Media icons
-    private LinearLayout mBlockMediaIcon;
-    private CheckBox mCheckboxMediaIcon;
+    // Domain icons
+    private LinearLayout mBlockDomainIcon;
+    private CheckBox mCheckboxDomainIcon;
+
+    // Filetype icons
+    private LinearLayout mBlockFiletypeIcon;
+    private CheckBox mCheckboxFiletypeIcon;
 
     // tracks whether anything was clicked on
     private boolean mModified = false;
@@ -176,24 +180,49 @@ public class ActivitySettings extends Activity {
 
 
 
-        /* Display media icons */
-        mCheckboxMediaIcon = (CheckBox) findViewById(R.id.settings_media_icon_checkbox);
-        boolean allowMediaIcons = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_MEDIA_ICON, true);
-        mCheckboxMediaIcon.setChecked(allowMediaIcons);
-        mCheckboxMediaIcon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        /* Display domain icons */
+        mCheckboxDomainIcon = (CheckBox) findViewById(R.id.settings_domain_icon_checkbox);
+        boolean displayDomainIcons = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false);
+        mCheckboxDomainIcon.setChecked(displayDomainIcons);
+        mCheckboxDomainIcon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //boolean newValue = mCheckboxPreviewImage.isChecked();
-                prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_MEDIA_ICON, b);
+                prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, b);
                 mModified = true;
             }
         });
 
-        mBlockMediaIcon = (LinearLayout) findViewById(R.id.settings_block_display_media_icon);
-        mBlockMediaIcon.setOnClickListener(new View.OnClickListener() {
+        mBlockDomainIcon = (LinearLayout) findViewById(R.id.settings_block_display_domain_icon);
+        mBlockDomainIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mCheckboxMediaIcon.setChecked(!mCheckboxMediaIcon.isChecked());
+                mCheckboxDomainIcon.setChecked(!mCheckboxDomainIcon.isChecked());
+            }
+        });
+
+
+
+
+
+        /****** Display filetype icons *******/
+        mCheckboxFiletypeIcon = (CheckBox) findViewById(R.id.settings_filetype_icon_checkbox);
+        boolean displayFiletypeIcon = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, true);
+        mCheckboxFiletypeIcon.setChecked(displayFiletypeIcon);
+        mCheckboxFiletypeIcon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                //boolean newValue = mCheckboxPreviewImage.isChecked();
+                prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, b);
+                mModified = true;
+            }
+        });
+
+        mBlockFiletypeIcon = (LinearLayout) findViewById(R.id.settings_block_filetype_icon);
+        mBlockFiletypeIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCheckboxFiletypeIcon.setChecked(!mCheckboxFiletypeIcon.isChecked());
             }
         });
 

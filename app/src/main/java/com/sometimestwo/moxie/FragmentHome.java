@@ -122,6 +122,7 @@ public class FragmentHome extends Fragment {
     private boolean mAllowBigDisplayClickClose = true;
     private boolean mDisplayDomainIcon = false;
     private boolean mHideNSFWThumbs = false;
+    private boolean mDisplayFiletypeIcons = false;
     // private boolean mAllowGifPreview = false;
     private Constants.HoverPreviewSize mPreviewSize;
 
@@ -651,11 +652,10 @@ public class FragmentHome extends Fragment {
 
     private void setupNavViewHeader(View navViewHeader) {
         mNavViewHeaderTitle = (TextView) navViewHeader.findViewById(R.id.navview_header_text_title);
-        if(Constants.USERNAME_USERLESS
-                .equalsIgnoreCase(App.getAccountHelper().getReddit().getAuthManager().currentUsername())){
+        if (Constants.USERNAME_USERLESS
+                .equalsIgnoreCase(App.getAccountHelper().getReddit().getAuthManager().currentUsername())) {
             mNavViewHeaderTitle.setText(Constants.USERNAME_USERLESS_PRETTY);
-        }
-        else{
+        } else {
             mNavViewHeaderTitle.setText(App.getAccountHelper().getReddit().getAuthManager().currentUsername());
         }
     }
@@ -716,8 +716,9 @@ public class FragmentHome extends Fragment {
             mPreviewSize = sharedprefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                     .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                     ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
-            mDisplayDomainIcon = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_MEDIA_ICON, false);
-            mHideNSFWThumbs = sharedprefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS,false);
+            mDisplayDomainIcon = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false);
+            mHideNSFWThumbs = sharedprefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false);
+            mDisplayFiletypeIcons = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false);
             mNumDisplayColumns = 3;//sharedprefs_settings.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
 
 
@@ -806,27 +807,27 @@ public class FragmentHome extends Fragment {
                     }
                     // We assume item will always have a thumbnail in an image format
                     thumbnail = item.getThumbnail();
-                    if(mDisplayDomainIcon){
-                        holder.thumbnailIconImageView.setBackground(getResources().getDrawable(R.drawable.ic_imgur_i_black_bg));
-                        holder.thumbnailIconImageView.setVisibility(View.VISIBLE);
+                    if (mDisplayDomainIcon) {
+                        holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_imgur_i_black_bg));
+                        holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
                     }
                 }
                 //v.redd.it
                 else if ("v.redd.it".equalsIgnoreCase(item.getDomain())) {
                     Log.e("VIDEO_DOMAIN_FOUND", " Found v.redd.it link. Not working yet.");
                     thumbnail = item.getThumbnail();
-                    if(mDisplayDomainIcon){
-                        holder.thumbnailIconImageView.setBackground(getResources().getDrawable(R.drawable.ic_reddit_blue_circle));
-                        holder.thumbnailIconImageView.setVisibility(View.VISIBLE);
+                    if (mDisplayDomainIcon) {
+                        holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_reddit_blue_circle));
+                        holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
                     }
                 }
 
                 // i.redd.it
                 else if (item.getDomain().contains("i.redd.it")) {
                     thumbnail = item.getThumbnail();
-                    if(mDisplayDomainIcon){
-                        holder.thumbnailIconImageView.setBackground(getResources().getDrawable(R.drawable.ic_reddit_circle_orange));
-                        holder.thumbnailIconImageView.setVisibility(View.VISIBLE);
+                    if (mDisplayDomainIcon) {
+                        holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_reddit_circle_orange));
+                        holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
                     }
                 }
                 //gfycat
@@ -843,17 +844,17 @@ public class FragmentHome extends Fragment {
                     Observable<FeedData> first = feedDataObservable.first();*/
 
                     thumbnail = item.getThumbnail();
-                    if(mDisplayDomainIcon){
-                        holder.thumbnailIconImageView.setBackground(getResources().getDrawable(R.drawable.ic_gfycat_circle_blue));
-                        holder.thumbnailIconImageView.setVisibility(View.VISIBLE);
+                    if (mDisplayDomainIcon) {
+                        holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_gfycat_circle_blue));
+                        holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
                     }
                 }
                 //youtube
                 else if (item.getDomain().contains("youtube")) {
                     Log.e("VIDEO_DOMAIN_FOUND", " Found YOUTUBE link. Not working yet.");
-                    if(mDisplayDomainIcon){
-                        holder.thumbnailIconImageView.setBackground(getResources().getDrawable(R.drawable.ic_youtube_red));
-                        holder.thumbnailIconImageView.setVisibility(View.VISIBLE);
+                    if (mDisplayDomainIcon) {
+                        holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_youtube_red));
+                        holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
                     }
                 }
                 // Domain not recognized - hope submission is linked to a valid media extension
@@ -872,13 +873,35 @@ public class FragmentHome extends Fragment {
                     Log.e("DOMAIN_NOT_FOUND", "Domain not recognized: " + item.getDomain() + ". Position: " + position);
                 }
 
+                /* Display file type icons if option is enabled through settings*/
+                if (item.getSubmissionType() != null && mDisplayFiletypeIcons) {
+                    switch (item.getSubmissionType()) {
+                        case IMAGE:
+                            holder.thumbnailFiletypeIcon.setBackground(
+                                    getResources().getDrawable(R.drawable.ic_filetype_image));
+                            holder.thumbnailFiletypeIcon.setVisibility(View.VISIBLE);
+                            break;
+                        case GIF:
+                            holder.thumbnailFiletypeIcon.setBackground(
+                                    getResources().getDrawable(R.drawable.ic_filetype_gif));
+                            holder.thumbnailFiletypeIcon.setVisibility(View.VISIBLE);
+                            break;
+                        case VIDEO:
+                            holder.thumbnailFiletypeIcon.setBackground(
+                                    getResources().getDrawable(R.drawable.ic_filetype_video));
+                            holder.thumbnailFiletypeIcon.setVisibility(View.VISIBLE);
+                            break;
+                        default:
+                            break;
+                    }
+
+                }
                 // Finally load thumbnail into recyclerview
-                if(item.isNSFW() && mHideNSFWThumbs){
+                if (item.isNSFW() && mHideNSFWThumbs) {
                     GlideApp.load(getResources().getDrawable(R.drawable.ic_reddit_nsfw_dark))
                             .apply(new RequestOptions().centerInside().diskCacheStrategy(DiskCacheStrategy.ALL))
                             .into(holder.thumbnailImageView);
-                }
-                else{
+                } else {
                     GlideApp.load(thumbnail)
                             .apply(new RequestOptions().centerCrop().diskCacheStrategy(DiskCacheStrategy.ALL))
                             .into(holder.thumbnailImageView);
@@ -1001,11 +1024,14 @@ public class FragmentHome extends Fragment {
         public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
             //TextView textView;
             ImageView thumbnailImageView;
-            ImageView thumbnailIconImageView;
+            ImageView thumbnailDomainIcon;
+            ImageView thumbnailFiletypeIcon;
+
             public ItemViewHolder(View itemView) {
                 super(itemView);
                 thumbnailImageView = (ImageView) itemView.findViewById(R.id.thumbnail);
-                thumbnailIconImageView = (ImageView) itemView.findViewById(R.id.thumbnail_domain_icon);
+                thumbnailDomainIcon = (ImageView) itemView.findViewById(R.id.thumbnail_domain_icon);
+                thumbnailFiletypeIcon = (ImageView) itemView.findViewById(R.id.thumbnail_filetype_icon);
             }
 
             @Override
@@ -1152,7 +1178,6 @@ public class FragmentHome extends Fragment {
             return true;
         }
     }
-
 
     /* Exoplayer */
 

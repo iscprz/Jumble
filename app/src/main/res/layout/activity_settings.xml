@@ -322,15 +322,15 @@
         android:text="@string/title_appearance"
         android:textColor="@color/colorWhite" />
 
-    <!--.............. Settings Block: Display media icon .................-->
+    <!--.............. Settings Block: Display domain icon .................-->
     <LinearLayout
-        android:id="@+id/settings_block_display_media_icon"
+        android:id="@+id/settings_block_display_domain_icon"
         android:layout_width="match_parent"
         android:layout_height="@dimen/settings_block_max_height"
         android:clickable="true">
 
         <RelativeLayout
-            android:id="@+id/settings_media_icon_text_container"
+            android:id="@+id/settings_domain_icon_text_container"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight=".9">
@@ -341,21 +341,21 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/settings_title_appearance_icons"
+                    android:id="@+id/settings_title_domain_icons"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Show media type icon"
+                    android:text="Show submission domain icon"
                     android:textColor="@color/colorWhite"
                     android:textSize="16sp" />
 
                 <!-- Icons subtitle-->
                 <TextView
-                    android:id="@+id/settings_appearance_icons_subtitle"
+                    android:id="@+id/settings_domain_icons_subtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/settings_title_appearance_icons"
+                    android:layout_below="@id/settings_title_domain_icons"
                     android:paddingLeft="@dimen/settings_padding_left"
                     android:text="Overlay icons such as Imgur, Youtube, Gfycat on submission thumbnails"
                     android:textColor="@color/colorWhite"
@@ -365,20 +365,75 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/settings_media_icon_checkbox_container"
+            android:id="@+id/settings_domain_icon_checkbox_container"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight=".1">
 
 
             <CheckBox
-                android:id="@+id/settings_media_icon_checkbox"
+                android:id="@+id/settings_domain_icon_checkbox"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:buttonTint="@color/colorWhite" />
         </RelativeLayout>
+    </LinearLayout>
+
+    <!--.............. Settings Block: Display filetype icon .................-->
+    <LinearLayout
+        android:id="@+id/settings_block_filetype_icon"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/settings_block_max_height"
+        android:clickable="true">
+
+        <RelativeLayout
+            android:id="@+id/settings_filetype_icon_text_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight=".9">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/settings_title_filetype_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:paddingLeft="@dimen/settings_padding_left"
+                    android:text="Show submission file type icon"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="16sp" />
+
+                <!-- Icons subtitle-->
+                <TextView
+                    android:id="@+id/settings_filetype_icons_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/settings_title_filetype_icon"
+                    android:paddingLeft="@dimen/settings_padding_left"
+                    android:text="Display overlay icons showing the type of submission it is (IMG, GIF, VID)"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/settings_filetype_icon_checkbox_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight=".1">
 
 
+            <CheckBox
+                android:id="@+id/settings_filetype_icon_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:buttonTint="@color/colorWhite" />
+        </RelativeLayout>
     </LinearLayout>
 
 </LinearLayout>

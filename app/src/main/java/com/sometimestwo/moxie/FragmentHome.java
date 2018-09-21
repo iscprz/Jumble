@@ -120,6 +120,7 @@ public class FragmentHome extends Fragment {
     private boolean mAllowNSFW = false;
     private boolean mAllowImagePreview = false;
     private boolean mAllowBigDisplayClickClose = true;
+    private boolean mDisplayDomainIcon = false;
     // private boolean mAllowGifPreview = false;
     private Constants.HoverPreviewSize mPreviewSize;
 
@@ -712,6 +713,7 @@ public class FragmentHome extends Fragment {
             mPreviewSize = sharedprefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                     .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                     ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
+            mDisplayDomainIcon = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_MEDIA_ICON, false);
             mNumDisplayColumns = 3;//sharedprefs_settings.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
 
 
@@ -774,7 +776,6 @@ public class FragmentHome extends Fragment {
                 display404();
                 return;
             }
-            // Waiting for API response
             String thumbnail = Constants.THUMBNAIL_NOT_FOUND;
             item.setSubmissionType(Helpers.getSubmissionType(item.getUrl()));
 
@@ -801,16 +802,28 @@ public class FragmentHome extends Fragment {
                     }
                     // We assume item will always have a thumbnail in an image format
                     thumbnail = item.getThumbnail();
+                    if(mDisplayDomainIcon){
+                        holder.thumbnailIconImageView.setBackground(getResources().getDrawable(R.drawable.ic_imgur_i_black_bg));
+                        holder.thumbnailIconImageView.setVisibility(View.VISIBLE);
+                    }
                 }
                 //v.redd.it
                 else if ("v.redd.it".equalsIgnoreCase(item.getDomain())) {
                     Log.e("VIDEO_DOMAIN_FOUND", " Found v.redd.it link. Not working yet.");
                     thumbnail = item.getThumbnail();
+                    if(mDisplayDomainIcon){
+                        holder.thumbnailIconImageView.setBackground(getResources().getDrawable(R.drawable.ic_reddit_circle_orange));
+                        holder.thumbnailIconImageView.setVisibility(View.VISIBLE);
+                    }
                 }
 
                 // i.redd.it
                 else if (item.getDomain().contains("i.redd.it")) {
                     thumbnail = item.getThumbnail();
+                    if(mDisplayDomainIcon){
+                        holder.thumbnailIconImageView.setBackground(getResources().getDrawable(R.drawable.ic_reddit_circle_orange));
+                        holder.thumbnailIconImageView.setVisibility(View.VISIBLE);
+                    }
                 }
                 //gfycat
                 else if (item.getDomain().contains("gfycat")) {
@@ -826,10 +839,18 @@ public class FragmentHome extends Fragment {
                     Observable<FeedData> first = feedDataObservable.first();*/
 
                     thumbnail = item.getThumbnail();
+                    if(mDisplayDomainIcon){
+                        holder.thumbnailIconImageView.setBackground(getResources().getDrawable(R.drawable.ic_gfycat_circle_blue));
+                        holder.thumbnailIconImageView.setVisibility(View.VISIBLE);
+                    }
                 }
                 //youtube
                 else if (item.getDomain().contains("youtube")) {
                     Log.e("VIDEO_DOMAIN_FOUND", " Found YOUTUBE link. Not working yet.");
+                    if(mDisplayDomainIcon){
+                        holder.thumbnailIconImageView.setBackground(getResources().getDrawable(R.drawable.ic_youtube_red));
+                        holder.thumbnailIconImageView.setVisibility(View.VISIBLE);
+                    }
                 }
                 // Domain not recognized - hope submission is linked to a valid media extension
                 else {
@@ -969,10 +990,11 @@ public class FragmentHome extends Fragment {
         public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
             //TextView textView;
             ImageView thumbnailImageView;
-
+            ImageView thumbnailIconImageView;
             public ItemViewHolder(View itemView) {
                 super(itemView);
                 thumbnailImageView = (ImageView) itemView.findViewById(R.id.thumbnail);
+                thumbnailIconImageView = (ImageView) itemView.findViewById(R.id.thumbnail_icon);
             }
 
             @Override

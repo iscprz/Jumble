@@ -135,6 +135,7 @@ public class FragmentHome extends Fragment {
     private RelativeLayout mHoverPreviewContainerLarge;
     private FrameLayout mHoverPreviewMediaContainerLarge;
     private TextView mHoverPreviewTitleLarge;
+    private TextView mHoverPreviewSubredditLarge;
     private ImageView mHoverImagePreviewLarge;
     // private GfycatPlayer mHoverPreviewGfycatLarge;
 
@@ -266,6 +267,7 @@ public class FragmentHome extends Fragment {
         mHoverPreviewContainerLarge = (RelativeLayout) v.findViewById(R.id.hover_view_container_large);
         mHoverPreviewMediaContainerLarge = (FrameLayout) v.findViewById(R.id.hover_view_large_image_container);
         mHoverPreviewTitleLarge = (TextView) v.findViewById(R.id.hover_view_title_large);
+        mHoverPreviewSubredditLarge = (TextView) v.findViewById(R.id.hover_view_textview_subreddit);
         mHoverImagePreviewLarge = (ImageView) v.findViewById(R.id.large_previewer_imageview);
 
         /* Exo player */
@@ -920,6 +922,7 @@ public class FragmentHome extends Fragment {
 
                         } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
                             mHoverPreviewTitleLarge.setText(item.getTitle());
+                            mHoverPreviewSubredditLarge.setText("/r/" + item.getSubreddit());
                             setupPreviewer(item);
                             if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
                                 GlideApp.load(item.getUrl())

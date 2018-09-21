@@ -29,9 +29,9 @@ import java.lang.ref.WeakReference;
 
             layout issues:
             - centering very tall image in large hover
-            - hide toolbar on large hover preview
             - can open drawer layout while large hover previewing
             - exo player not reloading when tabbing back into app
+            - create truncated title for long titles. To be useful in previewers
 
             names:
             Unfold

@@ -24,19 +24,25 @@
                 android:clickable="true"/>
         </FrameLayout>
 
-        <View
+        <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight=".9"/>
+            android:layout_weight=".9"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/settings_padding_left"
+            android:text="@string/title_settings"
+            android:textSize="@dimen/title_font_size"
+            android:textColor="@color/colorWhite"/>
     </LinearLayout>
 
-    <!-- Section Title: NSFW -->
+    <!--............................. Section Title: Filters .................................. -->
     <TextView
-        android:id="@+id/settings_section_title_nsfw"
+        android:id="@+id/settings_section_title_filters"
         android:layout_width="match_parent"
         android:layout_height="20dp"
         android:background="@color/colorBlack"
-        android:text="Allow NSFW"
+        android:text="@string/title_filters"
+        android:paddingLeft="@dimen/settings_padding_left"
         android:textColor="@color/colorWhite" />
 
     <!--......... Settings Block: Allow NSFW ..............-->
@@ -103,7 +109,8 @@
         android:layout_width="match_parent"
         android:layout_height="20dp"
         android:background="@color/colorBlack"
-        android:text="Click actions"
+        android:paddingLeft="@dimen/settings_padding_left"
+        android:text="@string/title_click_actions"
         android:textColor="@color/colorWhite" />
 
 

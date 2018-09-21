@@ -1,6 +1,6 @@
 <android.support.design.widget.NavigationView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/nav_view"
+    android:id="@+id/nav_view_left"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:layout_gravity="start"
@@ -10,7 +10,7 @@
   <!--  app:itemIconTint="@color/colorWhite"
     app:itemTextColor="@color/colorWhite"-->
     <ExpandableListView
-        android:id="@+id/expandableListView"
+        android:id="@+id/expandable_list_right"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/navview_header_height"

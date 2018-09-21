@@ -448,10 +448,10 @@ public class FragmentHome extends Fragment {
         };
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
-        mNavigationView = (NavigationView) v.findViewById(R.id.nav_view);
+        mNavigationView = (NavigationView) v.findViewById(R.id.nav_view_left);
 
         /* expandable nav */
-        expandableListView = v.findViewById(R.id.expandableListView);
+        expandableListView = v.findViewById(R.id.expandable_list_right);
         prepareMenuData();
         populateExpandableList();
         // Expand usernames
@@ -832,7 +832,8 @@ public class FragmentHome extends Fragment {
                 }
                 //gfycat
                 else if (item.getDomain().contains("gfycat")) {
-                   /* String testID = "PhysicalAdmirableBeagle";
+                   /* String testID = "SpitefulGoldenAracari";
+
                     Subscription subscription = GfyCore.getFeedManager()
                             .getGfycat(testID)
                             .cache()

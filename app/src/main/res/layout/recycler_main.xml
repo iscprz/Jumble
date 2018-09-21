@@ -12,12 +12,8 @@
         android:layout_height="match_parent" />
 
     <!-- Large preview container that gets hidden/unhidden-->
-    <include layout="@layout/layout_hover_previewer_large"/>
+    <include layout="@layout/layout_hover_previewer_large" />
 
     <!-- Small preview container that gets hidden/unhidden-->
-    <include layout="@layout/layout_hover_previewer_small"/>
-
-
-
-
+    <include layout="@layout/layout_hover_previewer_small" />
 </FrameLayout>

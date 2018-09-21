@@ -37,6 +37,7 @@
     </android.support.design.widget.CoordinatorLayout>
 
     <!-- Container for contents of drawer - use NavigationView to make configuration easier -->
-    <include layout="@layout/navview_drawer_menu"/>
+    <include layout="@layout/navview_menu_left"/>
 
+    <include layout="@layout/navview_menu_right"/>
 </android.support.v4.widget.DrawerLayout>

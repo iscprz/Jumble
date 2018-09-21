@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:layout_gravity="start"
     android:fitsSystemWindows="true"
-    app:headerLayout="@layout/nav_header"
+    app:headerLayout="@layout/navview_left_header"
     android:background="@color/colorBgBlackTint">
   <!--  app:itemIconTint="@color/colorWhite"
     app:itemTextColor="@color/colorWhite"-->
@@ -13,7 +13,7 @@
         android:id="@+id/expandable_list_right"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/navview_header_height"
+        android:layout_marginTop="@dimen/navview_left_header_height"
         android:dividerHeight="@null"
         android:groupIndicator="@null" />
 

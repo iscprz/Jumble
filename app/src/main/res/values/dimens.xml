@@ -2,7 +2,8 @@
 <resources>
     <dimen name="toolbar_height">45dp</dimen>
     <dimen name="title_font_size">18sp</dimen>
-    <dimen name="navview_header_height">60dp</dimen>
+    <dimen name="navview_left_header_height">60dp</dimen>
+    <dimen name="navview_right_header_height">40dp</dimen>
     <dimen name="settings_block_max_height">65dp</dimen>
     <dimen name="settings_padding_left">10dp</dimen>
     <dimen name="domain_icon_size">18dp</dimen>

@@ -4,14 +4,21 @@
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:layout_gravity="end"
+    android:background="@color/colorBgBlackTint"
     android:fitsSystemWindows="true"
-    app:headerLayout="@layout/nav_header"
-    android:background="@color/colorBgBlackTint">
+    app:headerLayout="@layout/navview_right_header">
 
-    <ExpandableListView
-        android:id="@+id/expandable_list_right"
+<!--    <FrameLayout
+        android:id="@+id/navview_right_main_content_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:dividerHeight="@null"
-        android:groupIndicator="@null" />
+        android:layout_height="100dp"
+        android:background="@color/redic"
+        android:layout_marginTop="@dimen/navview_right_header_height"
+        />-->
+    <!--    <ExpandableListView
+            android:id="@+id/expandable_list_right_subred"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:dividerHeight="@null"
+            android:groupIndicator="@null" />-->
 </android.support.design.widget.NavigationView>

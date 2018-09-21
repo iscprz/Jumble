@@ -40,6 +40,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
@@ -47,6 +48,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -101,7 +103,8 @@ public class FragmentHome extends Fragment {
     private MultiClickRecyclerView mRecyclerMain;
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
-    private NavigationView mNavigationView;
+    private NavigationView mNavigationViewLeft;
+    private NavigationView mNavigationViewRight;
     private ActionBarDrawerToggle mDrawerToggle;
     private int mNumDisplayColumns;
     private String mCurrSubreddit;
@@ -213,8 +216,14 @@ public class FragmentHome extends Fragment {
 
         unpackArgs();
 
+        /*Drawer layout config */
+        setupDrawerLayout(v);
+
         /* Navigation menu on left*/
-        setupNavigationMenu(v);
+        setupLeftNavView(v);
+
+        /* Navigation menu on right*/
+        setupRightNavView(v);
 
         /* Toolbar setup*/
         mToolbar = (Toolbar) v.findViewById(R.id.toolbar_main);
@@ -428,8 +437,8 @@ public class FragmentHome extends Fragment {
         }
     }
 
-    /* Left drawer/navigation view */
-    private void setupNavigationMenu(View v) {
+    /* Drawerlayout config to handle navigation views */
+    private void setupDrawerLayout(View v){
         mDrawerLayout = v.findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(
                 getActivity(),                  /* host Activity */
@@ -447,8 +456,12 @@ public class FragmentHome extends Fragment {
             }
         };
         mDrawerLayout.addDrawerListener(mDrawerToggle);
+    }
 
-        mNavigationView = (NavigationView) v.findViewById(R.id.nav_view_left);
+    /* Left drawer/navigation view */
+    private void setupLeftNavView(View v) {
+
+        mNavigationViewLeft = (NavigationView) v.findViewById(R.id.nav_view_left);
 
         /* expandable nav */
         expandableListView = v.findViewById(R.id.expandable_list_right);
@@ -458,10 +471,10 @@ public class FragmentHome extends Fragment {
         expandableListView.expandGroup(0);
 
         /* Navigation view menu */
-        Menu navViewMenu = mNavigationView.getMenu();
+        Menu navViewMenu = mNavigationViewLeft.getMenu();
 
         /* Navigation menu header*/
-        View navViewHeader = mNavigationView.getHeaderView(0);
+        View navViewHeader = mNavigationViewLeft.getHeaderView(0);
         setupNavViewHeader(navViewHeader);
 
         /* Log out button */
@@ -478,7 +491,18 @@ public class FragmentHome extends Fragment {
         });
     }
 
+    private void setupRightNavView(View v){
+        mNavigationViewRight = (NavigationView) v.findViewById(R.id.nav_view_right);
 
+        // set up spinner(header)
+        Spinner spinner = (Spinner) mNavigationViewRight.getHeaderView(0).findViewById(R.id.navview_right_spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
+                R.array.navview_right_dropdown_array, R.layout.spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
+    }
     private void prepareMenuData() {
         List<ExpandableMenuModel> childModelsList = new ArrayList<>();
 
@@ -541,10 +565,10 @@ public class FragmentHome extends Fragment {
                         // log in
                         if (getResources().getString(R.string.menu_log_in)
                                 .equalsIgnoreCase(clickedItemTitle)) {
-                            mDrawerLayout.closeDrawer(mNavigationView);
+                            mDrawerLayout.closeDrawer(mNavigationViewLeft);
                         } else if (getResources().getString(R.string.menu_add_account)
                                 .equalsIgnoreCase(clickedItemTitle)) {
-                            mDrawerLayout.closeDrawer(mNavigationView);
+                            mDrawerLayout.closeDrawer(mNavigationViewLeft);
                         }
                         // go to subreddit
                         else if (getResources().getString(R.string.menu_goto_subreddit)
@@ -588,7 +612,7 @@ public class FragmentHome extends Fragment {
                             alertDialog.show();
                             alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
 
-                            mDrawerLayout.closeDrawer(mNavigationView);
+                            mDrawerLayout.closeDrawer(mNavigationViewLeft);
                         } else if (getResources().getString(R.string.menu_settings)
                                 .equalsIgnoreCase(clickedItemTitle)) {
                             mHomeEventListener.openSettings();
@@ -1132,7 +1156,7 @@ public class FragmentHome extends Fragment {
 
     // Clean up any lingering views, media players, sharedprefs_settings, etc
     private void switchOrLogoutCleanup(String newCurrUser) {
-        mDrawerLayout.closeDrawer(mNavigationView);
+        mDrawerLayout.closeDrawer(mNavigationViewLeft);
         // Update most recent user to new user
         sharedprefs_settings.edit().putString(Constants.MOST_RECENT_USER, newCurrUser).apply();
         refresh(true);

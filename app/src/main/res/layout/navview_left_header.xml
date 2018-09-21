@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/navview_header_container"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/navview_header_height"
+    android:layout_height="@dimen/navview_left_header_height"
     android:background="?attr/colorPrimaryDark"
     android:clickable="true"
     android:gravity="bottom"

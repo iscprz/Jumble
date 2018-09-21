@@ -1,24 +1,279 @@
 <android.support.design.widget.NavigationView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_view_right"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="end"
-    android:background="@color/colorBgBlackTint"
+    android:background="@color/colorBgBlackTintDarkest"
     android:fitsSystemWindows="true"
     app:headerLayout="@layout/navview_right_header">
 
-<!--    <FrameLayout
-        android:id="@+id/navview_right_main_content_container"
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/navview_right_scrollview"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@color/redic"
-        android:layout_marginTop="@dimen/navview_right_header_height"
-        />-->
-    <!--    <ExpandableListView
-            android:id="@+id/expandable_list_right_subred"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/navview_right_header_height">
+        <!-- Container for main(non-header) content-->
+
+        <!-- if you want your view to use all available space, don’t set
+        width of your view to match_parent, set it to 0dp along with
+        layout_gravity=”fill”attribute.-->
+        <!--<include layout="@layout_navview_right_grid"/>-->
+        <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:dividerHeight="@null"
-            android:groupIndicator="@null" />-->
+
+            android:columnCount="2"
+            android:orientation="horizontal"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp">
+
+
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:id="@+id/imageView1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_columnWeight=".5"
+                android:layout_margin="1dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView xmlns:app="http://schemas.android.com/apk/res-auto"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha=".4"
+                    android:padding="0dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/grid_world_pics"
+                    app:riv_border_width="0dp"
+                    app:riv_corner_radius="@dimen/round_corner_radius"
+                    app:riv_mutate_background="true" />
+            </FrameLayout>
+
+
+        </GridLayout>
+    </ScrollView>
+
 </android.support.design.widget.NavigationView>

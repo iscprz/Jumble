@@ -12,6 +12,8 @@
 
     <color name="colorBlack">#000000</color>
     <color name="colorLightGray">#cecece</color>
+    <color name="colorGrayTint">#11cecece</color>
+
     <color name="colorGray">#979797</color>
     <color name="colorDarkGray">#404040</color>
     <color name="colorSoftBlue">#5e93ed</color>

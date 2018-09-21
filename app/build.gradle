@@ -85,5 +85,7 @@ dependencies {
     implementation 'com.gfycat.android:gfycat-webp-player:0.5.+' // Gfycat WebP player dependency
     implementation 'com.gfycat.android:gfycat-gif-player:0.5.+'  // Gfycat GIF player dependency
 
+    //rounded imageview
+    implementation 'com.makeramen:roundedimageview:2.3.0'
 
 }

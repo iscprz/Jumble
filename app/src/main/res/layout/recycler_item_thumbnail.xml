@@ -15,9 +15,9 @@
         android:scaleType="fitXY" />
 
     <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/thumbnail_icon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:id="@+id/thumbnail_domain_icon"
+        android:layout_width="@dimen/domain_icon_size"
+        android:layout_height="@dimen/domain_icon_size"
         android:layout_gravity="bottom|right"
         android:layout_marginRight="2dp"
         android:layout_marginBottom="2dp"

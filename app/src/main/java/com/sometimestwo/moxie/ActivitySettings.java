@@ -12,19 +12,26 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sometimestwo.moxie.Utils.Constants;
 
 public class ActivitySettings extends Activity {
     private final String TAG = this.getClass().getCanonicalName();
-
+    boolean mAllowNSFW;
     // Back arrow
     private ImageView mBackButton;
 
     // NSFW settings
     private LinearLayout mBlockNSFW;
     private CheckBox mCheckboxAllowNSFW;
+
+    // NSFW thumbnail overlay
+    private LinearLayout mBlockNSFWOverlay;
+    private CheckBox mCheckboxNSFWOverlay;
+    private TextView mTitleNSFWOverlay;
+    private TextView mSubtitleNSFWOverlay;
 
     // Image preview
     private LinearLayout mBlockAllowPreviewer;
@@ -60,16 +67,17 @@ public class ActivitySettings extends Activity {
 
         // NSFW
         mCheckboxAllowNSFW = (CheckBox) findViewById(R.id.settings_allow_nsfw_checkbox);
-        boolean allowNSFW = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
-        mCheckboxAllowNSFW.setChecked(allowNSFW);
+        mAllowNSFW = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
+        mCheckboxAllowNSFW.setChecked(mAllowNSFW);
         mCheckboxAllowNSFW.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                //boolean newValue = mCheckboxAllowNSFW.isChecked();
-                //mCheckboxAllowNSFW.setChecked(!oldValue);
                 prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_NSFW, b);
                 mModified = true;
                 mNeedsRefresh = true;
+                mAllowNSFW = b;
+                // NSFWOverlay depends on the state of NSFW submissions being allowed
+                setupNSFWOverlayBlock(b);
             }
         });
 
@@ -82,7 +90,40 @@ public class ActivitySettings extends Activity {
         });
 
 
-        /* Close big display on click*/
+        /****** NSFW thumbnail overlay ******/
+        mCheckboxNSFWOverlay = (CheckBox) findViewById(R.id.settings_nsfw_overlay_checkbox);
+        mBlockNSFWOverlay = (LinearLayout) findViewById(R.id.settings_block_nsfw_overlay);
+        // Title and subtitle text views to control their text color
+        mTitleNSFWOverlay = (TextView) findViewById(R.id.settings_title_nsfw_overlay);
+        mSubtitleNSFWOverlay = (TextView) findViewById(R.id.settings_nsfw_overlay_subtitle);
+
+        boolean hideNSFWThumbnails = prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false);
+        mCheckboxNSFWOverlay.setChecked(hideNSFWThumbnails);
+
+        // Will need to "disable" this block if NSFW posts are not allowed
+        setupNSFWOverlayBlock(mCheckboxAllowNSFW.isChecked());
+
+        mCheckboxNSFWOverlay.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                //boolean newValue = mCheckboxPreviewImage.isChecked();
+                prefs_settings_editor.putBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, b);
+                mModified = true;
+            }
+        });
+
+        mBlockNSFWOverlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // only care about clicks if NSFW submissions are allowed
+                if(mAllowNSFW) {
+                    mCheckboxNSFWOverlay.setChecked(!mCheckboxNSFWOverlay.isChecked());
+                }
+            }
+        });
+
+
+        /********** Close big display on click*********/
         mCheckboxAllowBigDisplayCloseClick = (CheckBox) findViewById(R.id.settings_bigdisplay_closeclick_checkbox);
         boolean closeOnClick = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
         mCheckboxAllowBigDisplayCloseClick.setChecked(closeOnClick);
@@ -99,7 +140,7 @@ public class ActivitySettings extends Activity {
         mBlockBigDisplayCloseClick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               mCheckboxAllowBigDisplayCloseClick.setChecked(!mCheckboxAllowBigDisplayCloseClick.isChecked());
+                mCheckboxAllowBigDisplayCloseClick.setChecked(!mCheckboxAllowBigDisplayCloseClick.isChecked());
             }
         });
 
@@ -156,6 +197,7 @@ public class ActivitySettings extends Activity {
             }
         });
 
+
         /* Exit settings */
         mBackButton = (ImageView) findViewById(R.id.settings_button_back);
         mBackButton.setOnClickListener(new View.OnClickListener() {
@@ -164,6 +206,18 @@ public class ActivitySettings extends Activity {
                 onBackPressed();
             }
         });
+    }
+
+    private void setupNSFWOverlayBlock(boolean isNSFWAllowed) {
+        if (!isNSFWAllowed) {
+            mTitleNSFWOverlay.setTextColor(getResources().getColor(R.color.colorGray));
+            mSubtitleNSFWOverlay.setTextColor(getResources().getColor(R.color.colorGray));
+            mCheckboxNSFWOverlay.setEnabled(false);
+        } else {
+            mTitleNSFWOverlay.setTextColor(getResources().getColor(R.color.colorWhite));
+            mSubtitleNSFWOverlay.setTextColor(getResources().getColor(R.color.colorWhite));
+            mCheckboxNSFWOverlay.setEnabled(true);
+        }
     }
 
     @Override

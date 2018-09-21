@@ -44,6 +44,7 @@ public class Constants {
     public final static String SETTINGS_PREVIEW_SIZE = "SETTINGS_PREVIEW_SIZE";
     public final static String SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK = "SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK";
     public final static String SETTINGS_ALLOW_MEDIA_ICON = "SETTINGS_ALLOW_MEDIA_ICON";
+    public final static String SETTINGS_HIDE_NSFW_THUMBS = "SETTINGS_HIDE_NSFW_THUMBS";
     public final static String SETTINGS_PREVIEW_SIZE_SMALL = "SETTINGS_PREVIEW_SIZE_SMALL";
     public final static String SETTINGS_PREVIEW_SIZE_LARGE = "SETTINGS_PREVIEW_SIZE_LARGE";
     public final static String MOST_RECENT_USER = "MOST_RECENT_USER";

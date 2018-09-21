@@ -121,6 +121,7 @@ public class FragmentHome extends Fragment {
     private boolean mAllowImagePreview = false;
     private boolean mAllowBigDisplayClickClose = true;
     private boolean mDisplayDomainIcon = false;
+    private boolean mHideNSFWThumbs = false;
     // private boolean mAllowGifPreview = false;
     private Constants.HoverPreviewSize mPreviewSize;
 
@@ -716,6 +717,7 @@ public class FragmentHome extends Fragment {
                     .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                     ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
             mDisplayDomainIcon = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_MEDIA_ICON, false);
+            mHideNSFWThumbs = sharedprefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS,false);
             mNumDisplayColumns = 3;//sharedprefs_settings.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
 
 
@@ -814,7 +816,7 @@ public class FragmentHome extends Fragment {
                     Log.e("VIDEO_DOMAIN_FOUND", " Found v.redd.it link. Not working yet.");
                     thumbnail = item.getThumbnail();
                     if(mDisplayDomainIcon){
-                        holder.thumbnailIconImageView.setBackground(getResources().getDrawable(R.drawable.ic_reddit_circle_orange));
+                        holder.thumbnailIconImageView.setBackground(getResources().getDrawable(R.drawable.ic_reddit_blue_circle));
                         holder.thumbnailIconImageView.setVisibility(View.VISIBLE);
                     }
                 }
@@ -870,12 +872,18 @@ public class FragmentHome extends Fragment {
                     Log.e("DOMAIN_NOT_FOUND", "Domain not recognized: " + item.getDomain() + ". Position: " + position);
                 }
 
-                //TODO: handle Constants.THUMBNAIL_NOT_FOUND
-
                 // Finally load thumbnail into recyclerview
-                GlideApp.load(thumbnail)
-                        .apply(new RequestOptions().centerCrop().diskCacheStrategy(DiskCacheStrategy.ALL))
-                        .into(holder.thumbnailImageView);
+                if(item.isNSFW() && mHideNSFWThumbs){
+                    GlideApp.load(getResources().getDrawable(R.drawable.ic_reddit_nsfw_dark))
+                            .apply(new RequestOptions().centerInside().diskCacheStrategy(DiskCacheStrategy.ALL))
+                            .into(holder.thumbnailImageView);
+                }
+                else{
+                    GlideApp.load(thumbnail)
+                            .apply(new RequestOptions().centerCrop().diskCacheStrategy(DiskCacheStrategy.ALL))
+                            .into(holder.thumbnailImageView);
+                }
+
 
 
                 /* open submission viewer when image clicked*/
@@ -997,7 +1005,7 @@ public class FragmentHome extends Fragment {
             public ItemViewHolder(View itemView) {
                 super(itemView);
                 thumbnailImageView = (ImageView) itemView.findViewById(R.id.thumbnail);
-                thumbnailIconImageView = (ImageView) itemView.findViewById(R.id.thumbnail_icon);
+                thumbnailIconImageView = (ImageView) itemView.findViewById(R.id.thumbnail_domain_icon);
             }
 
             @Override

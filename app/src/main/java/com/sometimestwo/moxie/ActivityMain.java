@@ -73,6 +73,11 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
             prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
         }
 
+        // Hide NSFW thumbs
+        if(prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false) == false){
+            prefs_settings_editor.putBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false);
+        }
+
         // Allow hover previewer - default to yes
         if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true) == true){
             prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true);

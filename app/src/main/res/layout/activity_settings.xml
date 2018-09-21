@@ -69,7 +69,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Display NSFW submissions"
+                    android:text="Allow NSFW submissions"
                     android:textColor="@color/colorWhite"
                     android:textSize="16sp" />
 
@@ -80,7 +80,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/settings_title_allow_nsfw"
                     android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Allow Not Safe For Work (NSFW) content to be displayed"
+                    android:text="Allow Not Safe For Work (NSFW) submissions to be displayed"
                     android:textColor="@color/colorWhite"
                     android:textSize="12sp" />
             </RelativeLayout>
@@ -98,6 +98,60 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:buttonTint="@color/colorWhite" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <!--......... Settings Block: Hide NSFW thumbnails ..............-->
+    <LinearLayout
+        android:id="@+id/settings_block_nsfw_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/settings_block_max_height"
+        android:clickable="true">
+
+        <RelativeLayout
+            android:id="@+id/settings_nsfw_overlay_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight=".9">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/settings_title_nsfw_overlay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:paddingLeft="@dimen/settings_padding_left"
+                    android:text="Hide NSFW thumbnails"
+                    android:textSize="16sp" />
+
+                <!-- Subtitle-->
+                <TextView
+                    android:id="@+id/settings_nsfw_overlay_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/settings_title_nsfw_overlay"
+                    android:paddingLeft="@dimen/settings_padding_left"
+                    android:text="Cover NSFW submission thumbnails with safe overlay"
+                    android:textSize="12sp" />
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/settings_nsfw_overlay_checkbox_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight=".1">
+
+            <CheckBox
+                android:id="@+id/settings_nsfw_overlay_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                />
         </RelativeLayout>
 
 

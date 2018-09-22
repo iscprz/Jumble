@@ -243,6 +243,7 @@ public class FragmentHome extends Fragment {
         mToolbar = (Toolbar) v.findViewById(R.id.toolbar_main);
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
 
+
         /* Refresh layout setup*/
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.recycler_refresh);
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -380,13 +381,13 @@ public class FragmentHome extends Fragment {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        if(isViewingSubmission){
-            menu.findItem(R.id.menu_comments_sortby).setVisible(true);
-            menu.findItem(R.id.menu_submissions_sortby).setVisible(false);
-        }
-        else{
+        if(!isViewingSubmission){
             menu.findItem(R.id.menu_comments_sortby).setVisible(false);
             menu.findItem(R.id.menu_submissions_sortby).setVisible(true);
+        }
+        else{
+            menu.findItem(R.id.menu_comments_sortby).setVisible(true);
+            menu.findItem(R.id.menu_submissions_sortby).setVisible(false);
         }
 
         super.onPrepareOptionsMenu(menu);
@@ -527,6 +528,10 @@ public class FragmentHome extends Fragment {
             } else {
                 mToolbar.setTitle("frontpage");
             }
+
+            // Subtitle - remember that if sort by is null, getter will default to HOT
+            mToolbar.setSubtitle(Helpers.makeTextCute(App.getMoxieInfoObj().getmSortBy().toString()));
+
 
             // set hamburger menu icon
             ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
@@ -1030,6 +1035,7 @@ public class FragmentHome extends Fragment {
             // is404 prevents more 404 pages from being added to the backstack
             if (item.isSubredditEmpty()) {
                 is404 = true;
+                holder.itemView.setVisibility(View.GONE);
                 mHomeEventListener.set404(true);
                 // the requested subreddit was empty. Display something meaningful
                 display404();

@@ -42,7 +42,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //getMenuInflater().inflate(R.menu.navigation_menu, menu);
-        getMenuInflater().inflate(R.menu.menu_subreddit_viewer_header, menu);
+        getMenuInflater().inflate(R.menu.menu_default_header, menu);
         return true;
     }
 
@@ -68,15 +68,14 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
 
     @Override
     public void finish() {
+        // bookkeeping
+        App.getMoxieInfoObj().getmSubredditStack().pop();
         super.finish();
     }
 
     @Override
     public void onBackPressed() {
-        // bookkeeping
-        App.getMoxieInfoObj().getmSubredditStack().pop();
-
-        // if activity is hosting a 404 page, we want to leave entire
+        // If activity is hosting a 404 page, we want to leave entire
         // activity not just pop 404 page off backstack
         if (mIs404) {
             finish();

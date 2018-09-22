@@ -18,7 +18,7 @@
     <string name="toast_settings_saved">Settings saved</string>
     <string name="toast_settings_logout_success">Successfully logged out</string>
     <string name="toast_copied_to_clipboard">Link copied to clipboard</string>
-    <string name="error_404">There doesn\'t seem to be anything here :{ </string>
+    <string name="error_404">There doesn\'t seem to be \n anything here :{ </string>
     <string name="error_404_retry"><u>Retry</u></string>
 
 </resources>

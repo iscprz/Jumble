@@ -86,7 +86,7 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //getMenuInflater().inflate(R.menu.navigation_menu, menu);
-        getMenuInflater().inflate(R.menu.menu_home_header, menu);
+        getMenuInflater().inflate(R.menu.menu_default_header, menu);
         return true;
     }
 

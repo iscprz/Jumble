@@ -28,16 +28,11 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     DefaultPaginator<Submission> mPaginator;
     MoxieInfoObj mMoxieInfoObj;
     private boolean mIs404 = false;
+    private boolean mEndOfSubreddit = false;
 
     public SubmissionsDataSource(MoxieInfoObj moxieInfoObj) {
         this.mMoxieInfoObj = moxieInfoObj;
     }
-
-    /*
-        App.getAccountHelper().switchToUser(App.getTokenStore().getUsernames().get(0))
-        App.getAccountHelper().getReddit().me().getUsername()
-     */
-
 
     @Override
     public void loadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {
@@ -71,20 +66,19 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                         .sorting(sortBy == null ? SubredditSort.HOT : sortBy)
                         .timePeriod(timePeriod == null ? TimePeriod.DAY : timePeriod)
                         .build();
-        //App.getTokenStore().getUsernames().get(App.getTokenStore().getUsernames().indexOf("ambits"));
 
         new FetchInitialSubmissionsTask(callback).execute();
     }
 
-    //shouldnt be needing this for now since we only ever append to our feed
+    // Shouldnt be needing this for now since we only ever append to our feed
     @Override
     public void loadBefore(@NonNull final LoadParams<String> params, @NonNull final LoadCallback<SubmissionObj> callback) {
     }
 
-    //this will load the next page
+    // Loads the next page
     @Override
     public void loadAfter(@NonNull final LoadParams<String> params, @NonNull final LoadCallback<SubmissionObj> callback) {
-        if (!mIs404) {
+        if (!mIs404 && !mEndOfSubreddit) {
             new FetchSubmissionsTask(callback).execute();
         }
     }
@@ -113,6 +107,16 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
             try {
                 submissions = mPaginator.next();
+                /* If we've retrieved an amount of pages less than our page size limit,
+                *  it's because the subreddit(s) in question are out of submissions to return.
+                *
+                *  There exists a condition that will break this: subreddit has exactly
+                *  Constants.QUERY_PAGE_SIZE amount of submissions, mEndOfSubreddit never gets
+                *  set to true, we try loading next page and we find nothing. Ignore this for now.
+                * */
+                if(submissions.size() < Constants.QUERY_PAGE_SIZE){
+                    mEndOfSubreddit = true;
+                }
                 submissionObjs = mapSubmissions(submissions);
             } catch (NetworkException e) {
                 Log.e(SubmissionsDataSource.class.getSimpleName(),
@@ -129,9 +133,9 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     }
 
     /*
-        Non-initial submissions loading. Used to page through submissions in a subreddit after being initialized.
-        This asyncronous function is what gets called as the recyclerview is scrolled.
-        Uses callback to return result if success
+        Non-initial submissions loading. Used to page through submissions in a subreddit after
+        being initialized. This asyncronous function is what gets called as the recyclerview
+        is scrolled. Uses callback to return result if success.
     */
     private class FetchSubmissionsTask extends AsyncTask<Void, Void, List<SubmissionObj>> {
 
@@ -149,14 +153,6 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 // get the next few submissions
                 submissions = mPaginator.next();
                 submissionObjs = mapSubmissions(submissions);
-                // download any videos if user has selected to play GIF files through settings
-                if (true/* sharedprefs.playGifs*/) {
-                    for (Submission s : submissions) {
-                      /*  if(Helpers.getSubmissionType(s) == Helpers.MediaType.GIF){
-
-                        }*/
-                    }
-                }
             } catch (Exception e) {
                 Log.e(SubmissionsDataSource.class.getSimpleName(),
                         " Failed to request non-initial submissions from reddit: " + e.getMessage());

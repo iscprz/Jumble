@@ -8,6 +8,13 @@ import java.util.List;
 
 public class Helpers {
 
+    /* Takes a string and makes it cute: CONTROVERSIAL -> Controversial */
+    public static String makeTextCute(String ugly){
+        if(ugly != null && ugly.length() > 0) {
+            return ugly.substring(0, 1).toUpperCase() + ugly.substring(1).toLowerCase();
+        }
+        return ugly;
+    }
     /*
        imgur links will be given in the following format :
        https://i.imgur.com/CtyvHl6.gifv

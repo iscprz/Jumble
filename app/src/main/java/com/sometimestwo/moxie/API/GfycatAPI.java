@@ -16,11 +16,11 @@ public interface GfycatAPI {
 
     //Non-static feed name
     @GET("{hash}")
-    Call<GfycatWrapper> getFeed(@Path("hash") String hash);
+    Call<GfycatWrapper> getGfycat(@Path("hash") String hash);
 
     //static feed name
 //    @GET("earthporn/.rss")
-//    Call<Feed> getFeed();
+//    Call<Feed> getGfycat();
 
 /*    @POST("{user}")
     Call<CheckLogin> signIn(

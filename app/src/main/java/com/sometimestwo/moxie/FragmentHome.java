@@ -1556,8 +1556,8 @@ public class FragmentHome extends Fragment {
                 .build();
 
         GfycatAPI gfycatAPI = retrofit.create(GfycatAPI.class);
-        gfycatAPI.getFeed(gfycatHash);
-        Call<GfycatWrapper> call = gfycatAPI.getFeed(gfycatHash);
+        gfycatAPI.getGfycat(gfycatHash);
+        Call<GfycatWrapper> call = gfycatAPI.getGfycat(gfycatHash);
         call.enqueue(new Callback<GfycatWrapper>() {
             @Override
             public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {

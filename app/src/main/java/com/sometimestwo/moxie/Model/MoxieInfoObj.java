@@ -3,12 +3,14 @@ package com.sometimestwo.moxie.Model;
 import net.dean.jraw.models.SubredditSort;
 import net.dean.jraw.models.TimePeriod;
 
+import java.util.Stack;
+
 /*
     Representation of the current state of the user's browsing preferences such as
     currently-being-viewed subreddit, sort by option, and time period (today, this month, all time).
  */
 public class MoxieInfoObj {
-    String mCurrSubreddit;
+    Stack<String> mSubredditStack = new Stack<>();
     SubredditSort mSortBy;
     TimePeriod mTimePeriod;
     boolean allowNSFW = false;
@@ -29,12 +31,12 @@ public class MoxieInfoObj {
         this.mTimePeriod = mTimePeriod;
     }
 
-    public String getCurrSubreddit() {
-        return mCurrSubreddit;
+    public Stack<String> getmSubredditStack() {
+        return mSubredditStack;
     }
 
-    public void setCurrSubreddit(String subreddit) {
-        this.mCurrSubreddit = subreddit;
+    public void setmSubredditStack(Stack<String> mSubredditStack) {
+        this.mSubredditStack = mSubredditStack;
     }
 
     public boolean isAllowNSFW() {

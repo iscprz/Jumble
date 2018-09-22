@@ -42,9 +42,12 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     public void loadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {
         RedditClient redditClient = App.getAccountHelper().getReddit();
         DefaultPaginator.Builder<Submission, SubredditSort> submissionSubredditSortBuilder;
-        String subredditRequested = mMoxieInfoObj.getCurrSubreddit();
         String defaultSubreddit = "pics";
+        String subredditRequested = null;
 
+        if(!mMoxieInfoObj.getmSubredditStack().isEmpty()){
+            subredditRequested = mMoxieInfoObj.getmSubredditStack().peek();
+        }
         if (subredditRequested != null) {
             submissionSubredditSortBuilder = redditClient.subreddit(subredditRequested).posts();
         }

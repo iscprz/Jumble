@@ -3,7 +3,6 @@ package com.sometimestwo.moxie;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -55,26 +54,27 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
         mScreenWidth = getResources().getDisplayMetrics().widthPixels;
         mScreenHeight = getResources().getDisplayMetrics().heightPixels;
 
-        loadHome(false);
+        loadReddit(false);
     }
 
-    private void loadHome(boolean invalidateData) {
+    private void loadReddit(boolean invalidateData ) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Fragment fragment = FragmentHome.newInstance();
         Bundle args = new Bundle();
         args.putBoolean(Constants.ARGS_INVALIDATE_DATASOURCE, invalidateData);
+
         fragment.setArguments(args);
         ft.add(R.id.fragment_container_home, fragment, Constants.TAG_FRAG_HOME);
         ft.commit();
     }
 
     // Actually removes current fragment and creates new one
-    protected void refreshFragment(String fragmentTag, boolean invalidateData) {
+    protected void refreshFragment(String fragmentTag, boolean invalidateData ) {
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(fragmentTag);
         final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         try {
             ft.remove(fragment).commit();
-            loadHome(invalidateData);
+            loadReddit(invalidateData);
         } catch (NullPointerException e) {
             throw new NullPointerException(this.toString()
                     + ". Could not refresh fragment! Probably provided incorrect fragment tag. " +
@@ -135,15 +135,14 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == Constants.INTENT_SETTINGS) {
             if (resultCode == RESULT_OK) {
-                refreshFragment(Constants.TAG_FRAG_HOME, false);
+                //refreshFragment(Constants.TAG_FRAG_HOME, false);
                 Log.e(TAG, "Returned from settings activity");
             }
             // Setting was changed that requires data to be invalidated(refreshed)
             else if (resultCode == Constants.RESULT_OK_INVALIDATE_DATA) {
-                refreshFragment(Constants.TAG_FRAG_HOME, true);
+               // refreshFragment(Constants.TAG_FRAG_HOME, true);
             }
         }
-
     }
 
 
@@ -159,6 +158,8 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
 
     @Override
     public void refreshFeed( boolean invalidateData) {
+        // ignore targetSubreddit. It's only here for the sake of ActivitySubredditViewer
+        // We'll always want to refresh home when we're in ActivityHome, no target needed
         refreshFragment(Constants.TAG_FRAG_HOME, invalidateData);
     }
 

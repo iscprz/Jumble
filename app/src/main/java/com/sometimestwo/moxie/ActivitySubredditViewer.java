@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 
+import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
 public class ActivitySubredditViewer extends AppCompatActivity implements FragmentHome.HomeEventListener,
@@ -72,6 +73,9 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
 
     @Override
     public void onBackPressed() {
+        // bookkeeping
+        App.getMoxieInfoObj().getmSubredditStack().pop();
+
         // if activity is hosting a 404 page, we want to leave entire
         // activity not just pop 404 page off backstack
         if (mIs404) {
@@ -125,8 +129,8 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
 
     // Called on refresh swipe
     @Override
-    public void refreshFeed(boolean invalidateData) {
-        this.retrySubredditLoad(Constants.TAG_FRAG_SUBREDDIT_VIEWER, invalidateData);
+    public void refreshFeed(boolean invalidateData ) {
+        retrySubredditLoad(Constants.TAG_FRAG_SUBREDDIT_VIEWER, invalidateData);
     }
 
     @Override

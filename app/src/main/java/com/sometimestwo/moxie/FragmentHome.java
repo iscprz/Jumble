@@ -407,8 +407,10 @@ public class FragmentHome extends Fragment {
             if (resultCode == RESULT_OK) {
                 // User successfully logged in. Update the current user.
                 updateCurrentUser(App.getTokenStore().getUsernames().size() - 1);
-
-                App.getMoxieInfoObj().setCurrSubreddit(null);
+                // empty the subreddit stack since we're starting over with new user
+                while(!App.getMoxieInfoObj().getmSubredditStack().isEmpty()){
+                    App.getMoxieInfoObj().getmSubredditStack().pop();
+                }
                 refresh(true);
             }
         }
@@ -706,7 +708,9 @@ public class FragmentHome extends Fragment {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     String requestedSubreddit = input.getText().toString();
-                                    App.getMoxieInfoObj().setCurrSubreddit(requestedSubreddit);
+                                    //TODO: This might be better placed as one of the first
+                                    // things ActivitySubredditViewer does
+                                    App.getMoxieInfoObj().getmSubredditStack().push(requestedSubreddit);
 
                                     Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
                                     visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, requestedSubreddit);
@@ -1052,6 +1056,7 @@ public class FragmentHome extends Fragment {
                 else{
                     holder.thumbnailNSFWIcon.setVisibility(View.GONE);
                 }
+
                 // Finally load thumbnail into recyclerview
                 if (item.isNSFW() && mHideNSFWThumbs) {
                     GlideApp.load(getResources().getDrawable(R.drawable.ic_reddit_nsfw_dark))
@@ -1292,6 +1297,11 @@ public class FragmentHome extends Fragment {
         mDrawerLayout.closeDrawer(mNavigationViewLeft);
         // Update most recent user to new user
         sharedprefs_settings.edit().putString(Constants.MOST_RECENT_USER, newCurrUser).apply();
+
+        // start our subreddit stack over cause we're starting over again
+        while(!App.getMoxieInfoObj().getmSubredditStack().isEmpty()){
+            App.getMoxieInfoObj().getmSubredditStack().pop();
+        }
         refresh(true);
     }
 

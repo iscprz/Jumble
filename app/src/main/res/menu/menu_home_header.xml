@@ -1,23 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ActivityMain">
     <item
-        android:id="@+id/menu_sortby"
-        android:title="Sort by"
-        android:orderInCategory="100"
+        android:id="@+id/menu_submissions_sortby"
         android:icon="@drawable/ic_white_sort"
-        app:showAsAction="ifRoom"
+        android:orderInCategory="100"
+        android:title="Sort by"
+        app:showAsAction="ifRoom">
 
-        />
+        <!-- Submission sort by options HOT,NEW,TOP etc-->
+        <menu>
+            <item
+                android:id="@+id/menu_submissions_sortby_HOT"
+                android:title="Hot" />
+            <item
+                android:id="@+id/menu_submissions_sortby_NEW"
+                android:title="New" />
+            <item
+                android:id="@+id/menu_submissions_sortby_RISING"
+                android:title="Rising" />
+            <item
+                android:id="@+id/menu_submissions_sortby_TOP"
+                android:title="Top...">
+
+                <menu>
+                    <item
+                        android:id="@+id/menu_submissions_sortby_TOP_hour"
+                        android:title="Past hour" />
+                    <item
+                        android:id="@+id/menu_submissions_sortby_TOP_today"
+                        android:title="Today" />
+                    <item
+                        android:id="@+id/menu_submissions_sortby_TOP_week"
+                        android:title="This week" />
+                    <item
+                        android:id="@+id/menu_submissions_sortby_TOP_month"
+                        android:title="Month" />
+                    <item
+                        android:id="@+id/menu_submissions_sortby_TOP_year"
+                        android:title="Year" />
+                    <item
+                        android:id="@+id/menu_submissions_sortby_TOP_alltime"
+                        android:title="All time" />
+                </menu>
+
+            </item>
+            <item
+                android:id="@+id/menu_submissions_sortby_CONTROVERSIAL"
+                android:title="Controversial...">
+
+                <menu>
+                    <item
+                        android:id="@+id/menu_submissions_sortby_CONTROVERSIAL_hour"
+                        android:title="Past hour" />
+                    <item
+                        android:id="@+id/menu_submissions_sortby_CONTROVERSIAL_today"
+                        android:title="Today" />
+                    <item
+                        android:id="@+id/menu_submissions_sortby_CONTROVERSIAL_week"
+                        android:title="This week" />
+                    <item
+                        android:id="@+id/menu_submissions_sortby_CONTROVERSIAL_month"
+                        android:title="Month" />
+                    <item
+                        android:id="@+id/menu_submissions_sortby_CONTROVERSIAL_year"
+                        android:title="Year" />
+                    <item
+                        android:id="@+id/menu_submissions_sortby_CONTROVERSIAL_alltime"
+                        android:title="All time" />
+                </menu>
+            </item>
+        </menu>
+    </item>
+
+<!-- Comments-->
+    <item
+        android:id="@+id/menu_comments_sortby"
+        android:icon="@drawable/ic_white_expand_down"
+        android:orderInCategory="100"
+        android:title="Sort by"
+        app:showAsAction="ifRoom">
+
+        <!-- Comments sort by options HOT,NEW,TOP etc-->
+
+
+    </item>
+
     <item
         android:id="@+id/menu_overflow"
+        android:icon="@drawable/ic_white_overflow"
         android:orderInCategory="200"
         android:title="Overflow"
-        android:icon="@drawable/ic_white_overflow"
-        app:showAsAction="never"/>
+        app:showAsAction="never" />
     <!--<item
         android:id="@+id/action_user"
         android:orderInCategory="300"

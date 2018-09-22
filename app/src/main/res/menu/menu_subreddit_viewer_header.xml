@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ActivityMain">
     <item
-        android:id="@+id/menu_sortby"
+        android:id="@+id/menu_submissions_sortby"
         android:title="Sort by"
         android:orderInCategory="100"
         android:icon="@drawable/ic_white_sort"

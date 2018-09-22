@@ -77,9 +77,13 @@ import com.sometimestwo.moxie.Imgur.client.ImgurClient;
 import com.sometimestwo.moxie.Imgur.response.images.ImgurSubmission;
 import com.sometimestwo.moxie.Imgur.response.images.SubmissionRoot;
 import com.sometimestwo.moxie.Model.ExpandableMenuModel;
+import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Helpers;
+
+import net.dean.jraw.models.SubredditSort;
+import net.dean.jraw.models.TimePeriod;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -373,8 +377,25 @@ public class FragmentHome extends Fragment {
         super.onDestroyOptionsMenu();
     }
 
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        if(isViewingSubmission){
+            menu.findItem(R.id.menu_comments_sortby).setVisible(true);
+            menu.findItem(R.id.menu_submissions_sortby).setVisible(false);
+        }
+        else{
+            menu.findItem(R.id.menu_comments_sortby).setVisible(false);
+            menu.findItem(R.id.menu_submissions_sortby).setVisible(true);
+        }
+
+        super.onPrepareOptionsMenu(menu);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        SubredditSort sortBy;
+        TimePeriod timePeriod;
         switch (item.getItemId()) {
             case android.R.id.home:
                 // Hacky workaround for handling conflict with opening drawer.
@@ -384,6 +405,87 @@ public class FragmentHome extends Fragment {
                 } else {
                     mHomeEventListener.goBack();
                 }
+            return true;
+                /* Sort by*/
+            case R.id.menu_submissions_sortby_HOT:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.HOT);
+                App.getMoxieInfoObj().setmTimePeriod(null);
+                refresh(true);
+                return true;
+            case R.id.menu_submissions_sortby_NEW:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.NEW);
+                App.getMoxieInfoObj().setmTimePeriod(null);
+                refresh(true);
+                return true;
+            case R.id.menu_submissions_sortby_RISING:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.RISING);
+                App.getMoxieInfoObj().setmTimePeriod(null);
+                refresh(true);
+                return true;
+            case R.id.menu_submissions_sortby_TOP_hour:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.TOP);
+                App.getMoxieInfoObj().setmTimePeriod(TimePeriod.HOUR);
+                refresh(true);
+                return true;
+
+            case R.id.menu_submissions_sortby_TOP_today:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.TOP);
+                App.getMoxieInfoObj().setmTimePeriod(TimePeriod.DAY);
+                refresh(true);
+                return true;
+
+            case R.id.menu_submissions_sortby_TOP_week:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.TOP);
+                App.getMoxieInfoObj().setmTimePeriod(TimePeriod.WEEK);
+                refresh(true);
+                return true;
+
+            case R.id.menu_submissions_sortby_TOP_month:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.TOP);
+                App.getMoxieInfoObj().setmTimePeriod(TimePeriod.MONTH);
+                refresh(true);
+                return true;
+
+            case R.id.menu_submissions_sortby_TOP_year:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.TOP);
+                App.getMoxieInfoObj().setmTimePeriod(TimePeriod.YEAR);
+                refresh(true);
+                return true;
+
+            case R.id.menu_submissions_sortby_TOP_alltime:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.TOP);
+                App.getMoxieInfoObj().setmTimePeriod(TimePeriod.ALL);
+                refresh(true);
+                return true;
+            case R.id.menu_submissions_sortby_CONTROVERSIAL_hour:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.CONTROVERSIAL);
+                App.getMoxieInfoObj().setmTimePeriod(TimePeriod.HOUR);
+                refresh(true);
+                return true;
+            case R.id.menu_submissions_sortby_CONTROVERSIAL_today:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.CONTROVERSIAL);
+                App.getMoxieInfoObj().setmTimePeriod(TimePeriod.DAY);
+                refresh(true);
+                return true;
+            case R.id.menu_submissions_sortby_CONTROVERSIAL_week:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.CONTROVERSIAL);
+                App.getMoxieInfoObj().setmTimePeriod(TimePeriod.WEEK);
+                refresh(true);
+                return true;
+            case R.id.menu_submissions_sortby_CONTROVERSIAL_month:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.CONTROVERSIAL);
+                App.getMoxieInfoObj().setmTimePeriod(TimePeriod.MONTH);
+                refresh(true);
+                return true;
+            case R.id.menu_submissions_sortby_CONTROVERSIAL_year:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.CONTROVERSIAL);
+                App.getMoxieInfoObj().setmTimePeriod(TimePeriod.YEAR);
+                refresh(true);
+                return true;
+            case R.id.menu_submissions_sortby_CONTROVERSIAL_alltime:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.CONTROVERSIAL);
+                App.getMoxieInfoObj().setmTimePeriod(TimePeriod.ALL);
+                refresh(true);
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -1302,6 +1404,10 @@ public class FragmentHome extends Fragment {
         while(!App.getMoxieInfoObj().getmSubredditStack().isEmpty()){
             App.getMoxieInfoObj().getmSubredditStack().pop();
         }
+
+        //remove any sorting we had...null is ok :^)
+        App.getMoxieInfoObj().setmSortBy(null);
+        App.getMoxieInfoObj().setmTimePeriod(null);
         refresh(true);
     }
 

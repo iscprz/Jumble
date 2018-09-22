@@ -14,6 +14,7 @@ import net.dean.jraw.http.NetworkException;
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.models.SubredditSort;
+import net.dean.jraw.models.TimePeriod;
 import net.dean.jraw.pagination.DefaultPaginator;
 
 import java.util.ArrayList;
@@ -42,8 +43,12 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     public void loadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {
         RedditClient redditClient = App.getAccountHelper().getReddit();
         DefaultPaginator.Builder<Submission, SubredditSort> submissionSubredditSortBuilder;
-        String defaultSubreddit = "pics";
         String subredditRequested = null;
+        SubredditSort sortBy = App.getMoxieInfoObj().getmSortBy();
+        TimePeriod timePeriod = App.getMoxieInfoObj().getmTimePeriod();
+
+        //TODO figure this out
+        String defaultSubreddit = "pics";
 
         if(!mMoxieInfoObj.getmSubredditStack().isEmpty()){
             subredditRequested = mMoxieInfoObj.getmSubredditStack().peek();
@@ -62,9 +67,9 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
         mPaginator =
                 submissionSubredditSortBuilder
-                        .limit(Constants.QUERY_PAGE_SIZE) // 50 posts per page
-                        .sorting(mMoxieInfoObj.getmSortBy()) // top posts
-                        .timePeriod(mMoxieInfoObj.getmTimePeriod()) // of all time
+                        .limit(Constants.QUERY_PAGE_SIZE)
+                        .sorting(sortBy == null ? SubredditSort.HOT : sortBy)
+                        .timePeriod(timePeriod == null ? TimePeriod.DAY : timePeriod)
                         .build();
         //App.getTokenStore().getUsernames().get(App.getTokenStore().getUsernames().indexOf("ambits"));
 

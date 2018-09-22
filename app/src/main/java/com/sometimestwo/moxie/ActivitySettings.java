@@ -20,6 +20,11 @@ import com.sometimestwo.moxie.Utils.Constants;
 public class ActivitySettings extends Activity {
     private final String TAG = this.getClass().getCanonicalName();
     boolean mAllowNSFW;
+
+    // Colors for quick reference
+    int mColorWhite;
+    int mColorGrayout;
+
     // Back arrow
     private ImageView mBackButton;
 
@@ -27,7 +32,7 @@ public class ActivitySettings extends Activity {
     private LinearLayout mBlockNSFW;
     private CheckBox mCheckboxAllowNSFW;
 
-    // NSFW thumbnail overlay
+    // NSFW thumbnail hidden overlay
     private LinearLayout mBlockNSFWOverlay;
     private CheckBox mCheckboxNSFWOverlay;
     private TextView mTitleNSFWOverlay;
@@ -52,6 +57,13 @@ public class ActivitySettings extends Activity {
     private LinearLayout mBlockFiletypeIcon;
     private CheckBox mCheckboxFiletypeIcon;
 
+    // NSFW icon
+    private LinearLayout mBlockNSFWIcon;
+    private CheckBox mCheckboxNSFWIcon;
+    private TextView mTitleNSFWIcon;
+    private TextView mSubtitleNSFWIcon;
+
+
     // tracks whether anything was clicked on
     private boolean mModified = false;
     // True when a "restart required" setting has been changed
@@ -67,7 +79,8 @@ public class ActivitySettings extends Activity {
         setContentView(R.layout.activity_settings);
         prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
         prefs_settings_editor = prefs_settings.edit();
-
+        mColorWhite = getResources().getColor(R.color.colorWhite);
+        mColorGrayout = getResources().getColor(R.color.colorGray);
 
         // NSFW
         mCheckboxAllowNSFW = (CheckBox) findViewById(R.id.settings_allow_nsfw_checkbox);
@@ -80,8 +93,10 @@ public class ActivitySettings extends Activity {
                 mModified = true;
                 mNeedsRefresh = true;
                 mAllowNSFW = b;
-                // NSFWOverlay depends on the state of NSFW submissions being allowed
+
+                // depend on the state of NSFW submissions being allowed
                 setupNSFWOverlayBlock(b);
+                setupNSFWIconBlock(b);
             }
         });
 
@@ -122,6 +137,43 @@ public class ActivitySettings extends Activity {
                 // only care about clicks if NSFW submissions are allowed
                 if(mAllowNSFW) {
                     mCheckboxNSFWOverlay.setChecked(!mCheckboxNSFWOverlay.isChecked());
+                }
+            }
+        });
+
+
+
+
+        /** NSFW icon  **/
+        mCheckboxNSFWIcon = (CheckBox) findViewById(R.id.settings_nsfw_icon_checkbox);
+        mBlockNSFWIcon = (LinearLayout) findViewById(R.id.settings_block_nsfw_icon);
+        // Title and subtitle text views to control their text color
+        mTitleNSFWIcon = (TextView) findViewById(R.id.settings_title_nsfw_icon);
+        mSubtitleNSFWIcon = (TextView) findViewById(R.id.settings_nsfw_icon_subtitle);
+
+        boolean showNSFWIcon = prefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false);
+        mCheckboxNSFWIcon.setChecked(showNSFWIcon);
+        /*mTitleNSFWIcon.setTextColor(mAllowNSFW ? mColorWhite
+                : mColorGrayout);*/
+
+        // Will need to "disable" this block if NSFW posts are not allowed
+        setupNSFWIconBlock(mCheckboxNSFWIcon.isChecked());
+
+        mCheckboxNSFWIcon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                //boolean newValue = mCheckboxPreviewImage.isChecked();
+                prefs_settings_editor.putBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, b);
+                mModified = true;
+            }
+        });
+
+        mBlockNSFWIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // only care about clicks if NSFW submissions are allowed
+                if(mAllowNSFW) {
+                    mCheckboxNSFWIcon.setChecked(!mCheckboxNSFWIcon.isChecked());
                 }
             }
         });
@@ -203,12 +255,11 @@ public class ActivitySettings extends Activity {
 
 
 
-
-
         /****** Display filetype icons *******/
         mCheckboxFiletypeIcon = (CheckBox) findViewById(R.id.settings_filetype_icon_checkbox);
         boolean displayFiletypeIcon = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, true);
         mCheckboxFiletypeIcon.setChecked(displayFiletypeIcon);
+
         mCheckboxFiletypeIcon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -237,18 +288,32 @@ public class ActivitySettings extends Activity {
         });
     }
 
-    private void setupNSFWOverlayBlock(boolean isNSFWAllowed) {
-        if (!isNSFWAllowed) {
-            mTitleNSFWOverlay.setTextColor(getResources().getColor(R.color.colorGray));
-            mSubtitleNSFWOverlay.setTextColor(getResources().getColor(R.color.colorGray));
+    // set up "cover up NSFW submission thumbnails"
+    private void setupNSFWOverlayBlock(boolean checked) {
+        if (!checked) {
+            mTitleNSFWOverlay.setTextColor(mColorGrayout);
+            mSubtitleNSFWOverlay.setTextColor(mColorGrayout);
             mCheckboxNSFWOverlay.setEnabled(false);
         } else {
-            mTitleNSFWOverlay.setTextColor(getResources().getColor(R.color.colorWhite));
-            mSubtitleNSFWOverlay.setTextColor(getResources().getColor(R.color.colorWhite));
+            mTitleNSFWOverlay.setTextColor(mColorWhite);
+            mSubtitleNSFWOverlay.setTextColor(mColorWhite);
             mCheckboxNSFWOverlay.setEnabled(true);
         }
     }
 
+
+    // set up "show NSFW icons"
+    private void setupNSFWIconBlock(boolean checked) {
+        if (!checked) {
+            mTitleNSFWIcon.setTextColor(mColorGrayout);
+            mSubtitleNSFWIcon.setTextColor(mColorGrayout);
+            mCheckboxNSFWIcon.setEnabled(false);
+        } else {
+            mTitleNSFWIcon.setTextColor(mColorWhite);
+            mSubtitleNSFWIcon.setTextColor(mColorWhite);
+            mCheckboxNSFWIcon.setEnabled(true);
+        }
+    }
     @Override
     public void onBackPressed() {
         super.onBackPressed();

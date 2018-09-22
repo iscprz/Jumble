@@ -1,439 +1,509 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/media_viewer_scroll_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBgBlackTintDarkest"
-    android:orientation="vertical">
+    android:background="@color/colorBgBlackTintDarkest">
 
-
-    <LinearLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/toolbar_height">
-
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".1">
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/settings_button_back"
-                android:layout_gravity="center"
-                android:background="@drawable/ic_white_back_arrow"
-                android:clickable="true"/>
-        </FrameLayout>
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".9"
-            android:gravity="center_vertical"
-            android:paddingStart="@dimen/settings_padding_left"
-            android:text="@string/title_settings"
-            android:textSize="@dimen/title_font_size"
-            android:textColor="@color/colorWhite"/>
-    </LinearLayout>
-
-    <!--............................. Section Title: Filters .................................. -->
-    <TextView
-        android:id="@+id/settings_section_title_filters"
-        android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:background="@color/colorBlack"
-        android:text="@string/title_filters"
-        android:paddingLeft="@dimen/settings_padding_left"
-        android:textColor="@color/colorWhite" />
-
-    <!--......... Settings Block: Allow NSFW ..............-->
-    <LinearLayout
-        android:id="@+id/settings_block_allow_nsfw"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/settings_block_max_height"
-        android:clickable="true">
-
-        <RelativeLayout
-            android:id="@+id/settings_allow_nsfw_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".9">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/settings_title_allow_nsfw"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Allow NSFW submissions"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="16sp" />
-
-                <!-- Subtitle-->
-                <TextView
-                    android:id="@+id/settings_allow_nsfw_subtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/settings_title_allow_nsfw"
-                    android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Allow Not Safe For Work (NSFW) submissions to be displayed"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="12sp" />
-            </RelativeLayout>
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/settings_allow_nsfw_checkbox_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".1">
-
-            <CheckBox
-                android:id="@+id/settings_allow_nsfw_checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:buttonTint="@color/colorWhite" />
-        </RelativeLayout>
-    </LinearLayout>
-
-    <!--......... Settings Block: Hide NSFW thumbnails ..............-->
-    <LinearLayout
-        android:id="@+id/settings_block_nsfw_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/settings_block_max_height"
-        android:clickable="true">
-
-        <RelativeLayout
-            android:id="@+id/settings_nsfw_overlay_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".9">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/settings_title_nsfw_overlay"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Hide NSFW thumbnails"
-                    android:textSize="16sp" />
-
-                <!-- Subtitle-->
-                <TextView
-                    android:id="@+id/settings_nsfw_overlay_subtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/settings_title_nsfw_overlay"
-                    android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Cover NSFW submission thumbnails with safe overlay"
-                    android:textSize="12sp" />
-            </RelativeLayout>
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/settings_nsfw_overlay_checkbox_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".1">
-
-            <CheckBox
-                android:id="@+id/settings_nsfw_overlay_checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                />
-        </RelativeLayout>
-
-
-    </LinearLayout>
-
-    <!--................................ Section Title: Click actions ......................... -->
-    <TextView
-        android:id="@+id/settings_section_title_previews"
-        android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:background="@color/colorBlack"
-        android:paddingLeft="@dimen/settings_padding_left"
-        android:text="@string/title_click_actions"
-        android:textColor="@color/colorWhite" />
-
-
-    <!--......... Settings Block: Big display close-to-click ..............-->
-    <LinearLayout
-        android:id="@+id/settings_block_bigdisplay_closeclick"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/settings_block_max_height"
-        android:clickable="true">
-
-        <RelativeLayout
-            android:id="@+id/settings_bigdisplay_closeclick_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".9">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/settings_title_bigdisplay_closeclick"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Tap-to-close full size images/gifs"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="16sp" />
-
-                <!-- Subtitle-->
-                <TextView
-                    android:id="@+id/settings_bigdisplay_closeclick_subtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/settings_title_bigdisplay_closeclick"
-                    android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Tap on image/gif when in full size to close and go back"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="12sp" />
-            </RelativeLayout>
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/settings_bigdisplay_closeclick_checkbox_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".1">
-
-            <CheckBox
-                android:id="@+id/settings_bigdisplay_closeclick_checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:buttonTint="@color/colorWhite" />
-        </RelativeLayout>
-
-
-    </LinearLayout>
-
-
-
-    <!--........... Settings Block: Preview on long press ................-->
-    <LinearLayout
-        android:id="@+id/settings_block_allow_previewer"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/settings_block_max_height"
-        android:clickable="true">
-
-        <RelativeLayout
-            android:id="@+id/settings_allow_previewer_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".9">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/settings_title_allow_previewer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Preview submission on long press"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="16sp" />
-
-                <!-- Icons subtitle-->
-                <TextView
-                    android:id="@+id/settings_allow_previewer_subtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/settings_title_allow_previewer"
-                    android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Long press submission thumbnail to preview title and media"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="12sp" />
-            </RelativeLayout>
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/settings_allow_previewer_checkbox_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".1">
-
-
-            <CheckBox
-                android:id="@+id/settings_allow_previewer_checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:buttonTint="@color/colorWhite" />
-        </RelativeLayout>
-
-    </LinearLayout>
-
-
-    <!-- Previewer size Radio buttons-->
-    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/radio_group_preview_size"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center|end"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <RadioButton
-            android:id="@+id/radio_preview_size_option_large"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onRadioButtonClicked"
-            android:text="Large"
+
+        <!--.......................Header with back button and title ........................-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/toolbar_height">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".1">
+
+                <ImageView
+                    android:id="@+id/settings_button_back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ic_white_back_arrow"
+                    android:clickable="true" />
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".9"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/settings_padding_left"
+                android:text="@string/title_settings"
+                android:textColor="@color/colorWhite"
+                android:textSize="@dimen/title_font_size" />
+        </LinearLayout>
+
+        <!--............................. Section Title: Filters .............................. -->
+        <TextView
+            android:id="@+id/settings_section_title_filters"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:background="@color/colorBlack"
+            android:paddingLeft="@dimen/settings_padding_left"
+            android:text="@string/title_filters"
             android:textColor="@color/colorWhite" />
 
-        <RadioButton
-            android:id="@+id/radio_preview_size_option_small"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onRadioButtonClicked"
-            android:text="Small"
+        <!--......... Settings Block: Allow NSFW ..............-->
+        <LinearLayout
+            android:id="@+id/settings_block_allow_nsfw"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/settings_block_max_height"
+            android:clickable="true">
+
+            <RelativeLayout
+                android:id="@+id/settings_allow_nsfw_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".9">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_title_allow_nsfw"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Allow NSFW submissions"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="16sp" />
+
+                    <!-- Subtitle-->
+                    <TextView
+                        android:id="@+id/settings_allow_nsfw_subtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/settings_title_allow_nsfw"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Allow Not Safe For Work (NSFW) submissions to be displayed"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="12sp" />
+                </RelativeLayout>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/settings_allow_nsfw_checkbox_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".1">
+
+                <CheckBox
+                    android:id="@+id/settings_allow_nsfw_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:buttonTint="@color/colorWhite" />
+            </RelativeLayout>
+        </LinearLayout>
+
+
+
+
+        <!--......... Settings Block: Hide NSFW thumbnails ..............-->
+        <LinearLayout
+            android:id="@+id/settings_block_nsfw_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/settings_block_max_height"
+            android:clickable="true">
+
+            <RelativeLayout
+                android:id="@+id/settings_nsfw_overlay_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".9">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_title_nsfw_overlay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Hide NSFW thumbnails"
+                        android:textSize="16sp"
+                        />
+
+                    <!-- Subtitle-->
+                    <TextView
+                        android:id="@+id/settings_nsfw_overlay_subtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/settings_title_nsfw_overlay"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Cover NSFW submission thumbnails with safe overlay"
+                        android:textSize="12sp"
+                        />
+                </RelativeLayout>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/settings_nsfw_overlay_checkbox_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".1">
+
+                <CheckBox
+                    android:id="@+id/settings_nsfw_overlay_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+            </RelativeLayout>
+
+
+        </LinearLayout>
+
+        <!--................................ Section Title: Click actions ......................... -->
+        <TextView
+            android:id="@+id/settings_section_title_previews"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:background="@color/colorBlack"
+            android:paddingLeft="@dimen/settings_padding_left"
+            android:text="@string/title_click_actions"
             android:textColor="@color/colorWhite" />
-    </RadioGroup>
 
-    <!--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Section Title: Click actions^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
-    <TextView
-        android:id="@+id/settings_section_title_appearance"
-        android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:background="@color/colorBlack"
-        android:paddingLeft="10dp"
-        android:text="@string/title_appearance"
-        android:textColor="@color/colorWhite" />
 
-    <!--.............. Settings Block: Display domain icon .................-->
-    <LinearLayout
-        android:id="@+id/settings_block_display_domain_icon"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/settings_block_max_height"
-        android:clickable="true">
-
-        <RelativeLayout
-            android:id="@+id/settings_domain_icon_text_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".9">
+        <!--......... Settings Block: Big display close-to-click ..............-->
+        <LinearLayout
+            android:id="@+id/settings_block_bigdisplay_closeclick"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/settings_block_max_height"
+            android:clickable="true">
 
             <RelativeLayout
-                android:layout_width="match_parent"
+                android:id="@+id/settings_bigdisplay_closeclick_container"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_weight=".9">
 
-                <TextView
-                    android:id="@+id/settings_title_domain_icons"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Show submission domain icon"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="16sp" />
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-                <!-- Icons subtitle-->
-                <TextView
-                    android:id="@+id/settings_domain_icons_subtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/settings_title_domain_icons"
-                    android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Overlay icons such as Imgur, Youtube, Gfycat on submission thumbnails"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="12sp" />
+                    <TextView
+                        android:id="@+id/settings_title_bigdisplay_closeclick"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Tap-to-close full size images/gifs"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="16sp" />
+
+                    <!-- Subtitle-->
+                    <TextView
+                        android:id="@+id/settings_bigdisplay_closeclick_subtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/settings_title_bigdisplay_closeclick"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Tap on image/gif when in full size to close and go back"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="12sp" />
+                </RelativeLayout>
+
             </RelativeLayout>
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/settings_domain_icon_checkbox_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".1">
-
-
-            <CheckBox
-                android:id="@+id/settings_domain_icon_checkbox"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:buttonTint="@color/colorWhite" />
-        </RelativeLayout>
-    </LinearLayout>
-
-    <!--.............. Settings Block: Display filetype icon .................-->
-    <LinearLayout
-        android:id="@+id/settings_block_filetype_icon"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/settings_block_max_height"
-        android:clickable="true">
-
-        <RelativeLayout
-            android:id="@+id/settings_filetype_icon_text_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".9">
 
             <RelativeLayout
-                android:layout_width="match_parent"
+                android:id="@+id/settings_bigdisplay_closeclick_checkbox_container"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_weight=".1">
 
-                <TextView
-                    android:id="@+id/settings_title_filetype_icon"
+                <CheckBox
+                    android:id="@+id/settings_bigdisplay_closeclick_checkbox"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Show submission file type icon"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="16sp" />
-
-                <!-- Icons subtitle-->
-                <TextView
-                    android:id="@+id/settings_filetype_icons_subtitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/settings_title_filetype_icon"
-                    android:paddingLeft="@dimen/settings_padding_left"
-                    android:text="Display overlay icons showing the type of submission it is (IMG, GIF, VID)"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="12sp" />
+                    android:layout_height="match_parent"
+                    android:buttonTint="@color/colorWhite" />
             </RelativeLayout>
 
-        </RelativeLayout>
 
-        <RelativeLayout
-            android:id="@+id/settings_filetype_icon_checkbox_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".1">
+        </LinearLayout>
 
 
-            <CheckBox
-                android:id="@+id/settings_filetype_icon_checkbox"
-                android:layout_width="wrap_content"
+        <!--........... Settings Block: Preview on long press ................-->
+        <LinearLayout
+            android:id="@+id/settings_block_allow_previewer"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/settings_block_max_height"
+            android:clickable="true">
+
+            <RelativeLayout
+                android:id="@+id/settings_allow_previewer_container"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:buttonTint="@color/colorWhite" />
-        </RelativeLayout>
-    </LinearLayout>
+                android:layout_weight=".9">
 
-</LinearLayout>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_title_allow_previewer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Preview submission on long press"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="16sp" />
+
+                    <!-- Icons subtitle-->
+                    <TextView
+                        android:id="@+id/settings_allow_previewer_subtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/settings_title_allow_previewer"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Long press submission thumbnail to preview title and media"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="12sp" />
+                </RelativeLayout>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/settings_allow_previewer_checkbox_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".1">
+
+
+                <CheckBox
+                    android:id="@+id/settings_allow_previewer_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:buttonTint="@color/colorWhite" />
+            </RelativeLayout>
+
+        </LinearLayout>
+
+
+        <!-- Previewer size Radio buttons-->
+        <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/radio_group_preview_size"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center|end"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/radio_preview_size_option_large"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onRadioButtonClicked"
+                android:text="Large"
+                android:textColor="@color/colorWhite" />
+
+            <RadioButton
+                android:id="@+id/radio_preview_size_option_small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onRadioButtonClicked"
+                android:text="Small"
+                android:textColor="@color/colorWhite" />
+        </RadioGroup>
+
+        <!--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Section Title: Click actions^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
+        <TextView
+            android:id="@+id/settings_section_title_appearance"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:background="@color/colorBlack"
+            android:paddingLeft="10dp"
+            android:text="@string/title_appearance"
+            android:textColor="@color/colorWhite" />
+
+        <!--.............. Settings Block: Display domain icon .................-->
+        <LinearLayout
+            android:id="@+id/settings_block_display_domain_icon"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/settings_block_max_height"
+            android:clickable="true">
+
+            <RelativeLayout
+                android:id="@+id/settings_domain_icon_text_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".9">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_title_domain_icons"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Show submission domain icon"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="16sp" />
+
+                    <!-- Icons subtitle-->
+                    <TextView
+                        android:id="@+id/settings_domain_icons_subtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/settings_title_domain_icons"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Overlay icons such as Imgur, Youtube, Gfycat on submission thumbnails"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="12sp" />
+                </RelativeLayout>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/settings_domain_icon_checkbox_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".1">
+
+
+                <CheckBox
+                    android:id="@+id/settings_domain_icon_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:buttonTint="@color/colorWhite" />
+            </RelativeLayout>
+        </LinearLayout>
+
+        <!--.............. Settings Block: Display filetype icon .................-->
+        <LinearLayout
+            android:id="@+id/settings_block_filetype_icon"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/settings_block_max_height"
+            android:clickable="true">
+
+            <RelativeLayout
+                android:id="@+id/settings_filetype_icon_text_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".9">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_title_filetype_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Show submission file type icon"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="16sp" />
+
+                    <!-- Icons subtitle-->
+                    <TextView
+                        android:id="@+id/settings_filetype_icons_subtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/settings_title_filetype_icon"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Display overlay icons showing the type of submission it is (IMG, GIF, VID)"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="12sp" />
+                </RelativeLayout>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/settings_filetype_icon_checkbox_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".1">
+
+
+                <CheckBox
+                    android:id="@+id/settings_filetype_icon_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:buttonTint="@color/colorWhite" />
+            </RelativeLayout>
+
+        </LinearLayout>
+
+
+        <!-- ...Settings Block: Display NSFW icon on thumbnails......-->
+        <LinearLayout
+            android:id="@+id/settings_block_nsfw_icon"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/settings_block_max_height"
+            android:clickable="true">
+
+            <RelativeLayout
+                android:id="@+id/settings_nsfw_icon_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".9">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_title_nsfw_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Display NSFW icon"
+                        android:textSize="16sp" />
+
+                    <!-- Subtitle-->
+                    <TextView
+                        android:id="@+id/settings_nsfw_icon_subtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/settings_title_nsfw_icon"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Display 'NSFW' icon in upper right corner of NSFW thumbnails"
+                        android:textSize="12sp" />
+                </RelativeLayout>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/settings_nsfw_icon_checkbox_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".1">
+
+                <CheckBox
+                    android:id="@+id/settings_nsfw_icon_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+            </RelativeLayout>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

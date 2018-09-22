@@ -46,6 +46,8 @@ public class Constants {
     public final static String SETTINGS_ALLOW_DOMAIN_ICON = "SETTINGS_ALLOW_DOMAIN_ICON";
     public final static String SETTINGS_ALLOW_FILETYPE_ICON = "SETTINGS_ALLOW_FILETYPE_ICON";
     public final static String SETTINGS_HIDE_NSFW_THUMBS = "SETTINGS_HIDE_NSFW_THUMBS";
+    public final static String SETTINGS_SHOW_NSFW_ICON = "SETTINGS_SHOW_NSFW_ICON";
+
     public final static String SETTINGS_PREVIEW_SIZE_SMALL = "SETTINGS_PREVIEW_SIZE_SMALL";
     public final static String SETTINGS_PREVIEW_SIZE_LARGE = "SETTINGS_PREVIEW_SIZE_LARGE";
     public final static String MOST_RECENT_USER = "MOST_RECENT_USER";

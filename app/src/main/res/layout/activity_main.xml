@@ -1,4 +1,4 @@
-<!-- Defines the loading spinner -->
+<!-- Defines the loading progress bar -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,13 +12,5 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center" />
-<!--
-    <TextView
-        android:id="@+id/progress_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:inputType="textMultiLine|textNoSuggestions"
-        android:text="Loading your Reddit..."
-        android:textColor="@color/colorWhite" />-->
+
 </FrameLayout>

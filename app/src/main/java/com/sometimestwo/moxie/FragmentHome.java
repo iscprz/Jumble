@@ -72,6 +72,7 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
+import com.makeramen.roundedimageview.RoundedImageView;
 import com.sometimestwo.moxie.Imgur.client.ImgurClient;
 import com.sometimestwo.moxie.Imgur.response.images.ImgurSubmission;
 import com.sometimestwo.moxie.Imgur.response.images.SubmissionRoot;
@@ -81,8 +82,10 @@ import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Helpers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -117,15 +120,15 @@ public class FragmentHome extends Fragment {
     private boolean mInvalidateDataSource = false;
     private boolean is404 = false;
 
-    // settings sharedprefs_settings
+    // User's preferences. Initialize with default values for safety
     SharedPreferences sharedprefs_settings;
-    private boolean mIsLoggedIn = false;
     private boolean mAllowNSFW = false;
     private boolean mAllowImagePreview = false;
     private boolean mAllowBigDisplayClickClose = true;
     private boolean mDisplayDomainIcon = false;
     private boolean mHideNSFWThumbs = false;
     private boolean mDisplayFiletypeIcons = false;
+    private boolean mDisplayNSFWIcon = false;
     // private boolean mAllowGifPreview = false;
     private Constants.HoverPreviewSize mPreviewSize;
 
@@ -144,7 +147,7 @@ public class FragmentHome extends Fragment {
     private ImageView mHoverImagePreviewLarge;
     // private GfycatPlayer mHoverPreviewGfycatLarge;
 
-    /* Navigation view */
+    /* Left navigation view */
     private LinearLayout mNavViewHeader;
     private TextView mNavViewHeaderTitle;
     private ImageView mNavViewDropDown;
@@ -152,6 +155,13 @@ public class FragmentHome extends Fragment {
     ExpandableListView expandableListView;
     List<ExpandableMenuModel> headerList = new ArrayList<>();
     HashMap<ExpandableMenuModel, List<ExpandableMenuModel>> childList = new HashMap<>();
+
+    /* Right navigation view*/
+    private RecyclerView mExploreRecyclerView;
+    // maps an explore category to a background image uri
+    private Map<String, Integer> mExploreCatagoriesMap;
+    // holds a list of the "Explore" catagories in memory
+    private List<String> mExploreCatagoriesList;
 
     // log out button
     private TextView mButtonLogout;
@@ -244,7 +254,7 @@ public class FragmentHome extends Fragment {
         mRecyclerMain.setHasFixedSize(true);
 
         /* RecyclerView adapter stuff */
-        final RecyclerAdapter adapter = new RecyclerAdapter(getContext());
+        final SubredditContentRecyclerAdapter adapter = new SubredditContentRecyclerAdapter(getContext());
 
         /* Viewmodel fetching and data updating */
         if (mInvalidateDataSource) {
@@ -438,7 +448,7 @@ public class FragmentHome extends Fragment {
     }
 
     /* Drawerlayout config to handle navigation views */
-    private void setupDrawerLayout(View v){
+    private void setupDrawerLayout(View v) {
         mDrawerLayout = v.findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(
                 getActivity(),                  /* host Activity */
@@ -491,7 +501,7 @@ public class FragmentHome extends Fragment {
         });
     }
 
-    private void setupRightNavView(View v){
+    private void setupRightNavView(View v) {
         mNavigationViewRight = (NavigationView) v.findViewById(R.id.nav_view_right);
 
         // set up spinner(header)
@@ -502,7 +512,119 @@ public class FragmentHome extends Fragment {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
+
+        // set up all the "Explore" options.
+        mExploreRecyclerView = (RecyclerView) v.findViewById(R.id.navview_right_explore_recycler);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
+        mExploreRecyclerView.setLayoutManager(gridLayoutManager);
+        mExploreRecyclerView.setHasFixedSize(true);
+        initExploreCatagories();
+        mExploreRecyclerView.setAdapter(new ExploreGridRecyclerAdapter());
+
     }
+
+    private class ExploreItemHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        private RoundedImageView mExploreImage;
+        private TextView mExploreTitle;
+
+        public ExploreItemHolder(View itemView) {
+            super(itemView);
+            mExploreImage = (RoundedImageView) itemView.findViewById(R.id.explore_image);
+            mExploreTitle = (TextView) itemView.findViewById(R.id.explore_title);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            //onAlbumClick(getAdapterPosition());
+        }
+    }
+
+    private class ExploreGridRecyclerAdapter extends RecyclerView.Adapter<ExploreItemHolder> {
+        public ExploreGridRecyclerAdapter() { }
+
+        @NonNull
+        @Override
+        public ExploreItemHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(getActivity());
+            View view = inflater.inflate(R.layout.explore_grid_item, viewGroup, false);
+            return new ExploreItemHolder(view);
+        }
+
+        @NonNull
+        @Override
+        public void onBindViewHolder(@NonNull final ExploreItemHolder exploreItemGridItem, int position) {
+            String category = mExploreCatagoriesList.get(position);
+
+            exploreItemGridItem.mExploreTitle.setText(category);
+            String bgUri = "android.resource://com.sometimestwo.moxie/"
+                           + mExploreCatagoriesMap.get(category);
+            GlideApp.load(Uri.parse(bgUri))
+                    .apply(new RequestOptions()
+                            .centerInside()
+                            .diskCacheStrategy(DiskCacheStrategy.ALL))
+                    .into(exploreItemGridItem.mExploreImage);
+
+            exploreItemGridItem.mExploreImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                }
+            });
+
+            exploreItemGridItem.mExploreTitle.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                }
+            });
+
+            //Long click listeners for future use
+           /* exploreItemGridItem.mExploreImage.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    return false;
+                }
+            });
+
+            exploreItemGridItem.mExploreTitle.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    return false;
+                }
+            });*/
+        }
+
+        @Override
+        public int getItemCount() {
+            return mExploreCatagoriesList.size();
+        }
+    }
+
+    private void initExploreCatagories() {
+        //store these values in a list in memory for convenience
+        mExploreCatagoriesList = Arrays.asList(getResources().getStringArray(R.array.explore_catagories));
+
+        // maps an explore category to an image file that will follow the following naming
+        // convention: explore_bg_category, where category is the explore category
+        mExploreCatagoriesMap = new HashMap<>();
+        mExploreCatagoriesMap.put("Funny", R.drawable.explore_bg_funny);
+        mExploreCatagoriesMap.put("Awwwww", R.drawable.explore_bg_aww);
+        mExploreCatagoriesMap.put("Travel", R.drawable.explore_bg_travel);
+        mExploreCatagoriesMap.put("Meme", R.drawable.explore_bg_meme);
+        mExploreCatagoriesMap.put("GIFs", R.drawable.explore_bg_gif);
+        mExploreCatagoriesMap.put("Food", R.drawable.explore_bg_food);
+        mExploreCatagoriesMap.put("Sports", R.drawable.explore_bg_sports);
+        mExploreCatagoriesMap.put("Gaming", R.drawable.explore_bg_gaming);
+        mExploreCatagoriesMap.put("Design", R.drawable.explore_bg_design);
+        mExploreCatagoriesMap.put("Art", R.drawable.explore_bg_art);
+        mExploreCatagoriesMap.put("WTF", R.drawable.explore_bg_wtf);
+        mExploreCatagoriesMap.put("Porn", R.drawable.explore_bg_porn);
+        mExploreCatagoriesMap.put("Infographics", R.drawable.explore_bg_infographics);
+        mExploreCatagoriesMap.put("Nature", R.drawable.explore_bg_nature);
+
+        //Uri.parse("android.resource://com.sometimestwo.moxie/" + R.drawable.sample_1);
+        //com.sometimestwo.moxie R.drawable.explore_bg_art
+    }
+
     private void prepareMenuData() {
         List<ExpandableMenuModel> childModelsList = new ArrayList<>();
 
@@ -743,6 +865,8 @@ public class FragmentHome extends Fragment {
             mDisplayDomainIcon = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false);
             mHideNSFWThumbs = sharedprefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false);
             mDisplayFiletypeIcons = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false);
+            mDisplayNSFWIcon = sharedprefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false);
+
             mNumDisplayColumns = 3;//sharedprefs_settings.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
 
 
@@ -769,10 +893,10 @@ public class FragmentHome extends Fragment {
             };
 
 
-    public class RecyclerAdapter extends PagedListAdapter<SubmissionObj, RecyclerAdapter.ItemViewHolder> {
+    private class SubredditContentRecyclerAdapter extends PagedListAdapter<SubmissionObj, SubredditContentRecyclerAdapter.ItemViewHolder> {
         private Context mContext;
 
-        RecyclerAdapter(Context mContext) {
+        SubredditContentRecyclerAdapter(Context mContext) {
             super(DIFF_CALLBACK);
             this.mContext = mContext;
         }
@@ -919,7 +1043,14 @@ public class FragmentHome extends Fragment {
                         default:
                             break;
                     }
+                }
 
+                // Display NSFW icon on top right if enabled through settings
+                if(mDisplayNSFWIcon && item.isNSFW()){
+                    holder.thumbnailNSFWIcon.setVisibility(View.VISIBLE);
+                }
+                else{
+                    holder.thumbnailNSFWIcon.setVisibility(View.GONE);
                 }
                 // Finally load thumbnail into recyclerview
                 if (item.isNSFW() && mHideNSFWThumbs) {
@@ -1051,12 +1182,14 @@ public class FragmentHome extends Fragment {
             ImageView thumbnailImageView;
             ImageView thumbnailDomainIcon;
             ImageView thumbnailFiletypeIcon;
+            ImageView thumbnailNSFWIcon;
 
             public ItemViewHolder(View itemView) {
                 super(itemView);
                 thumbnailImageView = (ImageView) itemView.findViewById(R.id.thumbnail);
                 thumbnailDomainIcon = (ImageView) itemView.findViewById(R.id.thumbnail_domain_icon);
                 thumbnailFiletypeIcon = (ImageView) itemView.findViewById(R.id.thumbnail_filetype_icon);
+                thumbnailNSFWIcon = (ImageView) itemView.findViewById(R.id.thumbnail_nsfw_icon);
             }
 
             @Override

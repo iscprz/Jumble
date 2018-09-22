@@ -94,6 +94,12 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
         if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false) == false){
             prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false);
         }
+
+        // Show NSFW icon on NSFW submissions
+        if(prefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false) == false){
+            prefs_settings_editor.putBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false);
+        }
+
         prefs_settings_editor.commit();
 
         new FetchRedditUser(this).execute();
@@ -136,27 +142,23 @@ public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.A
             String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
 
             if(!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)){
-                App.getAccountHelper().switchToUser(mostRecentUser);
-               /* if(!App.getAccountHelper().isAuthenticated()){
-
-                    Log.e("STARTUP_ERROR", "User " + mostRecentUser + " was not authenticated.");
+                try{
+                    App.getAccountHelper().switchToUser(mostRecentUser);
                 }
-                else{
-                }*/
+                catch (Exception e){
+                    App.getAccountHelper().switchToUser(mostRecentUser);
+                }
             }
+            //TODO Test to check if issue is here
             else{
-                App.getAccountHelper().switchToUserless();
+                try {
+                    App.getAccountHelper().switchToUserless();
+                }
+                catch (Exception e){
+                    App.getAccountHelper().switchToUserless();
+                }
             }
 
-           /*   if(App.getAccountHelper().isAuthenticated()){
-              String currUsername = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
-                //App.getAccountHelper().switchToUser(currUsername);
-            }
-            else if(!App.getAccountHelper().isAuthenticated()
-                    || Constants.USERNAME_USERLESS.equalsIgnoreCase(App.getAccountHelper().getReddit().getAuthManager().currentUsername())) {
-                App.getAccountHelper().switchToUserless();
-
-            }*/
                 // TODO CRASH HERE ON TAB BACK IN:
                 // Caused by: java.lang.IllegalStateException: No unexpired OAuthData or refresh token available for user '<userless>'
                 // check authentication stuff and redo if necessary

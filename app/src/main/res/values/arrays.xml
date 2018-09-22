@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="navview_right_dropdown_array">
+        <item>Explore</item>
+        <item>Subreddits</item>
+    </string-array>
+
+    <string-array name="explore_catagories">
+        <item>Funny</item>
+        <item>Awwwww</item>
+        <item>Travel</item>
+        <item>Meme</item>
+        <item>GIFs</item>
+        <item>Food</item>
+        <item>Sports</item>
+        <item>Gaming</item>
+        <item>Design</item>
+        <item>Art</item>
+        <item>WTF</item>
+        <item>Porn</item>
+        <item>Infographics</item>
+        <item>Nature</item>
+    </string-array>
+</resources>

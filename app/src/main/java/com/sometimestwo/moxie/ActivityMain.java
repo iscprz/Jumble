@@ -17,7 +17,6 @@ import java.lang.ref.WeakReference;
         TODOS:
             - double tap to upvote
             - view pager
-            - invalid subreddit
             - exoplayer releases
             - crash after token expires
             settings options:

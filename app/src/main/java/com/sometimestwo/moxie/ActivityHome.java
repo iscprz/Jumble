@@ -136,11 +136,7 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
         if (requestCode == Constants.INTENT_SETTINGS) {
             if (resultCode == RESULT_OK) {
                 //refreshFragment(Constants.TAG_FRAG_HOME, false);
-                Log.e(TAG, "Returned from settings activity");
-            }
-            // Setting was changed that requires data to be invalidated(refreshed)
-            else if (resultCode == Constants.RESULT_OK_INVALIDATE_DATA) {
-               // refreshFragment(Constants.TAG_FRAG_HOME, true);
+                //Log.e(TAG, "Returned from settings activity");
             }
         }
     }

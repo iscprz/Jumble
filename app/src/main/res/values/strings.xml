@@ -16,6 +16,7 @@
     <string name="title_settings"><b>Settings</b></string>
     <!-- Toasts-->
     <string name="toast_settings_saved">Settings saved</string>
+    <string name="toast_settings_saved_refresh">Settings saved. Refresh to update.</string>
     <string name="toast_settings_logout_success">Successfully logged out</string>
     <string name="toast_copied_to_clipboard">Link copied to clipboard</string>
     <string name="error_404">There doesn\'t seem to be \n anything here :{ </string>

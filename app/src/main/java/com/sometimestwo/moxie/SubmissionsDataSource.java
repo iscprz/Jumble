@@ -43,7 +43,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         TimePeriod timePeriod = App.getMoxieInfoObj().getmTimePeriod();
 
         //TODO figure this out
-        String defaultSubreddit = "pics";
+        String defaultSubreddit = "all";
 
         if(!mMoxieInfoObj.getmSubredditStack().isEmpty()){
             subredditRequested = mMoxieInfoObj.getmSubredditStack().peek();

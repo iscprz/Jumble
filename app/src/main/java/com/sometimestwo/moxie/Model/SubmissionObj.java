@@ -51,6 +51,7 @@ public class SubmissionObj implements Serializable{
     private String previewUrl;
     private String title;
     private String url;
+    private String cleanedUrl;
     private boolean isVisited;
     private boolean isRemoved;
     private VoteDirection vote;
@@ -325,6 +326,14 @@ public class SubmissionObj implements Serializable{
 
     public void setScore(int score) {
         this.score = score;
+    }
+
+    public String getCleanedUrl() {
+        return cleanedUrl;
+    }
+
+    public void setCleanedUrl(String cleanedUrl) {
+        this.cleanedUrl = cleanedUrl;
     }
 
     /*public Gfycat getGfycatObj() {

@@ -183,7 +183,6 @@ public class FragmentSubmissionViewer extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        releaseExoPlayer();
     }
 
     @Override
@@ -246,12 +245,18 @@ public class FragmentSubmissionViewer extends Fragment {
     private void setupMedia() {
         mSubmissionTitle.setText(mCurrSubmission.getTitle());
 
+        // Prioritize using the cleaned URL. Some post URLS point to indirect images:
+        // Indirect url example: imgur.com/AktjAWe
+        // Cleaned url example: imgur.com/AktjAWe.jpg
+        String imageUrl = (mCurrSubmission.getCleanedUrl() != null)
+                ? mCurrSubmission.getCleanedUrl() : mCurrSubmission.getUrl();
+
         if(mCurrSubmission.getSubmissionType() == Constants.SubmissionType.IMAGE){
             mImageView.setVisibility(View.VISIBLE);
             mExoplayer.setVisibility(View.GONE);
             //TODO: handle invalid URL
             Glide.with(this)
-                    .load(mCurrSubmission.getUrl())
+                    .load(imageUrl)
                     .listener(new ProgressBarRequestListener(mProgressBar))
                     //* .apply(options)*//*
                     .into(mImageView);
@@ -259,7 +264,7 @@ public class FragmentSubmissionViewer extends Fragment {
                 || mCurrSubmission.getSubmissionType() == Constants.SubmissionType.VIDEO){
             mImageView.setVisibility(View.GONE);
             mExoplayer.setVisibility(View.VISIBLE);
-            initializePlayer(mCurrSubmission.getUrl());
+            initializePlayer(imageUrl);
         }
     }
 

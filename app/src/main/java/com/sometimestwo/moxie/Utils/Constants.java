@@ -52,7 +52,8 @@ public class Constants {
     public final static String SETTINGS_PREVIEW_SIZE_LARGE = "SETTINGS_PREVIEW_SIZE_LARGE";
     public final static String MOST_RECENT_USER = "MOST_RECENT_USER";
 
-
+    /* API */
+    public final static String BASE_URL_GFYCAT = "https://gfycat.com/cajax/get/";
 
     /* Misc*/
     public final static String[] VALID_MEDIA_EXTENSION = {"jpg", "jpeg", "png","gifv" , "gif"};

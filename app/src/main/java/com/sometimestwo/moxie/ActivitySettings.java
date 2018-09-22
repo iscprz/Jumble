@@ -322,7 +322,11 @@ public class ActivitySettings extends Activity {
         if (mLogoutEvent) {
             Toast.makeText(this, getResources()
                     .getString(R.string.toast_settings_logout_success), Toast.LENGTH_SHORT).show();
-        } else if (mModified) {
+        }else if(mNeedsRefresh){
+            Toast.makeText(this, getResources()
+                    .getString(R.string.toast_settings_saved_refresh), Toast.LENGTH_LONG).show();
+        }
+        else if (mModified) {
             Toast.makeText(this, getResources()
                     .getString(R.string.toast_settings_saved), Toast.LENGTH_SHORT).show();
         }
@@ -335,7 +339,6 @@ public class ActivitySettings extends Activity {
             setResult(Constants.RESULT_OK_INVALIDATE_DATA, intent);
         } else if (mModified) {
             setResult(RESULT_OK, intent);
-
         }
         finish();
     }

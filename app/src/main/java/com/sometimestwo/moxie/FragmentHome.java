@@ -73,14 +73,20 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
 import com.makeramen.roundedimageview.RoundedImageView;
+import com.sometimestwo.moxie.API.GfycatAPI;
 import com.sometimestwo.moxie.Imgur.client.ImgurClient;
 import com.sometimestwo.moxie.Imgur.response.images.ImgurSubmission;
 import com.sometimestwo.moxie.Imgur.response.images.SubmissionRoot;
 import com.sometimestwo.moxie.Model.ExpandableMenuModel;
-import com.sometimestwo.moxie.Model.MoxieInfoObj;
+import com.sometimestwo.moxie.Model.GfyItem;
+import com.sometimestwo.moxie.Model.GfycatWrapper;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
-import com.sometimestwo.moxie.Utils.Helpers;
+import com.sometimestwo.moxie.Utils.Utils;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 import net.dean.jraw.models.SubredditSort;
 import net.dean.jraw.models.TimePeriod;
@@ -93,6 +99,7 @@ import java.util.Map;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -381,11 +388,10 @@ public class FragmentHome extends Fragment {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        if(!isViewingSubmission){
+        if (!isViewingSubmission) {
             menu.findItem(R.id.menu_comments_sortby).setVisible(false);
             menu.findItem(R.id.menu_submissions_sortby).setVisible(true);
-        }
-        else{
+        } else {
             menu.findItem(R.id.menu_comments_sortby).setVisible(true);
             menu.findItem(R.id.menu_submissions_sortby).setVisible(false);
         }
@@ -406,8 +412,8 @@ public class FragmentHome extends Fragment {
                 } else {
                     mHomeEventListener.goBack();
                 }
-            return true;
-                /* Sort by*/
+                return true;
+            /* Sort by*/
             case R.id.menu_submissions_sortby_HOT:
                 App.getMoxieInfoObj().setmSortBy(SubredditSort.HOT);
                 App.getMoxieInfoObj().setmTimePeriod(null);
@@ -511,7 +517,7 @@ public class FragmentHome extends Fragment {
                 // User successfully logged in. Update the current user.
                 updateCurrentUser(App.getTokenStore().getUsernames().size() - 1);
                 // empty the subreddit stack since we're starting over with new user
-                while(!App.getMoxieInfoObj().getmSubredditStack().isEmpty()){
+                while (!App.getMoxieInfoObj().getmSubredditStack().isEmpty()) {
                     App.getMoxieInfoObj().getmSubredditStack().pop();
                 }
                 refresh(true);
@@ -530,7 +536,7 @@ public class FragmentHome extends Fragment {
             }
 
             // Subtitle - remember that if sort by is null, getter will default to HOT
-            mToolbar.setSubtitle(Helpers.makeTextCute(App.getMoxieInfoObj().getmSortBy().toString()));
+            mToolbar.setSubtitle(Utils.makeTextCute(App.getMoxieInfoObj().getmSortBy().toString()));
 
 
             // set hamburger menu icon
@@ -650,7 +656,8 @@ public class FragmentHome extends Fragment {
     }
 
     private class ExploreGridRecyclerAdapter extends RecyclerView.Adapter<ExploreItemHolder> {
-        public ExploreGridRecyclerAdapter() { }
+        public ExploreGridRecyclerAdapter() {
+        }
 
         @NonNull
         @Override
@@ -667,7 +674,7 @@ public class FragmentHome extends Fragment {
 
             exploreItemGridItem.mExploreTitle.setText(category);
             String bgUri = "android.resource://com.sometimestwo.moxie/"
-                           + mExploreCatagoriesMap.get(category);
+                    + mExploreCatagoriesMap.get(category);
             GlideApp.load(Uri.parse(bgUri))
                     .apply(new RequestOptions()
                             .centerInside()
@@ -918,7 +925,8 @@ public class FragmentHome extends Fragment {
     }
 
     /*
-        Hover preview set up. Hides any views that aren't needed and unhides the ones we need.
+        Hover preview set up. Hides any views that aren't needed and unhides
+        the ones we need according to which viewer has been selected in settings.
      */
     private void setupPreviewer(SubmissionObj item) {
         mProgressBar.setVisibility(View.VISIBLE);
@@ -1042,7 +1050,7 @@ public class FragmentHome extends Fragment {
                 return;
             }
             String thumbnail = Constants.THUMBNAIL_NOT_FOUND;
-            item.setSubmissionType(Helpers.getSubmissionType(item.getUrl()));
+            item.setSubmissionType(Utils.getSubmissionType(item.getUrl()));
 
             if (item != null && !item.isSelfPost()) {
                 is404 = false;
@@ -1051,7 +1059,7 @@ public class FragmentHome extends Fragment {
                     // Check if submission type is null. This will happen if the item's URL is
                     // to a non-direct image/gif link such as https://imgur.com/qTadRtq
                     if (item.getSubmissionType() == null) {
-                        String imgurHash = Helpers.getImgurHash(item.getUrl());
+                        String imgurHash = Utils.getImgurHash(item.getUrl());
                         // Async call to Imgur API
                         fixIndirectImgurUrl(item, imgurHash);
                     }
@@ -1062,7 +1070,7 @@ public class FragmentHome extends Fragment {
                     // imgur gif
                     else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
                         // Assume we're given .gifv link. Need to fetch .mp4 link from Imgur API
-                        String imgurHash = Helpers.getImgurHash(item.getUrl());
+                        String imgurHash = Utils.getImgurHash(item.getUrl());
                         getMp4LinkImgur(item, imgurHash);
                     }
                     // We assume item will always have a thumbnail in an image format
@@ -1092,18 +1100,13 @@ public class FragmentHome extends Fragment {
                 }
                 //gfycat
                 else if (item.getDomain().contains("gfycat")) {
-                   /* String testID = "SpitefulGoldenAracari";
-
-                    Subscription subscription = GfyCore.getFeedManager()
-                            .getGfycat(testID)
-                            .cache()
-                            .subscribe();
-                    FeedIdentifier feedIdentifier = PublicFeedIdentifier.fromSingleItem(testID);
-                    Observable<FeedData> feedDataObservable =
-                            GfyCore.getFeedManager().observeGfycats(getContext(), feedIdentifier);
-
-                    Observable<FeedData> first = feedDataObservable.first();*/
-
+                    // We're given a URL in this format: //https://gfycat.com/SpitefulGoldenAracari
+                    //extract gfycat ID (looks like:SpitefulGoldenAracari)
+                    String gfycatHash = Utils.getGfycatHash(item.getUrl());
+                    // get Gfycat .mp4 "clean url"
+                    getGfycat(gfycatHash,item);
+                    // Assume all Gfycat links are of submission type GIF
+                    item.setSubmissionType(Constants.SubmissionType.GIF);
                     thumbnail = item.getThumbnail();
                     if (mDisplayDomainIcon) {
                         holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_gfycat_circle_blue));
@@ -1158,10 +1161,9 @@ public class FragmentHome extends Fragment {
                 }
 
                 // Display NSFW icon on top right if enabled through settings
-                if(mDisplayNSFWIcon && item.isNSFW()){
+                if (mDisplayNSFWIcon && item.isNSFW()) {
                     holder.thumbnailNSFWIcon.setVisibility(View.VISIBLE);
-                }
-                else{
+                } else {
                     holder.thumbnailNSFWIcon.setVisibility(View.GONE);
                 }
 
@@ -1204,7 +1206,7 @@ public class FragmentHome extends Fragment {
                             if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
                                 setupPreviewer(item);
                                 GlideApp
-                                        .load(item.getUrl())
+                                        .load(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl())
                                         .apply(new RequestOptions()
                                                 .diskCacheStrategy(DiskCacheStrategy.ALL))
                                         .into(mHoverImagePreviewSmall);
@@ -1225,7 +1227,7 @@ public class FragmentHome extends Fragment {
                             mHoverPreviewSubredditLarge.setText("/r/" + item.getSubreddit());
                             setupPreviewer(item);
                             if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-                                GlideApp.load(item.getUrl())
+                                GlideApp.load(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl())
                                         .listener(new ProgressBarRequestListener(mProgressBar))
                                         /*.apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))*/
                                         .into(mHoverImagePreviewLarge);
@@ -1339,7 +1341,6 @@ public class FragmentHome extends Fragment {
 
     private void openSubmissionViewer(SubmissionObj submission) {
         FragmentManager fm = getActivity().getSupportFragmentManager();
-        // Fragment mediaDisplayerFragment = (FragmentSubmissionViewer) fm.findFragmentByTag(Constants.TAG_FRAG_MEDIA_DISPLAY);
         FragmentTransaction ft = fm.beginTransaction();
         Fragment mediaDisplayerFragment = FragmentSubmissionViewer.newInstance();
         Bundle args = new Bundle();
@@ -1348,7 +1349,6 @@ public class FragmentHome extends Fragment {
 
         mediaDisplayerFragment.setTargetFragment(FragmentHome.this, KEY_INTENT_GOTO_SUBMISSIONVIEWER);
 
-        //ft.replace(R.id.fragment_container_home, mediaDisplayerFragment,Constants.TAG_FRAG_MEDIA_DISPLAY);
         int parentContainerId = ((ViewGroup) getView().getParent()).getId();
         ft.add(parentContainerId, mediaDisplayerFragment/*, Constants.TAG_FRAG_MEDIA_DISPLAY*/);
         ft.addToBackStack(null);
@@ -1407,7 +1407,7 @@ public class FragmentHome extends Fragment {
         sharedprefs_settings.edit().putString(Constants.MOST_RECENT_USER, newCurrUser).apply();
 
         // start our subreddit stack over cause we're starting over again
-        while(!App.getMoxieInfoObj().getmSubredditStack().isEmpty()){
+        while (!App.getMoxieInfoObj().getmSubredditStack().isEmpty()) {
             App.getMoxieInfoObj().getmSubredditStack().pop();
         }
 
@@ -1544,8 +1544,46 @@ public class FragmentHome extends Fragment {
         }
     }
 
+
+    /***********[GFYCAT SPECIFIC FUNCTIONS] ***************/
+    /****************************************************/
+    /****************************************************/
+
+    private void getGfycat(String gfycatHash, SubmissionObj item){
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(Constants.BASE_URL_GFYCAT)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        GfycatAPI gfycatAPI = retrofit.create(GfycatAPI.class);
+        gfycatAPI.getFeed(gfycatHash);
+        Call<GfycatWrapper> call = gfycatAPI.getFeed(gfycatHash);
+        call.enqueue(new Callback<GfycatWrapper>() {
+            @Override
+            public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {
+                //Log.d(TAG, "onResponse: feed: " + response.body().toString());
+                Log.d(TAG, "onResponse: Server Response: " + response.toString());
+
+                GfyItem gfyItem = response.body().getGfyItem();
+                item.setCleanedUrl(gfyItem.getMobileUrl());
+            }
+
+            @Override
+            public void onFailure(Call<GfycatWrapper> call, Throwable t) {
+                Log.e(TAG, "onFailure: Unable to retrieve RSS: " + t.getMessage() );
+                //Toast.makeText(MainActivity.this, "An Error Occured", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+    }
+
+
+
+    /***********[IMGUR SPECIFIC FUNCTIONS] ***************/
+    /****************************************************/
+    /****************************************************/
+
     /*
-       [IMGUR SPECIFIC FUNCTION]
        Takes indirect Imgur url such as https://imgur.com/7Ogk88I, fetches direct link from
        Imgur API, and sets item's URL to direct link.
        We also are setting the item's submission type here. Might need to do this elsewhere.
@@ -1569,13 +1607,13 @@ public class FragmentHome extends Fragment {
                         // 2. Gif. Will contain mp4 link
 
                         // image
-                        if (imgurSubmissionData.getMp4() == null /*|| "".equalsIgnoreCase(imgurSubmissionData.getMp4())*/) {
-                            item.setUrl(imgurSubmissionData.getLink());
+                        if (imgurSubmissionData.getMp4() == null) {
+                            item.setCleanedUrl(imgurSubmissionData.getLink());
                             item.setSubmissionType(Constants.SubmissionType.IMAGE);
                         }
                         // gif
                         else {
-                            item.setUrl(imgurSubmissionData.getMp4());
+                            item.setCleanedUrl(imgurSubmissionData.getMp4());
                             item.setSubmissionType(Constants.SubmissionType.GIF);
                         }
                     }
@@ -1593,14 +1631,14 @@ public class FragmentHome extends Fragment {
     }
 
     /*
-        [IMGUR SPECIFIC FUNCTION]
+
         Given a imgur link ending with .gif/gifv such as https://i.imgur.com/4RxPsWI.gifv,
         retrieve corresponding .mp4 link: https://i.imgur.com/4RxPsWI.mp4 and set item's
         URL to new .mp4 link.
      */
     private void getMp4LinkImgur(SubmissionObj item, String imgurHash) {
         ImgurClient imgurClient = new ImgurClient();
-
+        //UjpwIRe is a 404 gifv hash
         imgurClient.getImageService()
                 .getImageByHash(imgurHash)
                 .subscribeOn(Schedulers.io())
@@ -1617,6 +1655,7 @@ public class FragmentHome extends Fragment {
 
                     @Override
                     public void onError(Throwable e) {
+                        Log.e("ERROR_IMGUR_FETCH", "Failed to retrieve imgur hash: " + imgurHash);
                         e.printStackTrace();
                     }
 

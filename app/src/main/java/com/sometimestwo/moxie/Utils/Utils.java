@@ -1,12 +1,16 @@
 package com.sometimestwo.moxie.Utils;
 
 
+import android.app.Activity;
+import android.os.Looper;
+import android.widget.ProgressBar;
+
 import net.dean.jraw.models.Submission;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class Helpers {
+public class Utils {
 
     /* Takes a string and makes it cute: CONTROVERSIAL -> Controversial */
     public static String makeTextCute(String ugly){
@@ -88,5 +92,37 @@ public class Helpers {
             res = res.split("\\.")[0];
         }
         return res;
+    }
+
+    public static String getGfycatHash(String gfycatUrl){
+        String hash = gfycatUrl.substring(gfycatUrl.lastIndexOf("/", gfycatUrl.length()));
+        // remove trailing slash
+        return hash.substring(1);
+        //return gfycatUrl.substring(gfycatUrl.lastIndexOf("/", gfycatUrl.length()));
+    }
+
+
+    /**
+     * Shows a ProgressBar in the UI. If this method is called from a non-main thread, it will run
+     * the UI code on the main thread
+     *
+     * @param activity        The activity context to use to display the ProgressBar
+     * @param progressBar     The ProgressBar to display
+     * @param isIndeterminate True to show an indeterminate ProgressBar, false otherwise
+     */
+    public static void showProgressBar(final Activity activity, final ProgressBar progressBar,
+                                        final boolean isIndeterminate) {
+        if (activity == null) return;
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            // Current Thread is Main Thread.
+            if (progressBar != null) progressBar.setIndeterminate(isIndeterminate);
+        } else {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (progressBar != null) progressBar.setIndeterminate(isIndeterminate);
+                }
+            });
+        }
     }
 }

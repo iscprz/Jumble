@@ -1,6 +1,8 @@
 package com.sometimestwo.moxie;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -12,17 +14,21 @@ import android.webkit.CookieSyncManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.sometimestwo.moxie.Utils.Constants;
+
 import net.dean.jraw.oauth.OAuthException;
 import net.dean.jraw.oauth.StatefulAuthHelper;
 
 import java.lang.ref.WeakReference;
 
 public class ActivityNewUserLogin extends AppCompatActivity {
+    private SharedPreferences prefs_settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_user);
+        prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
 
         // Don't save any cookies, cache, or history from previous sessions. If we don't do this,
         // once the first user logs in and authenticates, the next time we go to add a new user,
@@ -71,6 +77,21 @@ public class ActivityNewUserLogin extends AppCompatActivity {
 
         // Finally, show the authorization URL to the user
         webView.loadUrl(authUrl);
+    }
+
+    @Override
+    protected void onResume() {
+        // User can become unauthenticated when inactive(tabbed out of app) for a long period (1hour).
+        String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
+        if(!App.getAccountHelper().isAuthenticated()){
+            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
+                App.getAccountHelper().switchToUser(mostRecentUser);
+            }
+            else {
+                App.getAccountHelper().switchToUserless();
+            }
+        }
+        super.onResume();
     }
 
     /**

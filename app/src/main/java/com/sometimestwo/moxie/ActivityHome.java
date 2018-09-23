@@ -1,7 +1,9 @@
 package com.sometimestwo.moxie;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -38,6 +40,7 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
         FragmentSubmissionViewer.SubmissionDisplayerEventListener {
 
     private final String TAG = ActivityHome.class.getSimpleName();
+    private SharedPreferences prefs_settings;
 
     // False if user has navigated to a submission or different subreddit.
     // This allows us to know if we should handle onBackPressed() or not
@@ -55,6 +58,8 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
 
         mScreenWidth = getResources().getDisplayMetrics().widthPixels;
         mScreenHeight = getResources().getDisplayMetrics().heightPixels;
+
+        prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
 
         loadReddit(false);
     }
@@ -90,6 +95,22 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
         //getMenuInflater().inflate(R.menu.navigation_menu, menu);
         getMenuInflater().inflate(R.menu.menu_default_header, menu);
         return true;
+    }
+
+    @Override
+    protected void onResume() {
+        // User can become unauthenticated when inactive(tabbed out of app) for a long period (1hour).
+        String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
+        if(!App.getAccountHelper().isAuthenticated()){
+            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
+                App.getAccountHelper().switchToUser(mostRecentUser);
+            }
+            else {
+                App.getAccountHelper().switchToUserless();
+            }
+        }
+
+        super.onResume();
     }
 
     @Override

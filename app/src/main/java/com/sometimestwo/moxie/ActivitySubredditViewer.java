@@ -1,6 +1,8 @@
 package com.sometimestwo.moxie;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -17,6 +19,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
         Fragment404.Fragment404EventListener {
 
     public final String TAG = this.getClass().getCanonicalName();
+    private SharedPreferences prefs_settings;
 
     private String mCurrSubbredit;
     private String mExploreCategory;
@@ -25,8 +28,9 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subreddit_viewer);
-        unpackExtras();
+        prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
 
+        unpackExtras();
         displaySubreddit(true);
     }
 
@@ -47,6 +51,21 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
         //getMenuInflater().inflate(R.menu.navigation_menu, menu);
         getMenuInflater().inflate(R.menu.menu_default_header, menu);
         return true;
+    }
+
+    @Override
+    protected void onResume() {
+        // User can become unauthenticated when inactive(tabbed out of app) for a long period (1hour).
+        String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
+        if(!App.getAccountHelper().isAuthenticated()){
+            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
+                App.getAccountHelper().switchToUser(mostRecentUser);
+            }
+            else {
+                App.getAccountHelper().switchToUserless();
+            }
+        }
+        super.onResume();
     }
 
     @Override

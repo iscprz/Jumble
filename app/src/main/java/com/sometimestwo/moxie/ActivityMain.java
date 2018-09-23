@@ -31,6 +31,7 @@ import java.lang.ref.WeakReference;
             - can open drawer layout while large hover previewing
             - exo player not reloading when tabbing back into app
             - create truncated title for long titles. To be useful in previewers
+            - Go to Subreddit edit text box is too short (height wise) for small screen
 
             names:
             Unfold

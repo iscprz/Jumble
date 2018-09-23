@@ -65,6 +65,7 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.ui.PlaybackControlView;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -949,10 +950,6 @@ public class FragmentHome extends Fragment {
             ViewGroup vg = (ViewGroup) (getActivity().getWindow().getDecorView().getRootView());
             vg.addView(mHoverPreviewContainerLarge);
 
-            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                Window w = getActivity().getWindow(); // in Activity's onCreate() for instance
-                w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-            }*/
 
             mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
             mHoverPreviewContainerSmall.setVisibility(View.GONE);
@@ -964,7 +961,7 @@ public class FragmentHome extends Fragment {
                 mExoplayerLarge.setVisibility(View.GONE);
             }
             if (item.getSubmissionType() == Constants.SubmissionType.GIF) { // and video?
-                initializePlayer(item.getUrl());
+                initializePreviewExoPlayer(item.getUrl());
                 mExoplayerLarge.setVisibility(View.VISIBLE);
                 mHoverImagePreviewLarge.setVisibility(View.GONE);
 
@@ -1055,6 +1052,7 @@ public class FragmentHome extends Fragment {
             if (item != null && !item.isSelfPost()) {
                 is404 = false;
                 // Imgur
+                //TODO: imgur albums. Example URL https://imgur.com/a/K8bJ9pV (nsfw)
                 if (item.getDomain().contains("imgur")) {
                     // Check if submission type is null. This will happen if the item's URL is
                     // to a non-direct image/gif link such as https://imgur.com/qTadRtq
@@ -1241,7 +1239,7 @@ public class FragmentHome extends Fragment {
                                 }*/
                                 //TODO: Settings option to disable exoplayer controller?
                                 // set up exoplayer to play gif
-                                initializePlayer(item.getUrl());
+                                initializePreviewExoPlayer(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl());
                             }
                         }
                         return true;
@@ -1252,7 +1250,8 @@ public class FragmentHome extends Fragment {
                     @Override
                     public boolean onTouch(View pView, MotionEvent pEvent) {
                         boolean singleTap = mGestureDetector.onTouchEvent(pEvent);
-                        // do nothing if previewing has been disabled through settings
+                        // do nothing if previewing has been disabled through settings or if
+                        // the touch we're detecting is a secondary touch that no one cares about
                         if (!mAllowImagePreview && !singleTap) {
                             return true;
                         }
@@ -1283,7 +1282,6 @@ public class FragmentHome extends Fragment {
                                     // restore the toolbar
                                     mToolbar.setAlpha(1);
                                 }
-                                //releaseExoPlayer();
                             }
                         }
                         return false;
@@ -1459,9 +1457,9 @@ public class FragmentHome extends Fragment {
         }
     }
 
-    /* Exoplayer */
+    /* Exoplayer for previewer*/
 
-    private void initializePlayer(String url) {
+    private void initializePreviewExoPlayer(String url) {
 
         mExoplayerLarge.requestFocus();
 
@@ -1474,11 +1472,19 @@ public class FragmentHome extends Fragment {
 
         mExoplayerLarge.setPlayer(player);
 
+        // hide the controller since we're dealing with previewer here and user will be long clicking
+        mExoplayerLarge.hideController();
+        mExoplayerLarge.setControllerVisibilityListener(new PlaybackControlView.VisibilityListener() {
+            @Override
+            public void onVisibilityChange(int i) {
+                if(i == 0) {
+                    mExoplayerLarge.hideController();
+                }
+            }
+        });
+
         player.addListener(new PlayerEventListener());
         player.setPlayWhenReady(true);
-/*        MediaSource mediaSource = new HlsMediaSource(Uri.parse("https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
-                mediaDataSourceFactory, mainHandler, null);*/
-
 
         MediaSource mediaSource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
                 .createMediaSource(Uri.parse(url));
@@ -1491,13 +1497,6 @@ public class FragmentHome extends Fragment {
         // repeat mode: 0 = off, 1 = loop single video, 2 = loop playlist
         player.setRepeatMode(1);
         player.prepare(mediaSource, !haveStartPosition, false);
-
-     /*   ivHideControllerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                playerView.hideController();
-            }
-        });*/
     }
 
     private class PlayerEventListener extends Player.DefaultEventListener {

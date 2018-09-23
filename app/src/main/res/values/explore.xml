@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="explore_subreddits_aww">
+        <item>Aww</item>
+        <item>RarePuppers</item>
+        <item>SEUT</item>
+        <item>RarePuppers</item>
+        <item>AnimalsBeingJerks</item>
+        <item>aww_gifs</item>
+        <item>Awwducational</item>
+        <item>babybigcatgifs</item>
+        <item>babywildanimals</item>
+        <item>CanineCosplay</item>
+    </string-array>
+
+    <string-array name="explore_subreddits_nature">
+        <item>Earthporn</item>
+        <item>Nature</item>
+    </string-array>
+
+    <string-array name="explore_subreddits_funny">
+        <item>funny</item>
+        <item>HoldMyBeer</item>
+        <item>Facepalm</item>
+        <item>CrappyDesign</item>
+        <item>TrippinThroughTime</item>
+        <item>AnimalsBeingJerks</item>
+        <item>MildlyVandalized</item>
+        <item>PerfectTiming</item>
+        <item>ReverseAnimalRescue</item>
+        <item>Instant_regret</item>
+    </string-array>
+
+    <string-array name="explore_subreddits_design">
+        <item>Design</item>
+        <item>CrappyDesign</item>
+        <item>Facepalm</item>
+        <item>CrappyDesign</item>
+        <item>90sdesign</item>
+        <item>80sdesign</item>
+        <item>CozyPlaces</item>
+
+    </string-array>
+
+    <string-array name="explore_subreddits_wtf">
+        <item>WTF</item>
+        <item>hmmm</item>
+    </string-array>
+
+    <string-array name="explore_subreddits_weird">
+        <item>birdswitharms</item>
+        <item>dragonsfuckingcars/</item>
+        <item>ImaginaryCharacters</item>
+        <item>ImaginaryLandscapes</item>
+        <item>ImaginaryMonsters</item>
+        <item>ReverseAnimalRescue</item>
+        <item>itookapicture</item>
+    </string-array>
+
+    <string-array name="explore_subreddits_travel">
+        <item>travelphotos</item>
+        <item>earthporn</item>
+        <item>beerwithaview</item>
+    </string-array>
+
+    <string-array name="explore_subreddits_gifs">
+        <item>Nonononoyes</item>
+        <item>gifs</item>
+        <item>Instant_regret</item>
+    </string-array>
+
+    <string-array name="explore_subreddits_food">
+        <item>GifRecipes</item>
+        <item>food</item>
+    </string-array>
+
+    <string-array name="explore_subreddits_meme">
+        <item>adviceanimals</item>
+        <item>blackpeopletwitter</item>
+    </string-array>
+
+    <string-array name="explore_subreddits_woah">
+        <item>Damnthatsinteresting</item>
+        <item>ThisBlewMyMind</item>
+        <item>woahdude</item>
+        <item>lookscool</item>
+        <item>mildlyinteresting</item>
+    </string-array>
+
+    <string-array name="explore_subreddits_motivational">
+        <item>Progresspics</item>
+    </string-array>
+    <string-array name="explore_subreddits_infographics">
+        <item>Infographics</item>
+        <item>infographic</item>
+        <item>DataIsBeautiful</item>
+        <item>visualization</item>
+    </string-array>
+    <string-array name="explore_subreddits_art">
+        <item>artporn</item>
+        <item>art</item>
+        <item>ImaginaryLandscapes</item>
+        <item>ImaginaryCharacters</item>
+        <item>Illustration</item>
+        <item>minimalist_art</item>
+    </string-array>
+    <string-array name="explore_subreddits_nsfw">
+        <item>nsfw</item>
+        <item>legalteens</item>
+        <item>gonewild</item>
+        <item>asiansgonewild</item>
+        <item>realasians</item>
+        <item>bustyasians</item>
+        <item>bodyperfection</item>
+        <item>boobies</item>
+        <item>burstingout</item>
+        <item>biggerthanyouthought</item>
+        <item>collegesluts</item>
+
+    </string-array>
+<!--    <string-array name="explore_subreddits_gaming">
+        <item>gaming</item>
+        <item>leagueoflegends</item>
+    </string-array>-->
+</resources>

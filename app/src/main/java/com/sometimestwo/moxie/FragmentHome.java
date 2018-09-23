@@ -79,6 +79,7 @@ import com.sometimestwo.moxie.Imgur.client.ImgurClient;
 import com.sometimestwo.moxie.Imgur.response.images.ImgurSubmission;
 import com.sometimestwo.moxie.Imgur.response.images.SubmissionRoot;
 import com.sometimestwo.moxie.Model.ExpandableMenuModel;
+import com.sometimestwo.moxie.Model.Explore;
 import com.sometimestwo.moxie.Model.GfyItem;
 import com.sometimestwo.moxie.Model.GfycatWrapper;
 import com.sometimestwo.moxie.Model.SubmissionObj;
@@ -171,7 +172,7 @@ public class FragmentHome extends Fragment {
     /* Right navigation view*/
     private RecyclerView mExploreRecyclerView;
     // maps an explore category to a background image uri
-    private Map<String, Integer> mExploreCatagoriesMap;
+    private Map<String, Explore> mExploreCatagoriesMap;
     // holds a list of the "Explore" catagories in memory
     private List<String> mExploreCatagoriesList;
 
@@ -677,7 +678,7 @@ public class FragmentHome extends Fragment {
 
             exploreItemGridItem.mExploreTitle.setText(category);
             String bgUri = "android.resource://com.sometimestwo.moxie/"
-                    + mExploreCatagoriesMap.get(category);
+                    + mExploreCatagoriesMap.get(category).getBgDrawableId();
             GlideApp.load(Uri.parse(bgUri))
                     .apply(new RequestOptions()
                             .centerInside()
@@ -687,12 +688,22 @@ public class FragmentHome extends Fragment {
             exploreItemGridItem.mExploreImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    String category = mExploreCatagoriesList.get(position);
+                    List<String> subreddits = mExploreCatagoriesMap.get(category).getSubredditList();
+
+                    StringBuilder sb = new StringBuilder();
+                    for(String subreddit : subreddits){
+                        sb.append(subreddit).append('+');
+                    }
+
+                    String subredditsUrl = sb.substring(0, sb.length()-1);
                 }
             });
 
             exploreItemGridItem.mExploreTitle.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    exploreItemGridItem.mExploreImage.callOnClick();
                 }
             });
 
@@ -725,23 +736,55 @@ public class FragmentHome extends Fragment {
         // maps an explore category to an image file that will follow the following naming
         // convention: explore_bg_category, where category is the explore category
         mExploreCatagoriesMap = new HashMap<>();
-        mExploreCatagoriesMap.put("Funny", R.drawable.explore_bg_funny);
-        mExploreCatagoriesMap.put("Awwwww", R.drawable.explore_bg_aww);
-        mExploreCatagoriesMap.put("Travel", R.drawable.explore_bg_travel);
-        mExploreCatagoriesMap.put("Meme", R.drawable.explore_bg_meme);
-        mExploreCatagoriesMap.put("GIFs", R.drawable.explore_bg_gif);
-        mExploreCatagoriesMap.put("Food", R.drawable.explore_bg_food);
-        mExploreCatagoriesMap.put("Sports", R.drawable.explore_bg_sports);
-        mExploreCatagoriesMap.put("Gaming", R.drawable.explore_bg_gaming);
-        mExploreCatagoriesMap.put("Design", R.drawable.explore_bg_design);
-        mExploreCatagoriesMap.put("Art", R.drawable.explore_bg_art);
-        mExploreCatagoriesMap.put("WTF", R.drawable.explore_bg_wtf);
-        mExploreCatagoriesMap.put("Porn", R.drawable.explore_bg_porn);
-        mExploreCatagoriesMap.put("Infographics", R.drawable.explore_bg_infographics);
-        mExploreCatagoriesMap.put("Nature", R.drawable.explore_bg_nature);
+        //ArrayList<String> subreddits;
+        //List<String> Lines = Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_funny));
 
-        //Uri.parse("android.resource://com.sometimestwo.moxie/" + R.drawable.sample_1);
-        //com.sometimestwo.moxie R.drawable.explore_bg_art
+      //  subreddits = new ArrayList<String>(R.array.explore_subreddits_funny);
+        mExploreCatagoriesMap.put("Funny", new Explore(R.drawable.explore_bg_funny, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_funny))));
+
+       // subreddits = new ArrayList<String>(R.array.explore_subreddits_aww);
+        mExploreCatagoriesMap.put("Awwwww", new Explore(R.drawable.explore_bg_aww,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_aww))));
+
+       // subreddits = new ArrayList<String>(R.array.explore_subreddits_travel);
+        mExploreCatagoriesMap.put("Travel", new Explore(R.drawable.explore_bg_travel2,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_travel))));
+
+        //subreddits = new ArrayList<String>(R.array.explore_subreddits_meme);
+        mExploreCatagoriesMap.put("Meme", new Explore(R.drawable.explore_bg_meme,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_meme))));
+
+       // subreddits = new ArrayList<String>(R.array.explore_subreddits_gifs);
+        mExploreCatagoriesMap.put("GIFs", new Explore(R.drawable.explore_bg_gifs,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_gifs))));
+
+        //subreddits = new ArrayList<String>(R.array.explore_subreddits_food);
+        mExploreCatagoriesMap.put("Food", new Explore(R.drawable.explore_bg_food,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_food))));
+
+
+      //  subreddits = new ArrayList<String>(R.array.explore_subreddits_motivational);
+        mExploreCatagoriesMap.put("Motivational", new Explore(R.drawable.explore_bg_motivational, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_motivational))));
+
+       // subreddits = new ArrayList<String>(R.array.explore_subreddits_woah);
+        mExploreCatagoriesMap.put("Woah", new Explore(R.drawable.explore_bg_woah,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_woah))));
+
+        //subreddits = new ArrayList<String>(R.array.explore_subreddits_design);
+        mExploreCatagoriesMap.put("Design", new Explore(R.drawable.explore_bg_design,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_design))));
+
+       // subreddits = new ArrayList<String>(R.array.explore_subreddits_art);
+        mExploreCatagoriesMap.put("Art", new Explore(R.drawable.explore_bg_art, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_art))));
+
+        //subreddits = new ArrayList<String>(R.array.explore_subreddits_wtf);
+        mExploreCatagoriesMap.put("WTF", new Explore(R.drawable.explore_bg_wtf,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_wtf))));
+
+       // subreddits = new ArrayList<String>(R.array.explore_subreddits_porn);
+        mExploreCatagoriesMap.put("NSFW", new Explore(R.drawable.explore_bg_nsfw,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nsfw))));
+
+       // subreddits = new ArrayList<String>(R.array.explore_subreddits_infographics);
+        mExploreCatagoriesMap.put("Infographics", new Explore(R.drawable.explore_bg_infographics,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_infographics))));
+
+        //subreddits = new ArrayList<String>(R.array.explore_subreddits_nature);
+        mExploreCatagoriesMap.put("Nature", new Explore(R.drawable.explore_bg_nature,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nature))));
+
+
+
+
     }
 
     private void prepareMenuData() {

@@ -8,16 +8,16 @@
     <string-array name="explore_catagories">
         <item>Funny</item>
         <item>Awwwww</item>
+        <item>Food</item>
+        <item>Art</item>
         <item>Travel</item>
         <item>Meme</item>
         <item>GIFs</item>
-        <item>Food</item>
-        <item>Sports</item>
-        <item>Gaming</item>
+        <item>Motivational</item>
+        <item>Woah</item>
         <item>Design</item>
-        <item>Art</item>
         <item>WTF</item>
-        <item>Porn</item>
+        <item>NSFW</item>
         <item>Infographics</item>
         <item>Nature</item>
     </string-array>

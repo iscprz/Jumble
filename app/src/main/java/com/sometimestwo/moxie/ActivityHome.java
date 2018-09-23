@@ -4,6 +4,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -92,8 +94,17 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
 
     @Override
     public void onBackPressed() {
-        // If we're at home we prompt user if they really want to exit, else just pop back stack
-        if (isHome) {
+        // Back button should close nav view drawers if they're open (on either side)
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if(drawer.isDrawerOpen(GravityCompat.START) || drawer.isDrawerOpen(GravityCompat.END) ){
+            drawer.closeDrawers();
+        }
+        // Not at the home screen, pop back stack instead of closing activity
+        else if(!isHome){
+            getSupportFragmentManager().popBackStack();
+        }
+        // isHome == true. Confirm exit app
+        else{
             AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.TransparentDialog);
             builder.setTitle("Confirm exit");
             builder.setMessage("Really exit app?");
@@ -121,8 +132,6 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
             // resize the alert dialog
             alertDialog.show();
             alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
-        } else {
-            getSupportFragmentManager().popBackStack();
         }
     }
 

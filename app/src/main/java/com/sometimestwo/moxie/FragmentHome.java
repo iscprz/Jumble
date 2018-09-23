@@ -540,21 +540,26 @@ public class FragmentHome extends Fragment {
             // Displaying Explore category
             if(mCurrExploreTitle != null){
                 mToolbar.setTitle(mCurrExploreTitle);
+                //mToolbar.setTitleTextColor(getResources().getColor(R.color.colorAccentBlue));
+                mToolbar.setTitleTextAppearance(getContext(), R.style.toolbar_title_text_explore);
             }
             // Displaying a subreddit
             else if (mCurrSubreddit != null) {
                 mToolbar.setTitle(getResources().getString(R.string.subreddit_prefix) + mCurrSubreddit);
+                mToolbar.setTitleTextAppearance(getContext(), R.style.toolbar_title_text_default);
             }
             // Displaying user's frontpage
             else {
                 mToolbar.setTitle(getResources().getString(R.string.frontpage));
+                mToolbar.setTitleTextAppearance(getContext(), R.style.toolbar_title_text_default);
+
             }
 
-            // Subtitle - remember that if sort by is null, getter will default to HOT
+            // Subtitle - if sort by is null, getter will default to HOT
             mToolbar.setSubtitle(Utils.makeTextCute(App.getMoxieInfoObj().getmSortBy().toString()));
 
 
-            // set hamburger menu icon
+            // set hamburger menu icon if viewing a subreddit, back arrow if viewing submission
             ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
             if (toolbar != null) {
                 toolbar.setDisplayHomeAsUpEnabled(true);

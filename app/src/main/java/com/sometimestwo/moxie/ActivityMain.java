@@ -37,6 +37,8 @@ import java.lang.ref.WeakReference;
 
             names:
             Unfold
+
+            Explore blue color code: 33B5E5
  */
 public class ActivityMain extends AppCompatActivity {
 

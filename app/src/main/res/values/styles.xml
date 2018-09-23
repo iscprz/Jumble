@@ -6,9 +6,9 @@
         <item name="colorPrimary">@color/colorThemeDarkPrimary</item>
         <item name="colorPrimaryDark">@color/colorThemeDarkPrimaryDark</item>
         <item name="colorAccent">@color/colorWhite</item>
-<!--
-        <item name="android:popupMenuStyle"></item>
--->
+        <!--
+                <item name="android:popupMenuStyle"></item>
+        -->
 
     </style>
 
@@ -31,8 +31,7 @@
         <item name="android:windowNoTitle">true</item>
     </style>
 
-    <style name="DialogAsActivityTheme" parent="@android:style/Theme.Holo.Dialog">
-    </style>
+    <style name="DialogAsActivityTheme" parent="@android:style/Theme.Holo.Dialog"></style>
 
     <style name="ThemeNavViewHeader">
         <item name="android:textSize">20sp</item>
@@ -50,8 +49,17 @@
         <item name="android:textColor">@color/colorWhite</item>
     </style>
 
-<!--    <style name="PopupTheme" parent="Widget.AppCompat.PopupMenu">
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:itemBackground">@color/colorBlack</item>
-    </style>-->
+    <style name="toolbar_title_text_explore">
+        <item name="android:textColor">@color/colorAccentBlue</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="toolbar_title_text_default">
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+    <!--    <style name="PopupTheme" parent="Widget.AppCompat.PopupMenu">
+            <item name="android:textColor">@android:color/white</item>
+            <item name="android:itemBackground">@color/colorBlack</item>
+        </style>-->
 </resources>

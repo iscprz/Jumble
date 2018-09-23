@@ -3,6 +3,8 @@
     <color name="colorThemeDarkPrimary">#202020</color>
     <color name="colorThemeDarkPrimaryDark">#000000</color>
     <color name="colorDarkThemeAccent">#ffffff</color>
+    <color name="colorAccentBlue">#33B5E5</color>
+
 
     <color name="colorWhite">#ffffff</color>
     <color name="transparent">#00000000</color>
@@ -17,7 +19,6 @@
     <color name="colorGray">#979797</color>
     <color name="colorDarkGray">#404040</color>
     <color name="colorSoftBlue">#5e93ed</color>
-    <color name="colorLightBlue">#33B5E5</color>
 
 
     <color name="redic">#ff6dd1</color>

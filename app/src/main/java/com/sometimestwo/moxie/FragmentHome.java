@@ -631,7 +631,7 @@ public class FragmentHome extends Fragment {
 
         // set up all the "Explore" options.
         mExploreRecyclerView = (RecyclerView) v.findViewById(R.id.navview_right_explore_recycler);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 4);
         mExploreRecyclerView.setLayoutManager(gridLayoutManager);
         mExploreRecyclerView.setHasFixedSize(true);
         initExploreCatagories();
@@ -1563,8 +1563,26 @@ public class FragmentHome extends Fragment {
                 //Log.d(TAG, "onResponse: feed: " + response.body().toString());
                 Log.d(TAG, "onResponse: Server Response: " + response.toString());
 
-                GfyItem gfyItem = response.body().getGfyItem();
-                item.setCleanedUrl(gfyItem.getMobileUrl());
+                /*GfyItem gfyItem = new GfyItem();
+                GfycatWrapper body = response.body();
+                if(body != null){
+                    gfyItem  = body.getGfyItem();
+                }*/
+                GfyItem gfyItem = new GfyItem();
+                try{
+                    gfyItem = response.body().getGfyItem();
+                }
+                catch (Exception e){
+                    Log.e("GFYCAT_RESPONSE_ERROR",
+                            "Failed in attempt to retrieve gfycat object for hash "
+                                    + gfycatHash + ". "
+                                    + e.getMessage());
+                }
+
+                if(gfyItem == null){
+                    int a = 2;
+                }
+                item.setCleanedUrl(gfyItem.getMobileUrl() != null ? gfyItem.getMobileUrl() : gfyItem.getMp4Url());
             }
 
             @Override

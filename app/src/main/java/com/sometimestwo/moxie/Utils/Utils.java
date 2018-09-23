@@ -96,6 +96,9 @@ public class Utils {
 
     public static String getGfycatHash(String gfycatUrl){
         String hash = gfycatUrl.substring(gfycatUrl.lastIndexOf("/", gfycatUrl.length()));
+        if (hash.contains("-size_restricted")){
+            hash = hash.replace("-size_restricted", "");
+        }
         // remove trailing slash
         return hash.substring(1);
         //return gfycatUrl.substring(gfycatUrl.lastIndexOf("/", gfycatUrl.length()));

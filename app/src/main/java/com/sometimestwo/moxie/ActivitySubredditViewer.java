@@ -17,6 +17,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
     public final String TAG = this.getClass().getCanonicalName();
 
     private String mCurrSubbredit;
+    private String mExploreCategory;
     private boolean mIs404 = false;    // activity hosts a 404 page
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +88,8 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
     public void unpackExtras() {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            mCurrSubbredit = (String) getIntent().getExtras().get(Constants.EXTRA_GOTO_SUBREDDIT);
+            mCurrSubbredit = (String) getIntent().getExtras().getString(Constants.EXTRA_GOTO_SUBREDDIT);
+            mExploreCategory = (String) getIntent().getExtras().getString(Constants.EXTRA_GOTO_EXPLORE_CATEGORY);
         }
     }
 
@@ -96,6 +98,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
         Bundle args = new Bundle();
         args.putString(Constants.ARGS_CURR_SUBREDDIT, mCurrSubbredit);
         args.putBoolean(Constants.ARGS_INVALIDATE_DATASOURCE, invalidateData);
+        args.putString(Constants.EXTRA_GOTO_EXPLORE_CATEGORY, mExploreCategory);
         Fragment fragment = FragmentHome.newInstance();
         fragment.setArguments(args);
         ft.add(R.id.fragment_container_subreddit_viewer, fragment, Constants.TAG_FRAG_SUBREDDIT_VIEWER);

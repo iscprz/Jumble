@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="subreddits">
+        <item>frontpage</item>
+        <item>all</item>
+        <item>adviceanimals</item>
+        <item>animalgifs</item>
+        <item>animalsbeingbros</item>
+        <item>animalsbeingjerks</item>
+        <item>animalsbeingfunny</item>
+        <item>art</item>
+
+    </string-array>
+</resources>

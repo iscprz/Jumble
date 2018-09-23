@@ -45,13 +45,16 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         //TODO figure this out
         String defaultSubreddit = "all";
 
+        // Get the requested subreddit(s), if any
         if(!mMoxieInfoObj.getmSubredditStack().isEmpty()){
             subredditRequested = mMoxieInfoObj.getmSubredditStack().peek();
         }
+
+        // We have a subreddit request - does not matter if logged in or not
         if (subredditRequested != null) {
             submissionSubredditSortBuilder = redditClient.subreddit(subredditRequested).posts();
         }
-        // logged in with no request - display user's front page
+        // Logged in with no request - display user's front page
         else if (!redditClient.getAuthMethod().isUserless()) {
             submissionSubredditSortBuilder = redditClient.frontPage();
         }

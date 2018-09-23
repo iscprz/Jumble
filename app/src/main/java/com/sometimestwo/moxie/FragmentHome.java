@@ -124,6 +124,7 @@ public class FragmentHome extends Fragment {
     private ActionBarDrawerToggle mDrawerToggle;
     private int mNumDisplayColumns;
     private String mCurrSubreddit;
+    private String mCurrExploreTitle;
     //private String mCurrUsername = null;
     private boolean isImageViewPressed = false;
     private int mActivePointerId = -1;
@@ -535,10 +536,18 @@ public class FragmentHome extends Fragment {
         if (isAdded()) {
             mToolbar.setVisibility(View.VISIBLE);
             mToolbar.setAlpha(1);
-            if (mCurrSubreddit != null) {
+
+            // Displaying Explore category
+            if(mCurrExploreTitle != null){
+                mToolbar.setTitle(mCurrExploreTitle);
+            }
+            // Displaying a subreddit
+            else if (mCurrSubreddit != null) {
                 mToolbar.setTitle(getResources().getString(R.string.subreddit_prefix) + mCurrSubreddit);
-            } else {
-                mToolbar.setTitle("frontpage");
+            }
+            // Displaying user's frontpage
+            else {
+                mToolbar.setTitle(getResources().getString(R.string.frontpage));
             }
 
             // Subtitle - remember that if sort by is null, getter will default to HOT
@@ -561,6 +570,7 @@ public class FragmentHome extends Fragment {
             if (arguments != null) {
                 mInvalidateDataSource = (boolean) arguments.getBoolean(Constants.ARGS_INVALIDATE_DATASOURCE);
                 mCurrSubreddit = (String) arguments.getString(Constants.ARGS_CURR_SUBREDDIT, null);
+                mCurrExploreTitle = (String) arguments.getString(Constants.EXTRA_GOTO_EXPLORE_CATEGORY,null);
             }
             //  mCurrSubreddit = mRedditClient.getmRedditDataRequestObj().getmSubreddit();
         } catch (NullPointerException npe) {
@@ -698,7 +708,14 @@ public class FragmentHome extends Fragment {
                         sb.append(subreddit).append('+');
                     }
 
-                    String subredditsUrl = sb.substring(0, sb.length()-1);
+                    String exploreURL = sb.substring(0, sb.length()-1);
+                    App.getMoxieInfoObj().getmSubredditStack().push(exploreURL);
+
+                    Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
+                    visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, exploreURL);
+                    visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_EXPLORE_CATEGORY, category);
+                    startActivity(visitSubredditIntent);
+
                 }
             });
 
@@ -783,10 +800,6 @@ public class FragmentHome extends Fragment {
 
         //subreddits = new ArrayList<String>(R.array.explore_subreddits_nature);
         mExploreCatagoriesMap.put("Nature", new Explore(R.drawable.explore_bg_nature,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nature))));
-
-
-
-
     }
 
     private void prepareMenuData() {
@@ -1229,7 +1242,6 @@ public class FragmentHome extends Fragment {
                 }
 
 
-
                 /* open submission viewer when image clicked*/
                 holder.thumbnailImageView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -1360,7 +1372,6 @@ public class FragmentHome extends Fragment {
             @Override
             public void onClick(View view) {
                 SubmissionObj submission = getItem(getLayoutPosition());
-
                 // prevent any weird double clicks from opening two submission viewers
                 if (!isViewingSubmission) {
                     openSubmissionViewer(submission);

@@ -8,6 +8,7 @@
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="subreddit_prefix">/r/</string>
+    <string name="frontpage">frontpage</string>
     <string name="log_out">Log out</string>
     <string name="remove">Remove</string>
     <string name="title_appearance"><b>Appearance</b></string>

@@ -57,48 +57,47 @@ public class ActivityMain extends AppCompatActivity {
          */
         prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
         prefs_settings_editor =
-                 this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE)
-                .edit();
+                this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE)
+                        .edit();
 
         // Hover previewer size - defaults to small
-        if(prefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE,null) == null) {
+        if (prefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, null) == null) {
             prefs_settings_editor.putString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE);
         }
 
 
-
         // Allow NSFW
-        if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false) == false){
+        if (prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false) == false) {
             prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
         }
 
         // Hide NSFW thumbs
-        if(prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false) == false){
+        if (prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false) == false) {
             prefs_settings_editor.putBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false);
         }
 
         // Allow hover previewer - default to yes
-        if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true) == true){
+        if (prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true) == true) {
             prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true);
         }
 
         // Allow tap-to-close big display
-        if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false) == false){
+        if (prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false) == false) {
             prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
         }
 
         // Allow domain icons - defaults to false
-        if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false) == false){
+        if (prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false) == false) {
             prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false);
         }
 
         // Allow filetype icons - defaults to false
-        if(prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false) == false){
+        if (prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false) == false) {
             prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false);
         }
 
         // Show NSFW icon on NSFW submissions
-        if(prefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false) == false){
+        if (prefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false) == false) {
             prefs_settings_editor.putBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false);
         }
 
@@ -143,28 +142,17 @@ public class ActivityMain extends AppCompatActivity {
             // Load most recently logged in user
             String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
 
-            if(!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)){
-                try{
-                    App.getAccountHelper().switchToUser(mostRecentUser);
-                }
-                catch (Exception e){
-                    App.getAccountHelper().switchToUser(mostRecentUser);
-                }
+            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
+                App.getAccountHelper().switchToUser(mostRecentUser);
             }
-            //TODO Test to check if issue is here
-            else{
-                try {
-                    App.getAccountHelper().switchToUserless();
-                }
-                catch (Exception e){
-                    App.getAccountHelper().switchToUserless();
-                }
+            else {
+                App.getAccountHelper().switchToUserless();
             }
 
-                // TODO CRASH HERE ON TAB BACK IN:
-                // Caused by: java.lang.IllegalStateException: No unexpired OAuthData or refresh token available for user '<userless>'
-                // check authentication stuff and redo if necessary
-                // https://mattbdean.gitbooks.io/jraw/content/v/v1.1.0/oauth2.html
+            // TODO CRASH HERE ON TAB BACK IN:
+            // Caused by: java.lang.IllegalStateException: No unexpired OAuthData or refresh token available for user '<userless>'
+            // check authentication stuff and redo if necessary
+            // https://mattbdean.gitbooks.io/jraw/content/v/v1.1.0/oauth2.html
 
 
             return true;

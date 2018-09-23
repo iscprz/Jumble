@@ -11,6 +11,7 @@
         <item>babybigcatgifs</item>
         <item>babywildanimals</item>
         <item>CanineCosplay</item>
+        <item>babywildanimals</item>
     </string-array>
 
     <string-array name="explore_subreddits_nature">
@@ -29,6 +30,9 @@
         <item>PerfectTiming</item>
         <item>ReverseAnimalRescue</item>
         <item>Instant_regret</item>
+        <item>lmao</item>
+        <item>lol</item>
+        <item>funny_gifs</item>
     </string-array>
 
     <string-array name="explore_subreddits_design">
@@ -55,6 +59,7 @@
         <item>ImaginaryMonsters</item>
         <item>ReverseAnimalRescue</item>
         <item>itookapicture</item>
+        <item>oddlysatisfying</item>
     </string-array>
 
     <string-array name="explore_subreddits_travel">
@@ -85,6 +90,7 @@
         <item>woahdude</item>
         <item>lookscool</item>
         <item>mildlyinteresting</item>
+        <item>oddlysatisfying</item>
     </string-array>
 
     <string-array name="explore_subreddits_motivational">

@@ -390,11 +390,13 @@ public class FragmentHome extends Fragment {
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         if (!isViewingSubmission) {
-            menu.findItem(R.id.menu_comments_sortby).setVisible(false);
             menu.findItem(R.id.menu_submissions_sortby).setVisible(true);
+            menu.findItem(R.id.menu_explore).setVisible(true);
+            menu.findItem(R.id.menu_comments_sortby).setVisible(false);
         } else {
             menu.findItem(R.id.menu_comments_sortby).setVisible(true);
             menu.findItem(R.id.menu_submissions_sortby).setVisible(false);
+            menu.findItem(R.id.menu_explore).setVisible(false);
         }
 
         super.onPrepareOptionsMenu(menu);
@@ -1077,6 +1079,11 @@ public class FragmentHome extends Fragment {
                 return;
             }
             SubmissionObj item = (getItem(position) == null ? new SubmissionObj(true) : getItem(position));
+
+            // initialize all view holder icons to GONE to avoid conflicts when recycling
+            holder.thumbnailNSFWIcon.setVisibility(View.GONE);
+            holder.thumbnailFiletypeIcon.setVisibility(View.GONE);
+            holder.thumbnailDomainIcon.setVisibility(View.GONE);
 
             // Workaround for checking if requested subreddit is empty (or invalid).
             // If invalid subreddit, there should exist only 1 element and this field will be true

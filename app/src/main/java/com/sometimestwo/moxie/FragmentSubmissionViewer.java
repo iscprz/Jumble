@@ -214,25 +214,11 @@ public class FragmentSubmissionViewer extends Fragment {
         //toolbar setup
         ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (toolbar != null) {
-            //toolbar.setTitle(getResources().getString(R.string.toolbar_title_albums));
             toolbar.setDisplayHomeAsUpEnabled(true);
             toolbar.setHomeAsUpIndicator(R.drawable.ic_white_back_arrow);
             toolbar.setTitle("/r/" + mCurrSubmission.getSubreddit());
         }
         mToolbar.setAlpha(1);
-    }
-
-
-
-    private void goBack() {
-        releaseExoPlayer();
-        try {
-            FragmentManager fm = getActivity().getSupportFragmentManager();
-
-            fm.popBackStack();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void releaseExoPlayer() {

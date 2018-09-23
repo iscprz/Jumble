@@ -25,6 +25,8 @@ import java.lang.ref.WeakReference;
             -NSFW icon
             - play gif icon
             - When large previewer fails to load, loads previously successful image instead
+            -remove item from recycler
+            - progress bar time out when load fails
 
             layout issues:
             - centering very tall image in large hover
@@ -36,7 +38,7 @@ import java.lang.ref.WeakReference;
             names:
             Unfold
  */
-public class ActivityMain extends AppCompatActivity  /*implements ActivityHome.ActivityHomeEventListener*/ {
+public class ActivityMain extends AppCompatActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 

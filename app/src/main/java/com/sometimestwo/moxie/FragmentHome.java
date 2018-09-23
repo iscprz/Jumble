@@ -367,7 +367,6 @@ public class FragmentHome extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         mToolbar.setAlpha(0);
-
     }
 
     @Override
@@ -413,6 +412,9 @@ public class FragmentHome extends Fragment {
                 } else {
                     mHomeEventListener.goBack();
                 }
+                return true;
+            case R.id.menu_explore:
+                mDrawerLayout.openDrawer(GravityCompat.END);
                 return true;
             /* Sort by*/
             case R.id.menu_submissions_sortby_HOT:
@@ -631,7 +633,7 @@ public class FragmentHome extends Fragment {
 
         // set up all the "Explore" options.
         mExploreRecyclerView = (RecyclerView) v.findViewById(R.id.navview_right_explore_recycler);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 4);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
         mExploreRecyclerView.setLayoutManager(gridLayoutManager);
         mExploreRecyclerView.setHasFixedSize(true);
         initExploreCatagories();

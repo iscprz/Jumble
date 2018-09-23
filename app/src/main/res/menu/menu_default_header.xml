@@ -3,6 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ActivityMain">
+
+    <!-- Explore-->
+    <item
+        android:id="@+id/menu_explore"
+        android:icon="@drawable/ic_explore"
+        android:title="Explore"
+        android:orderInCategory="90"
+        app:showAsAction="ifRoom">
+    </item>
+    <!-- Submission sort by options HOT,NEW,TOP etc-->
     <item
         android:id="@+id/menu_submissions_sortby"
         android:icon="@drawable/ic_white_sort"
@@ -10,7 +20,6 @@
         android:title="Sort by"
         app:showAsAction="ifRoom">
 
-        <!-- Submission sort by options HOT,NEW,TOP etc-->
         <menu>
             <item
                 android:id="@+id/menu_submissions_sortby_HOT"
@@ -75,19 +84,18 @@
         </menu>
     </item>
 
-<!-- Comments-->
+
+
+    <!-- Comments sort by-->
     <item
         android:id="@+id/menu_comments_sortby"
         android:icon="@drawable/ic_white_expand_down"
         android:orderInCategory="100"
         android:title="Sort by"
         app:showAsAction="ifRoom">
-
-        <!-- Comments sort by options HOT,NEW,TOP etc-->
-
-
     </item>
 
+    <!-- Overflow -->
     <item
         android:id="@+id/menu_overflow"
         android:icon="@drawable/ic_white_overflow"

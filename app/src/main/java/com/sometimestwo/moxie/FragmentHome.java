@@ -720,7 +720,7 @@ public class FragmentHome extends Fragment {
                     visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, exploreURL);
                     visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_EXPLORE_CATEGORY, category);
                     startActivity(visitSubredditIntent);
-
+                    mDrawerLayout.closeDrawer(mNavigationViewRight);
                 }
             });
 

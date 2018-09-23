@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 
@@ -76,11 +78,16 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
 
     @Override
     public void onBackPressed() {
-        // If activity is hosting a 404 page, we want to leave entire
-        // activity not just pop 404 page off backstack
-        if (mIs404) {
+        // Back button should close nav view drawers if they're open (on either side)
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START) || drawer.isDrawerOpen(GravityCompat.END)) {
+            drawer.closeDrawers();
+        }
+        // If hosting a 404 page, we want to leave activity not just pop 404 page off backstack
+        else if (mIs404) {
             finish();
-        } else {
+        }
+        else {
             super.onBackPressed();
         }
     }
@@ -131,12 +138,13 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
 
     // Called on refresh swipe
     @Override
-    public void refreshFeed(boolean invalidateData ) {
+    public void refreshFeed(boolean invalidateData) {
         retrySubredditLoad(Constants.TAG_FRAG_SUBREDDIT_VIEWER, invalidateData);
     }
 
     @Override
-    public void isHome(boolean isHome) { }
+    public void isHome(boolean isHome) {
+    }
 
     @Override
     public void goBack() {
@@ -153,6 +161,6 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
     // Called on Retry button click
     @Override
     public void refresh404(String tag) {
-        this.retrySubredditLoad(tag,true);
+        this.retrySubredditLoad(tag, true);
     }
 }

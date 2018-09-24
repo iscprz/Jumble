@@ -1,7 +1,6 @@
 package com.sometimestwo.moxie;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.SpannableString;
@@ -23,6 +22,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private Context context;
     private List<ExpandableMenuModel> listDataHeader;
     private HashMap<ExpandableMenuModel, List<ExpandableMenuModel>> listDataChild;
+    private String mCurrLoggedInUser = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
 
     public ExpandableListAdapter(Context context, List<ExpandableMenuModel> listDataHeader,
                                  HashMap<ExpandableMenuModel, List<ExpandableMenuModel>> listChildData) {
@@ -54,16 +54,10 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
             convertView = infalInflater.inflate(R.layout.list_group_child, null);
         }
 
-        // for changing the item's background color
-        /*LinearLayout itemContainer = convertView.findViewById(R.id.expand_list_item_container);
-        if(getMenuContainerColor(convertView, menuItem) != -1){
-            itemContainer.setBackgroundColor(getMenuContainerColor(convertView, menuItem));
-        }*/
-
         TextView txtListChild = convertView.findViewById(R.id.expand_list_item);
         txtListChild.setText(menuItem);
-        txtListChild.setTextColor(getMenuItemTextColor(convertView,menuItem));
-        if((convertView.getResources().getString(R.string.menu_add_account).equalsIgnoreCase(menuItem))){
+        txtListChild.setTextColor(getMenuItemTextColor(convertView, menuItem));
+        if ((convertView.getResources().getString(R.string.menu_add_account).equalsIgnoreCase(menuItem))) {
             SpannableString content = new SpannableString(menuItem);
             content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
             txtListChild.setText(content);
@@ -127,8 +121,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         return true;
     }
 
+    /* Gets menu icons for menu items in the left nav bar */
     private Drawable getMenuIcon(View convertView, String headerTitle) {
-        String currLoggedInUser = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
+
 
         if (convertView.getResources().getString(R.string.menu_accounts).equalsIgnoreCase(headerTitle)) {
             return convertView.getResources().getDrawable(R.drawable.ic_white_accounts);
@@ -139,12 +134,12 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         } else if (convertView.getResources().getString(R.string.menu_add_account).equalsIgnoreCase(headerTitle)) {
             return convertView.getResources().getDrawable(R.drawable.ic_white_add_account);
         } else if ((Constants.USERNAME_USERLESS_PRETTY).equalsIgnoreCase(headerTitle)) {
-            if((Constants.USERNAME_USERLESS).equalsIgnoreCase(currLoggedInUser)){
+            if ((Constants.USERNAME_USERLESS).equalsIgnoreCase(mCurrLoggedInUser)) {
                 return convertView.getResources().getDrawable(R.drawable.ic_blue_person_filled);
             }
             return convertView.getResources().getDrawable(R.drawable.ic_white_person_unfilled);
         } else if (App.getTokenStore().getUsernames().contains(headerTitle)) {
-            if(headerTitle.equalsIgnoreCase(currLoggedInUser)){
+            if (headerTitle.equalsIgnoreCase(mCurrLoggedInUser)) {
                 return convertView.getResources().getDrawable(R.drawable.ic_blue_person_filled);
             }
             return convertView.getResources().getDrawable(R.drawable.ic_white_person_filled);
@@ -153,34 +148,17 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         }
     }
 
- /*   private int getMenuContainerColor(View convertView, String headerTitle) {
-        SharedPreferences login_prefs = convertView.getContext().getSharedPreferences(Constants.KEY_GET_PREFS_LOGIN_DATA, Context.MODE_PRIVATE);
-        String currLoggedInUser = login_prefs.getString(Constants.KEY_CURR_USERNAME, Constants.USERNAME_USERLESS);
-
-        // swap username ugly to pretty for sake of comparing sharedpref details and menu item
-        if(Constants.USERNAME_USERLESS.equalsIgnoreCase(currLoggedInUser)){
-            currLoggedInUser = Constants.USERNAME_USERLESS_PRETTY;
-        }
-        if (currLoggedInUser.equalsIgnoreCase(headerTitle)) {
-            Log.e("TINT_USER","headerTitle = " + headerTitle + ". currLoggedInUser = " + currLoggedInUser);
-            return convertView.getResources().getColor(R.color.colorBlueTrans);
-        }
-        else{
-            return convertView.getResources().getColor(R.color.transparent);
-        }
-    }*/
 
     private int getMenuItemTextColor(View convertView, String headerTitle) {
         String currLoggedInUser = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
 
         // swap username ugly to pretty for sake of comparing sharedpref details and menu item
-        if(Constants.USERNAME_USERLESS.equalsIgnoreCase(currLoggedInUser)){
+        if (Constants.USERNAME_USERLESS.equalsIgnoreCase(currLoggedInUser)) {
             currLoggedInUser = Constants.USERNAME_USERLESS_PRETTY;
         }
         if (currLoggedInUser.equalsIgnoreCase(headerTitle)) {
             return convertView.getResources().getColor(R.color.colorAccentBlue);
-        }
-        else{
+        } else {
             return convertView.getResources().getColor(R.color.colorWhite);
         }
     }

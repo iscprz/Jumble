@@ -30,7 +30,7 @@
         android:textColor="@color/colorWhite"
         android:gravity="center_vertical"/>
 
-<!--    <FrameLayout
+    <FrameLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight=".1"
@@ -38,14 +38,14 @@
 
         <ImageView
             android:id="@+id/list_child_icon_right"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:layout_gravity="center"
-
-            android:background="@drawable/ic_white_exit_medium"
+            android:background="@drawable/ic_blue_expand_down"
             android:scaleType="centerInside"
-            android:clickable="true"/>
-    </FrameLayout>-->
+            android:clickable="true"
+            android:visibility="gone"/>
+    </FrameLayout>
 
 
 </LinearLayout>

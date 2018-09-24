@@ -226,7 +226,7 @@ public class ActivitySettings extends Activity {
         /* Preview size radio buttons */
         mRadioGroupPreviewSize = (RadioGroup) findViewById(R.id.radio_group_preview_size);
         String previewSizeSelection = prefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
-        // check sharedprefs_settings for what user has selected for preview size and initialize radio buttons accordingly
+        // check prefs_settings for what user has selected for preview size and initialize radio buttons accordingly
         mRadioGroupPreviewSize.check(previewSizeSelection.equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                 ? R.id.radio_preview_size_option_small : R.id.radio_preview_size_option_large);
 

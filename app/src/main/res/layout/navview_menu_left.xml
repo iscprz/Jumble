@@ -4,19 +4,19 @@
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:layout_gravity="start"
+    android:background="@color/colorBgBlackTint"
     android:fitsSystemWindows="true"
-    app:headerLayout="@layout/navview_left_header"
-    android:background="@color/colorBgBlackTint">
-  <!--  app:itemIconTint="@color/colorWhite"
-    app:itemTextColor="@color/colorWhite"-->
+    app:headerLayout="@layout/navview_left_header">
+
     <ExpandableListView
-        android:id="@+id/expandable_list_right"
+        android:id="@+id/expandable_list_left"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/navview_left_header_height"
         android:dividerHeight="@null"
         android:groupIndicator="@null" />
 
+    <!-- Log out button-->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

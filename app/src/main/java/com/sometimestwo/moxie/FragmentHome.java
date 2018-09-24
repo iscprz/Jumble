@@ -30,7 +30,6 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -110,7 +109,6 @@ public class FragmentHome extends Fragment {
     public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
     private final static int KEY_LOG_IN = 2;
 
-    private DisplayMetrics mDisplayMetrics;
     private int mScreenWidth;
     private int mScreenHeight;
 
@@ -135,7 +133,7 @@ public class FragmentHome extends Fragment {
     private boolean is404 = false;
 
     // User's preferences. Initialize with default values for safety
-    SharedPreferences sharedprefs_settings;
+    SharedPreferences prefs_settings;
     private boolean mAllowNSFW = false;
     private boolean mAllowImagePreview = false;
     private boolean mAllowBigDisplayClickClose = true;
@@ -217,7 +215,7 @@ public class FragmentHome extends Fragment {
         GlideApp = Glide.with(this);
         //  mRedditClient = App.getAccountHelper().isAuthenticated() ? App.getAccountHelper().getReddit() : App.getAccountHelper().switchToUserless();
         setHasOptionsMenu(true);
-        sharedprefs_settings = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        prefs_settings = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -610,7 +608,7 @@ public class FragmentHome extends Fragment {
         mNavigationViewLeft = (NavigationView) v.findViewById(R.id.nav_view_left);
 
         /* expandable nav */
-        expandableListView = v.findViewById(R.id.expandable_list_right);
+        expandableListView = v.findViewById(R.id.expandable_list_left);
         prepareMenuData();
         populateExpandableList();
         // Expand usernames
@@ -866,16 +864,9 @@ public class FragmentHome extends Fragment {
                 if (headerList.get(groupPosition).isGroup) {
                     if (!headerList.get(groupPosition).hasChildren) {
                         String clickedItemTitle = headerList.get(groupPosition).menuName;
-                        // log in
-                        if (getResources().getString(R.string.menu_log_in)
-                                .equalsIgnoreCase(clickedItemTitle)) {
-                            mDrawerLayout.closeDrawer(mNavigationViewLeft);
-                        } else if (getResources().getString(R.string.menu_add_account)
-                                .equalsIgnoreCase(clickedItemTitle)) {
-                            mDrawerLayout.closeDrawer(mNavigationViewLeft);
-                        }
+
                         // go to subreddit
-                        else if (getResources().getString(R.string.menu_goto_subreddit)
+                        if (getResources().getString(R.string.menu_goto_subreddit)
                                 .equalsIgnoreCase(clickedItemTitle)) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.TransparentDialog);
                             builder.setTitle("Enter subreddit:");
@@ -942,7 +933,7 @@ public class FragmentHome extends Fragment {
                         if (Constants.USERNAME_USERLESS_PRETTY.equalsIgnoreCase(clickedMenuItemName)) {
                             new FetchUserlessAccountTask().execute();
                         }
-                        // user selected a non-guest account to log in to
+                        // user selected a non-guest switch to
                         else {
                             App.getAccountHelper().switchToUser(clickedMenuItemName);
                             switchOrLogoutCleanup(clickedMenuItemName);
@@ -1035,20 +1026,20 @@ public class FragmentHome extends Fragment {
     }
 
     private void validatePreferences() throws Exception {
-        if (sharedprefs_settings != null) {
+        if (prefs_settings != null) {
 
-            mAllowNSFW = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
-            mAllowImagePreview = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true);
-            mAllowBigDisplayClickClose = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
-            mPreviewSize = sharedprefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
+            mAllowNSFW = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
+            mAllowImagePreview = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true);
+            mAllowBigDisplayClickClose = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+            mPreviewSize = prefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                     .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                     ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
-            mDisplayDomainIcon = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false);
-            mHideNSFWThumbs = sharedprefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false);
-            mDisplayFiletypeIcons = sharedprefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false);
-            mDisplayNSFWIcon = sharedprefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false);
+            mDisplayDomainIcon = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false);
+            mHideNSFWThumbs = prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false);
+            mDisplayFiletypeIcons = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false);
+            mDisplayNSFWIcon = prefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false);
 
-            mNumDisplayColumns = 3;//sharedprefs_settings.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
+            mNumDisplayColumns = 3;//prefs_settings.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
 
 
             App.getMoxieInfoObj().setAllowNSFW(mAllowNSFW);
@@ -1056,7 +1047,7 @@ public class FragmentHome extends Fragment {
 
         } else {
             throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
-                    + "Could not find sharedprefs_settings KEY_GET_PREFS_SETTINGS.");
+                    + "Could not find prefs_settings KEY_GET_PREFS_SETTINGS.");
         }
     }
 
@@ -1466,11 +1457,11 @@ public class FragmentHome extends Fragment {
         alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
     }
 
-    // Clean up any lingering views, media players, sharedprefs_settings, etc
+    // Clean up any lingering views, media players, prefs_settings, etc
     private void switchOrLogoutCleanup(String newCurrUser) {
         mDrawerLayout.closeDrawer(mNavigationViewLeft);
         // Update most recent user to new user
-        sharedprefs_settings.edit().putString(Constants.MOST_RECENT_USER, newCurrUser).apply();
+        prefs_settings.edit().putString(Constants.MOST_RECENT_USER, newCurrUser).apply();
 
         // start our subreddit stack over cause we're starting over again
         while (!App.getMoxieInfoObj().getmSubredditStack().isEmpty()) {
@@ -1502,7 +1493,7 @@ public class FragmentHome extends Fragment {
         App.getAccountHelper().switchToUser(username);
 
         // update the most recent logged in user in sharedprefs
-        sharedprefs_settings.edit().putString(Constants.MOST_RECENT_USER, username).commit();
+        prefs_settings.edit().putString(Constants.MOST_RECENT_USER, username).commit();
     }
 
     /*

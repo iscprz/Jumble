@@ -5,10 +5,23 @@ import android.app.Activity;
 import android.os.Looper;
 import android.widget.ProgressBar;
 
-import net.dean.jraw.models.Submission;
+import com.coremedia.iso.boxes.Container;
+import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
-import java.util.List;
 
 public class Utils {
 
@@ -40,6 +53,14 @@ public class Utils {
         IMAGE,
         GIF,
         YOUTUBE
+    }
+    public enum SubmissionDomain{
+        IMGUR,
+        GFYCAT,
+        VREDDIT,
+        IREDDIT,
+        YOUTUBE,
+        OTHER
     }
 
     public static Constants.SubmissionType getSubmissionType(String url) {
@@ -126,6 +147,129 @@ public class Utils {
                     if (progressBar != null) progressBar.setIndeterminate(isIndeterminate);
                 }
             });
+        }
+    }
+
+
+    public static boolean mux(String videoFile, String audioFile, String outputFile) {
+        com.googlecode.mp4parser.authoring.Movie video;
+        try {
+            new MovieCreator();
+            video = MovieCreator.build(videoFile);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        com.googlecode.mp4parser.authoring.Movie audio;
+        try {
+            new MovieCreator();
+            audio = MovieCreator.build(audioFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        com.googlecode.mp4parser.authoring.Track audioTrack = audio.getTracks().get(0);
+
+        CroppedTrack croppedTrack = new CroppedTrack(audioTrack, 0, audioTrack.getSamples().size());
+        video.addTrack(croppedTrack);
+        Container out = new DefaultMp4Builder().build(video);
+
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(outputFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+        BufferedWritableFileByteChannel byteBufferByteChannel =
+                new BufferedWritableFileByteChannel(fos);
+        try {
+            out.writeContainer(byteBufferByteChannel);
+            byteBufferByteChannel.close();
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    //Code from https://stackoverflow.com/a/9293885/3697225
+    public static void copy(File src, File dst) throws IOException {
+        InputStream in = new FileInputStream(src);
+        try {
+            OutputStream out = new FileOutputStream(dst);
+            try {
+                // Transfer bytes from in to out
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            } finally {
+                out.close();
+            }
+        } finally {
+            in.close();
+        }
+    }
+
+    private static class BufferedWritableFileByteChannel implements WritableByteChannel {
+        private static final int BUFFER_CAPACITY = 1000000;
+
+        private boolean isOpen = true;
+        private final OutputStream outputStream;
+        private final ByteBuffer byteBuffer;
+        private final byte[] rawBuffer = new byte[BUFFER_CAPACITY];
+
+        private BufferedWritableFileByteChannel(OutputStream outputStream) {
+            this.outputStream = outputStream;
+            this.byteBuffer = ByteBuffer.wrap(rawBuffer);
+        }
+
+        @Override
+        public int write(ByteBuffer inputBuffer) {
+            int inputBytes = inputBuffer.remaining();
+
+            if (inputBytes > byteBuffer.remaining()) {
+                dumpToFile();
+                byteBuffer.clear();
+
+                if (inputBytes > byteBuffer.remaining()) {
+                    throw new BufferOverflowException();
+                }
+            }
+
+            byteBuffer.put(inputBuffer);
+
+            return inputBytes;
+        }
+
+        @Override
+        public boolean isOpen() {
+            return isOpen;
+        }
+
+        @Override
+        public void close() {
+            dumpToFile();
+            isOpen = false;
+        }
+
+        private void dumpToFile() {
+            try {
+                outputStream.write(rawBuffer, 0, byteBuffer.position());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

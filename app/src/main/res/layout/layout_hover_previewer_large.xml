@@ -31,9 +31,9 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="30dp"
-            android:paddingEnd="10dp"
             android:layout_weight=".25"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingEnd="10dp">
 
             <View
                 android:layout_width="0dp"
@@ -44,9 +44,9 @@
                 android:id="@+id/hover_view_textview_subreddit"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
                 android:layout_weight=".5"
                 android:gravity="end"
-                android:layout_gravity="bottom"
                 android:textColor="@color/colorWhite"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -97,24 +97,22 @@
             app:show_buffering="true"
             app:use_controller="true" />
 
-        <!--  &lt;!&ndash; Gfycat &ndash;&gt;
-          <com.gfycat.webp.view.GfycatWebpView
-              android:id="@+id/large_previewer_gfycat"
-              android:layout_width="200dp"
-              android:layout_height="200dp"
-              android:visibility="gone"
 
-              app:autoplay="true"
-              app:shouldLoadPreview="true" />-->
+        <!--   <FrameLayout
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:layout_gravity="center">-->
+        <VideoView
+            android:id="@+id/large_previewer_video_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@color/transparent"
+            android:visibility="gone" />
+        <!--
+                </FrameLayout>
+        -->
     </FrameLayout>
 
 
-    <!--        <FrameLayout
-                android:id="@+id/container_exoplayer_large"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/hover_view_title_large"
-                android:background="@color/colorBgBlackTintDarker"
-                android:visibility="gone">
-            </FrameLayout>-->
 </RelativeLayout>

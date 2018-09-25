@@ -49,11 +49,13 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.facebook.stetho.common.LogUtil;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
@@ -84,6 +86,7 @@ import com.sometimestwo.moxie.Model.GfycatWrapper;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -92,6 +95,11 @@ import retrofit2.Retrofit;
 import net.dean.jraw.models.SubredditSort;
 import net.dean.jraw.models.TimePeriod;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -189,6 +197,7 @@ public class FragmentHome extends Fragment {
     private Timeline.Window window;
     //private FrameLayout mExoplayerContainerLarge;
     private PlayerView mExoplayerLarge;
+    private VideoView mPreviewerVideoViewLarge;
 
     // event listeners
     private HomeEventListener mHomeEventListener;
@@ -307,6 +316,7 @@ public class FragmentHome extends Fragment {
         /* Exo player */
         //mExoplayerContainerLarge = (FrameLayout) v.findViewById(R.id.container_exoplayer_large);
         mExoplayerLarge = (PlayerView) v.findViewById(R.id.large_previewer_exoplayer);
+        mPreviewerVideoViewLarge = (VideoView) v.findViewById(R.id.large_previewer_video_view);
 
         bandwidthMeter = new DefaultBandwidthMeter();
         mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(), Util.getUserAgent(getContext(), "Moxie"), (TransferListener<? super DataSource>) bandwidthMeter);
@@ -536,7 +546,7 @@ public class FragmentHome extends Fragment {
             mToolbar.setAlpha(1);
 
             // Displaying Explore category
-            if(mCurrExploreTitle != null){
+            if (mCurrExploreTitle != null) {
                 mToolbar.setTitle(mCurrExploreTitle);
                 //mToolbar.setTitleTextColor(getResources().getColor(R.color.colorAccentBlue));
                 mToolbar.setTitleTextAppearance(getContext(), R.style.toolbar_title_text_explore);
@@ -573,7 +583,7 @@ public class FragmentHome extends Fragment {
             if (arguments != null) {
                 mInvalidateDataSource = (boolean) arguments.getBoolean(Constants.ARGS_INVALIDATE_DATASOURCE);
                 mCurrSubreddit = (String) arguments.getString(Constants.ARGS_CURR_SUBREDDIT, null);
-                mCurrExploreTitle = (String) arguments.getString(Constants.EXTRA_GOTO_EXPLORE_CATEGORY,null);
+                mCurrExploreTitle = (String) arguments.getString(Constants.EXTRA_GOTO_EXPLORE_CATEGORY, null);
             }
             //  mCurrSubreddit = mRedditClient.getmRedditDataRequestObj().getmSubreddit();
         } catch (NullPointerException npe) {
@@ -707,11 +717,11 @@ public class FragmentHome extends Fragment {
                     List<String> subreddits = mExploreCatagoriesMap.get(category).getSubredditList();
 
                     StringBuilder sb = new StringBuilder();
-                    for(String subreddit : subreddits){
+                    for (String subreddit : subreddits) {
                         sb.append(subreddit).append('+');
                     }
 
-                    String exploreURL = sb.substring(0, sb.length()-1);
+                    String exploreURL = sb.substring(0, sb.length() - 1);
                     App.getMoxieInfoObj().getmSubredditStack().push(exploreURL);
 
                     Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
@@ -761,48 +771,48 @@ public class FragmentHome extends Fragment {
         //ArrayList<String> subreddits;
         //List<String> Lines = Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_funny));
 
-      //  subreddits = new ArrayList<String>(R.array.explore_subreddits_funny);
+        //  subreddits = new ArrayList<String>(R.array.explore_subreddits_funny);
         mExploreCatagoriesMap.put("Funny", new Explore(R.drawable.explore_bg_funny, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_funny))));
 
-       // subreddits = new ArrayList<String>(R.array.explore_subreddits_aww);
-        mExploreCatagoriesMap.put("Awwwww", new Explore(R.drawable.explore_bg_aww,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_aww))));
+        // subreddits = new ArrayList<String>(R.array.explore_subreddits_aww);
+        mExploreCatagoriesMap.put("Awwwww", new Explore(R.drawable.explore_bg_aww, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_aww))));
 
-       // subreddits = new ArrayList<String>(R.array.explore_subreddits_travel);
-        mExploreCatagoriesMap.put("Travel", new Explore(R.drawable.explore_bg_travel2,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_travel))));
+        // subreddits = new ArrayList<String>(R.array.explore_subreddits_travel);
+        mExploreCatagoriesMap.put("Travel", new Explore(R.drawable.explore_bg_travel2, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_travel))));
 
         //subreddits = new ArrayList<String>(R.array.explore_subreddits_meme);
-        mExploreCatagoriesMap.put("Meme", new Explore(R.drawable.explore_bg_meme,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_meme))));
+        mExploreCatagoriesMap.put("Meme", new Explore(R.drawable.explore_bg_meme, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_meme))));
 
-       // subreddits = new ArrayList<String>(R.array.explore_subreddits_gifs);
-        mExploreCatagoriesMap.put("GIFs", new Explore(R.drawable.explore_bg_gifs,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_gifs))));
+        // subreddits = new ArrayList<String>(R.array.explore_subreddits_gifs);
+        mExploreCatagoriesMap.put("GIFs", new Explore(R.drawable.explore_bg_gifs, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_gifs))));
 
         //subreddits = new ArrayList<String>(R.array.explore_subreddits_food);
-        mExploreCatagoriesMap.put("Food", new Explore(R.drawable.explore_bg_food,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_food))));
+        mExploreCatagoriesMap.put("Food", new Explore(R.drawable.explore_bg_food, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_food))));
 
 
-      //  subreddits = new ArrayList<String>(R.array.explore_subreddits_motivational);
+        //  subreddits = new ArrayList<String>(R.array.explore_subreddits_motivational);
         mExploreCatagoriesMap.put("Motivational", new Explore(R.drawable.explore_bg_motivational, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_motivational))));
 
-       // subreddits = new ArrayList<String>(R.array.explore_subreddits_woah);
-        mExploreCatagoriesMap.put("Woah", new Explore(R.drawable.explore_bg_woah,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_woah))));
+        // subreddits = new ArrayList<String>(R.array.explore_subreddits_woah);
+        mExploreCatagoriesMap.put("Woah", new Explore(R.drawable.explore_bg_woah, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_woah))));
 
         //subreddits = new ArrayList<String>(R.array.explore_subreddits_design);
-        mExploreCatagoriesMap.put("Design", new Explore(R.drawable.explore_bg_design,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_design))));
+        mExploreCatagoriesMap.put("Design", new Explore(R.drawable.explore_bg_design, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_design))));
 
-       // subreddits = new ArrayList<String>(R.array.explore_subreddits_art);
+        // subreddits = new ArrayList<String>(R.array.explore_subreddits_art);
         mExploreCatagoriesMap.put("Art", new Explore(R.drawable.explore_bg_art, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_art))));
 
         //subreddits = new ArrayList<String>(R.array.explore_subreddits_wtf);
-        mExploreCatagoriesMap.put("WTF", new Explore(R.drawable.explore_bg_wtf,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_wtf))));
+        mExploreCatagoriesMap.put("WTF", new Explore(R.drawable.explore_bg_wtf, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_wtf))));
 
-       // subreddits = new ArrayList<String>(R.array.explore_subreddits_porn);
-        mExploreCatagoriesMap.put("NSFW", new Explore(R.drawable.explore_bg_nsfw,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nsfw))));
+        // subreddits = new ArrayList<String>(R.array.explore_subreddits_porn);
+        mExploreCatagoriesMap.put("NSFW", new Explore(R.drawable.explore_bg_nsfw, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nsfw))));
 
-       // subreddits = new ArrayList<String>(R.array.explore_subreddits_infographics);
-        mExploreCatagoriesMap.put("Infographics", new Explore(R.drawable.explore_bg_infographics,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_infographics))));
+        // subreddits = new ArrayList<String>(R.array.explore_subreddits_infographics);
+        mExploreCatagoriesMap.put("Infographics", new Explore(R.drawable.explore_bg_infographics, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_infographics))));
 
         //subreddits = new ArrayList<String>(R.array.explore_subreddits_nature);
-        mExploreCatagoriesMap.put("Nature", new Explore(R.drawable.explore_bg_nature,Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nature))));
+        mExploreCatagoriesMap.put("Nature", new Explore(R.drawable.explore_bg_nature, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nature))));
     }
 
     private void prepareMenuData() {
@@ -1012,15 +1022,23 @@ public class FragmentHome extends Fragment {
             // fade the toolbar while we're in large previewer
             mToolbar.setAlpha(.1f);
             mHoverPreviewMediaContainerLarge.setVisibility(View.VISIBLE);
-            if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-                mHoverImagePreviewLarge.setVisibility(View.VISIBLE);
-                mExoplayerLarge.setVisibility(View.GONE);
-            }
-            if (item.getSubmissionType() == Constants.SubmissionType.GIF) { // and video?
-                initializePreviewExoPlayer(item.getUrl());
-                mExoplayerLarge.setVisibility(View.VISIBLE);
-                mHoverImagePreviewLarge.setVisibility(View.GONE);
 
+            //v.redd.it links will always be non-image. Display in video view.
+            if (item.getDomain() == Utils.SubmissionDomain.VREDDIT) {
+                mPreviewerVideoViewLarge.setVisibility(View.VISIBLE);
+                mHoverImagePreviewLarge.setVisibility(View.GONE);
+            } else {
+                if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                    mHoverImagePreviewLarge.setVisibility(View.VISIBLE);
+                    mExoplayerLarge.setVisibility(View.GONE);
+                    mPreviewerVideoViewLarge.setVisibility(View.GONE);
+                }
+                if (item.getSubmissionType() == Constants.SubmissionType.GIF) { // and video?
+                    initializePreviewExoPlayer(item.getUrl());
+                    mExoplayerLarge.setVisibility(View.VISIBLE);
+                    mHoverImagePreviewLarge.setVisibility(View.GONE);
+                    mPreviewerVideoViewLarge.setVisibility(View.GONE);
+                }
             }
         }
     }
@@ -1114,7 +1132,7 @@ public class FragmentHome extends Fragment {
                 is404 = false;
                 // Imgur
                 //TODO: imgur albums. Example URL https://imgur.com/a/K8bJ9pV (nsfw)
-                if (item.getDomain().contains("imgur")) {
+                if (item.getDomain() == Utils.SubmissionDomain.IMGUR) {
                     // Check if submission type is null. This will happen if the item's URL is
                     // to a non-direct image/gif link such as https://imgur.com/qTadRtq
                     if (item.getSubmissionType() == null) {
@@ -1140,8 +1158,20 @@ public class FragmentHome extends Fragment {
                     }
                 }
                 //v.redd.it
-                else if ("v.redd.it".equalsIgnoreCase(item.getDomain())) {
-                    Log.e("VIDEO_DOMAIN_FOUND", " Found v.redd.it link. Not working yet.");
+
+                else if (item.getDomain() == Utils.SubmissionDomain.VREDDIT) {
+                    if (item.getEmbeddedMedia() == null) {
+                        // v.redd.it Videos/GIFS that are crossposted will not have EmbeddedMedia
+                        // and instead have some sort of crosspost field that JRAW does handle.
+                        // Since these aren't too common, let's skip support for them for now.
+                        return;
+                    }
+                    if ("hosted:video".equalsIgnoreCase(item.getPostHint())) {
+                        item.setSubmissionType(Constants.SubmissionType.VIDEO);
+                    } else {
+                        item.setSubmissionType(Constants.SubmissionType.GIF);
+                    }
+
                     thumbnail = item.getThumbnail();
                     if (mDisplayDomainIcon) {
                         holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_reddit_blue_circle));
@@ -1150,7 +1180,7 @@ public class FragmentHome extends Fragment {
                 }
 
                 // i.redd.it
-                else if (item.getDomain().contains("i.redd.it")) {
+                else if (item.getDomain() == Utils.SubmissionDomain.IREDDIT) {
                     thumbnail = item.getThumbnail();
                     if (mDisplayDomainIcon) {
                         holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_reddit_circle_orange));
@@ -1158,12 +1188,12 @@ public class FragmentHome extends Fragment {
                     }
                 }
                 //gfycat
-                else if (item.getDomain().contains("gfycat")) {
+                else if (item.getDomain() == Utils.SubmissionDomain.GFYCAT) {
                     // We're given a URL in this format: //https://gfycat.com/SpitefulGoldenAracari
-                    //extract gfycat ID (looks like:SpitefulGoldenAracari)
+                    // extract gfycat ID (looks like:SpitefulGoldenAracari)
                     String gfycatHash = Utils.getGfycatHash(item.getUrl());
                     // get Gfycat .mp4 "clean url"
-                    getGfycat(gfycatHash,item);
+                    getGfycat(gfycatHash, item);
                     // Assume all Gfycat links are of submission type GIF
                     item.setSubmissionType(Constants.SubmissionType.GIF);
                     thumbnail = item.getThumbnail();
@@ -1173,7 +1203,7 @@ public class FragmentHome extends Fragment {
                     }
                 }
                 //youtube
-                else if (item.getDomain().contains("youtube")) {
+                else if (item.getDomain() == Utils.SubmissionDomain.YOUTUBE) {
                     Log.e("VIDEO_DOMAIN_FOUND", " Found YOUTUBE link. Not working yet.");
                     if (mDisplayDomainIcon) {
                         holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_youtube_red));
@@ -1183,16 +1213,6 @@ public class FragmentHome extends Fragment {
                 // Domain not recognized - hope submission is linked to a valid media extension
                 else {
                     thumbnail = item.getThumbnail();
-
-                   /* if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-                        thumbnail = item.getUrl();
-                    }
-
-                    //TODO: Test what happens when we encounter weird domain linked to gif/video
-                    else if (item.getSubmissionType() == Constants.SubmissionType.GIF
-                            || item.getSubmissionType() == Constants.SubmissionType.VIDEO) {
-                        thumbnail = item.getUrl();
-                    }*/
                     Log.e("DOMAIN_NOT_FOUND", "Domain not recognized: " + item.getDomain() + ". Position: " + position);
                 }
 
@@ -1246,7 +1266,7 @@ public class FragmentHome extends Fragment {
                     }
                 });
 
-                /* Long press hover previewer */
+                /* Long press previewer */
                 holder.thumbnailImageView.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View pView) {
@@ -1290,16 +1310,22 @@ public class FragmentHome extends Fragment {
                                         /*.apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))*/
                                         .into(mHoverImagePreviewLarge);
                                 // make sure the gif/video player isn't showing
-                            } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
-                                /*if(item.getDomain().contains("gfycat")){
-                                    mHoverPreviewGfycatLarge.setShouldLoadPreview(true);
-                                    //mHoverPreviewGfycatLarge.setOnStartAnimationListener
-                                    //mHoverPreviewGfycatLarge.setupGfycat(gfycatObject);
-                                    mHoverPreviewGfycatLarge.play();
-                                }*/
-                                //TODO: Settings option to disable exoplayer controller?
-                                // set up exoplayer to play gif
-                                initializePreviewExoPlayer(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl());
+                            } else if (item.getSubmissionType() == Constants.SubmissionType.GIF
+                                    || item.getSubmissionType() == Constants.SubmissionType.VIDEO) {
+
+                                // VREDDIT videos are high maintance :/
+                                if (item.getDomain() == Utils.SubmissionDomain.VREDDIT) {
+                                    String url = item.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
+
+                                    try {
+                                        new FetchVRedditGif(url).execute();
+
+                                    } catch (Exception e) {
+                                        LogUtil.e(e, "Error v.redd.it url: " + url);
+                                    }
+                                } else {
+                                    initializePreviewExoPlayer(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl());
+                                }
                             }
                         }
                         return true;
@@ -1322,25 +1348,25 @@ public class FragmentHome extends Fragment {
                         final int action = pEvent.getAction();
                         int currPointerId = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
 
-                        // don't care about touches that aren't the first touch
-                        if (currPointerId != mActivePointerId) {
-                            return true;
-                        }
-                        // only care about doing stuff that relates to first finger touch
-                        if (pEvent.getAction() == MotionEvent.ACTION_UP) {
-                            // hide hoverView on click release
-                            if (isImageViewPressed) {
-                                // done with hover view, allow recyclerview to handle touch events
-                                mRecyclerMain.setHandleTouchEvents(true);
-                                isImageViewPressed = false;
-                                if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
-                                    mHoverPreviewContainerSmall.setVisibility(View.GONE);
 
-                                } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
-                                    mHoverPreviewContainerLarge.setVisibility(View.GONE);
-                                    //mExoplayerContainerLarge.setVisibility(View.GONE);
-                                    // restore the toolbar
-                                    mToolbar.setAlpha(1);
+                        // only care about doing stuff that relates to first finger touch
+                        if (currPointerId == mActivePointerId) {
+                            if (pEvent.getAction() == MotionEvent.ACTION_UP) {
+                                // hide hoverView on click release
+                                if (isImageViewPressed) {
+                                    // done with hover view, allow recyclerview to handle touch events
+                                    mRecyclerMain.setHandleTouchEvents(true);
+                                    isImageViewPressed = false;
+                                    if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
+                                        mHoverPreviewContainerSmall.setVisibility(View.GONE);
+
+                                    } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+                                        mHoverPreviewContainerLarge.setVisibility(View.GONE);
+                                        mPreviewerVideoViewLarge.stopPlayback();
+                                        //mExoplayerContainerLarge.setVisibility(View.GONE);
+                                        // restore the toolbar
+                                        mToolbar.setAlpha(1);
+                                    }
                                 }
                             }
                         }
@@ -1536,7 +1562,7 @@ public class FragmentHome extends Fragment {
         mExoplayerLarge.setControllerVisibilityListener(new PlaybackControlView.VisibilityListener() {
             @Override
             public void onVisibilityChange(int i) {
-                if(i == 0) {
+                if (i == 0) {
                     mExoplayerLarge.hideController();
                 }
             }
@@ -1607,7 +1633,7 @@ public class FragmentHome extends Fragment {
     /****************************************************/
     /****************************************************/
 
-    private void getGfycat(String gfycatHash, SubmissionObj item){
+    private void getGfycat(String gfycatHash, SubmissionObj item) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(Constants.BASE_URL_GFYCAT)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -1628,17 +1654,16 @@ public class FragmentHome extends Fragment {
                     gfyItem  = body.getGfyItem();
                 }*/
                 GfyItem gfyItem = new GfyItem();
-                try{
+                try {
                     gfyItem = response.body().getGfyItem();
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     Log.e("GFYCAT_RESPONSE_ERROR",
                             "Failed in attempt to retrieve gfycat object for hash "
                                     + gfycatHash + ". "
                                     + e.getMessage());
                 }
 
-                if(gfyItem == null){
+                if (gfyItem == null) {
                     int a = 2;
                 }
                 item.setCleanedUrl(gfyItem.getMobileUrl() != null ? gfyItem.getMobileUrl() : gfyItem.getMp4Url());
@@ -1646,13 +1671,12 @@ public class FragmentHome extends Fragment {
 
             @Override
             public void onFailure(Call<GfycatWrapper> call, Throwable t) {
-                Log.e(TAG, "onFailure: Unable to retrieve RSS: " + t.getMessage() );
+                Log.e(TAG, "onFailure: Unable to retrieve RSS: " + t.getMessage());
                 //Toast.makeText(MainActivity.this, "An Error Occured", Toast.LENGTH_SHORT).show();
 
             }
         });
     }
-
 
 
     /***********[IMGUR SPECIFIC FUNCTIONS] ***************/
@@ -1741,4 +1765,142 @@ public class FragmentHome extends Fragment {
                 });
     }
 
+
+    /***********[V.REDDIT SPECIFIC FUNCTIONS] ***************/
+    /****************************************************/
+    /****************************************************/
+    private class FetchVRedditGif extends AsyncTask<String, Void, String> {
+        String url;
+
+        public FetchVRedditGif(String url) {
+            this.url = url;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+
+            if (!url.contains("DASH")) {
+                if (url.endsWith("/")) {
+                    url = url.substring(url.length() - 2);
+                }
+                url = url + "/DASH_9_6_M";
+            }
+
+            File videoFile = App.getProxy(getActivity()).getCacheFile(url);
+
+            if (videoFile.length() <= 0) {
+                try {
+                    if (!videoFile.exists()) {
+                        if (!videoFile.getParentFile().exists()) {
+                            videoFile.getParentFile().mkdirs();
+                        }
+                        videoFile.createNewFile();
+                    }
+
+                    HttpURLConnection conv = (HttpURLConnection) (new URL(url)).openConnection();
+                    conv.setRequestMethod("GET");
+                    conv.connect();
+
+                    String downloadsPath = getActivity().getCacheDir().getAbsolutePath();
+                    String fileName = "video.mp4"; //temporary location for video
+                    File videoOutput = new File(downloadsPath, fileName);
+                    HttpURLConnection cona = (HttpURLConnection) new URL(
+                            url.toString().substring(0, url.lastIndexOf("/") + 1)
+                                    + "audio").openConnection();
+                    cona.setRequestMethod("GET");
+
+                    if (!videoOutput.exists()) {
+                        videoOutput.createNewFile();
+                    }
+
+                    FileOutputStream fos = new FileOutputStream(videoOutput);
+                    InputStream is = conv.getInputStream();
+                    int fileLength = conv.getContentLength() + cona.getContentLength();
+
+                    byte data[] = new byte[4096];
+                    long total = 0;
+                    int count;
+                    while ((count = is.read(data)) != -1) {
+                        // allow canceling with back button
+                        if (isCancelled()) {
+                            is.close();
+                        }
+                        total += count;
+                        fos.write(data, 0, count);
+                    }
+                    fos.close();
+                    is.close();
+
+                    cona.connect();
+
+                    String fileNameAudio = "audio.mp4"; //temporary location for audio
+                    File audioOutput = new File(downloadsPath, fileNameAudio);
+                    File muxedPath = new File(downloadsPath, "muxedvideo.mp4");
+                    muxedPath.createNewFile();
+
+                    if (!audioOutput.exists()) {
+                        audioOutput.createNewFile();
+                    }
+
+                    fos = new FileOutputStream(audioOutput);
+
+                    int stat = cona.getResponseCode();
+                    if (stat != 403) {
+                        InputStream isa = cona.getInputStream();
+
+                        byte dataa[] = new byte[4096];
+                        int counta;
+                        while ((counta = isa.read(dataa)) != -1) {
+                            // allow canceling with back button
+                            if (isCancelled()) {
+                                isa.close();
+                            }
+                            total += counta;
+
+                            fos.write(dataa, 0, counta);
+                        }
+                        fos.close();
+                        isa.close();
+
+                        Utils.mux(videoOutput.getAbsolutePath(), audioOutput.getAbsolutePath(),
+                                muxedPath.getAbsolutePath());
+
+                        Utils.copy(muxedPath, videoFile);
+                        new File(videoFile.getAbsolutePath() + ".a").createNewFile();
+                        //setMuteVisibility(true);
+
+                    } else {
+                        Utils.copy(videoOutput, videoFile);
+                        //no audio!
+                        //setMuteVisibility(false);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+            // found in cache???
+            else {
+                File isAudio = new File(videoFile.getAbsolutePath() + ".a");
+                if (isAudio.exists()) {
+                    //setMuteVisibility(true);
+                }
+            }
+            String toLoad = App.getProxy(getActivity()).getCacheFile(url).getAbsolutePath();
+
+            return toLoad;
+        }
+
+        @Override
+        protected void onPostExecute(String urlToLoad) {
+            mPreviewerVideoViewLarge.setVideoURI(Uri.parse(urlToLoad));
+            mPreviewerVideoViewLarge.start();
+        }
+
+    }
 }

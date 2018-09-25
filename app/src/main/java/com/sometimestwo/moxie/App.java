@@ -2,12 +2,11 @@ package com.sometimestwo.moxie;
 
 
 import android.app.Application;
+import android.content.Context;
 import android.util.Log;
 
-//import com.gfycat.core.GfyCoreInitializationBuilder;
-//import com.gfycat.core.GfyCoreInitializer;
-//import com.gfycat.core.GfycatApplicationInfo;
 import com.sometimestwo.moxie.Model.MoxieInfoObj;
+import com.sometimestwo.moxie.VideoCacher.HttpProxyCacheServer;
 
 import net.dean.jraw.android.AndroidHelper;
 import net.dean.jraw.android.AppInfoProvider;
@@ -24,6 +23,8 @@ public final class App extends Application {
     private static AccountHelper accountHelper;
     private static SharedPreferencesTokenStore tokenStore;
     private static MoxieInfoObj currSubredditObj;
+
+    public static HttpProxyCacheServer proxy;
 
     @Override
     public void onCreate() {
@@ -65,9 +66,25 @@ public final class App extends Application {
 
             return null;
         });
+
+        proxy = new HttpProxyCacheServer.Builder(this).maxCacheSize(5 * 1024)
+                .maxCacheFilesCount(20)
+                .build();
+
     }
 
     public static AccountHelper getAccountHelper() { return accountHelper; }
     public static SharedPreferencesTokenStore getTokenStore() { return tokenStore; }
     public static MoxieInfoObj getMoxieInfoObj() {return currSubredditObj;}
+
+
+    // Video cache
+    public static HttpProxyCacheServer getProxy(Context context) {
+        App app = (App) context.getApplicationContext();
+        return app.proxy == null ? (app.proxy = app.newProxy()) : app.proxy;
+    }
+
+    private HttpProxyCacheServer newProxy() {
+        return new HttpProxyCacheServer(this);
+    }
 }

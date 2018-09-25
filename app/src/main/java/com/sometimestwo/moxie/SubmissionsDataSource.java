@@ -8,6 +8,7 @@ import android.util.Log;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Utils;
 
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.http.NetworkException;
@@ -43,7 +44,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         TimePeriod timePeriod = App.getMoxieInfoObj().getmTimePeriod();
 
         //TODO figure this out
-        String defaultSubreddit = "all";
+        String defaultSubreddit = "gifs";
 
         // Get the requested subreddit(s), if any
         if(!mMoxieInfoObj.getmSubredditStack().isEmpty()){
@@ -190,7 +191,6 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             s.setSubredditEmpty(false);
             s.setAuthor(submission.getAuthor());
             s.setUrl(submission.getUrl());
-            s.setDomain(submission.getDomain());
             s.setId(submission.getId());
             s.setTitle(submission.getTitle());
             s.setCommentCount(submission.getCommentCount());
@@ -217,6 +217,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             s.setVote(submission.getVote());
             s.setVisited(submission.isVisited());
             s.setScore(submission.getScore());
+            s.setEmbeddedMedia(submission.getEmbeddedMedia());
             s.setPreviewUrl(submission.getPreview() == null ?
                     null : submission.getPreview().getImages().get(0).getSource().getUrl());
             // thumbnail will be "nsfw" here if user has selected to hide NSFW thumbnails through
@@ -227,9 +228,25 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 s.setThumbnail(submission.getThumbnail());
             }
 
-            // Some submissions may be a link that does not end with .jpeg, .gif, etc.
-            // Example: "https://imgur.com/qTadRtq?r"
-            // Needs to be converted to proper extension
+            // domain
+            if(submission.getDomain().contains("imgur")){
+                s.setDomain(Utils.SubmissionDomain.IMGUR);
+            }
+            else if(submission.getDomain().contains("v.redd.it")){
+                s.setDomain(Utils.SubmissionDomain.VREDDIT);
+            }
+            else if(submission.getDomain().contains("i.redd.it")){
+                s.setDomain(Utils.SubmissionDomain.IREDDIT);
+            }
+            else if(submission.getDomain().contains("gfycat")){
+                s.setDomain(Utils.SubmissionDomain.GFYCAT);
+            }
+            else if(submission.getDomain().contains("youtube")){
+                s.setDomain(Utils.SubmissionDomain.YOUTUBE);
+            }
+            else{
+                s.setDomain(Utils.SubmissionDomain.OTHER);
+            }
 
             res.add(s);
         }

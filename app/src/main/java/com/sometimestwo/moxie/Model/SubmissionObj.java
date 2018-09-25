@@ -2,8 +2,10 @@ package com.sometimestwo.moxie.Model;
 
 //import com.gfycat.core.gfycatapi.pojo.Gfycat;
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Utils;
 
 import net.dean.jraw.models.CommentSort;
+import net.dean.jraw.models.EmbeddedMedia;
 import net.dean.jraw.models.VoteDirection;
 import net.dean.jraw.references.SubmissionReference;
 
@@ -27,7 +29,7 @@ public class SubmissionObj implements Serializable{
 
     private String author;
     private Date dateCreated;
-    private String domain;
+    private Utils.SubmissionDomain domain;
     private String fullName;
     private short gilded;
     private boolean isHidden;
@@ -60,6 +62,7 @@ public class SubmissionObj implements Serializable{
     // object is in the process of getting filled through async API call
     private boolean loadingData;
     private int score;
+    private EmbeddedMedia embeddedMedia;
 
     // Only used if item is a gfycat link
     //private Gfycat gfycatObj;
@@ -88,11 +91,11 @@ public class SubmissionObj implements Serializable{
         this.dateCreated = dateCreated;
     }
 
-    public String getDomain() {
+    public Utils.SubmissionDomain getDomain() {
         return domain;
     }
 
-    public void setDomain(String domain) {
+    public void setDomain(Utils.SubmissionDomain domain) {
         this.domain = domain;
     }
 
@@ -336,11 +339,12 @@ public class SubmissionObj implements Serializable{
         this.cleanedUrl = cleanedUrl;
     }
 
-    /*public Gfycat getGfycatObj() {
-        return gfycatObj;
+    public EmbeddedMedia getEmbeddedMedia() {
+        return embeddedMedia;
     }
 
-    public void setGfycatObj(Gfycat gfycatObj) {
-        this.gfycatObj = gfycatObj;
-    }*/
+    public void setEmbeddedMedia(EmbeddedMedia embeddedMedia) {
+        this.embeddedMedia = embeddedMedia;
+    }
+
 }

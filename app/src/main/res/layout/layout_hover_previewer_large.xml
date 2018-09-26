@@ -98,10 +98,7 @@
             app:use_controller="true" />
 
 
-        <!--   <FrameLayout
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               android:layout_gravity="center">-->
+        <!--Video view for VREDDIT videos -->
         <VideoView
             android:id="@+id/large_previewer_video_view"
             android:layout_width="match_parent"
@@ -109,9 +106,7 @@
             android:layout_gravity="center"
             android:background="@color/transparent"
             android:visibility="gone" />
-        <!--
-                </FrameLayout>
-        -->
+
     </FrameLayout>
 
 

@@ -18,9 +18,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.VideoView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.RequestManager;
+import com.facebook.stetho.common.LogUtil;
 import com.github.piasy.biv.BigImageViewer;
 import com.github.piasy.biv.loader.glide.GlideImageLoader;
 import com.github.piasy.biv.view.BigImageView;
@@ -43,8 +43,9 @@ import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Utils;
 
-public class FragmentFullDisplay extends Fragment {
+public class FragmentFullDisplay extends Fragment implements OnTaskCompletedListener {
 
     private SubmissionObj mCurrSubmission;
     private boolean mPrefsAllowNSFW;
@@ -63,7 +64,12 @@ public class FragmentFullDisplay extends Fragment {
     private LinearLayout mSnackbarContainer;
 
     /* Big zoomie view*/
+    private FrameLayout mBigImageViewContainer;
     private BigImageView mBigImageView;
+
+    /* Video view for VREDDIT videos*/
+    private FrameLayout mVideoviewContainer;
+    private VideoView mVideoView;
 
     private ProgressBar mProgressBar;
 
@@ -117,26 +123,29 @@ public class FragmentFullDisplay extends Fragment {
         mSnackbarContainer = (LinearLayout) v.findViewById(R.id.big_display_snack_bar_container);
 
         /* Main zoomie image view*/
+        mBigImageViewContainer = (FrameLayout) v.findViewById(R.id.full_displayer_big_image_container);
         mBigImageView = (BigImageView) v.findViewById(R.id.big_image_viewer);
 
+        /* Video view*/
+        mVideoviewContainer = (FrameLayout) v.findViewById(R.id.full_displayer_videoview_container);
+        mVideoView = (VideoView) v.findViewById(R.id.full_displayer_videoview);
 
         /* Loading progress bar */
         //mProgressBar = (ProgressBar) v.findViewById(R.id.full_displayer_progress);
 
         /* Exo player*/
+        mExoplayerContainer = (FrameLayout) v.findViewById(R.id.full_displayer_exoplayer_container);
         mExoplayer = (PlayerView) v.findViewById(R.id.full_displayer_exoplayer);
         bandwidthMeter = new DefaultBandwidthMeter();
         mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(),
                 Util.getUserAgent(getContext(), "Moxie"),
                 (TransferListener<? super DataSource>) bandwidthMeter);
         window = new Timeline.Window();
-        mExoplayerContainer = (FrameLayout) v.findViewById(R.id.full_displayer_exoplayer_container);
 
 
         setupFullViewer();
 
-        /* Exit on image tap if settings option is enabled*/
-        mBigImageView.setClickable(true);
+        /* Exit on tap if settings option is enabled*/
         mBigImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -145,8 +154,15 @@ public class FragmentFullDisplay extends Fragment {
                 }
             }
         });
-
         mExoplayerContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mAllowCloseOnClick){
+                    closeFullDisplay();
+                }
+            }
+        });
+        mVideoviewContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(mAllowCloseOnClick){
@@ -213,18 +229,38 @@ public class FragmentFullDisplay extends Fragment {
                 ? mCurrSubmission.getCleanedUrl() : mCurrSubmission.getUrl();
 
         if(mCurrSubmission.getSubmissionType() == Constants.SubmissionType.IMAGE){
-            mBigImageView.setVisibility(View.VISIBLE);
-            mExoplayer.setVisibility(View.GONE);
-            //TODO: handle invalid URL
+            mExoplayerContainer.setVisibility(View.GONE);
+            mVideoviewContainer.setVisibility(View.GONE);
+            mBigImageViewContainer.setVisibility(View.VISIBLE);
             mBigImageView.showImage(Uri.parse(mCurrSubmission.getUrl()));
+
+            //mBigImageView.setVisibility(View.VISIBLE);
+            //mExoplayer.setVisibility(View.GONE);
+            //TODO: handle invalid URL
         }else if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.GIF
                 || mCurrSubmission.getSubmissionType() == Constants.SubmissionType.VIDEO){
-            mBigImageView.setVisibility(View.GONE);
-            mExoplayer.setVisibility(View.VISIBLE);
-            initializePlayer(imageUrl);
+           // mBigImageView.setVisibility(View.GONE);
+                mBigImageViewContainer.setVisibility(View.GONE);
+            // VREDDIT submissions require a video view
+            if(mCurrSubmission.getDomain() == Utils.SubmissionDomain.VREDDIT){
+                mVideoviewContainer.setVisibility(View.VISIBLE);
+                mExoplayerContainer.setVisibility(View.GONE);
+                String url = mCurrSubmission.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
+                try {
+                    new Utils.FetchVRedditGifTask(getContext(),url, this).execute();
+                } catch (Exception e) {
+                    LogUtil.e(e, "Error v.redd.it url: " + url);
+                }
+                //mExoplayer.setVisibility(View.GONE);
+            }
+            else{
+                mExoplayer.setVisibility(View.VISIBLE);
+                mVideoviewContainer.setVisibility(View.GONE);
+               // mVideoView.setVisibility(View.GONE);
+                initializePlayer(imageUrl);
+            }
+
         }
-
-
 
         // button to visit comments
         mButtonComments.setOnClickListener(new View.OnClickListener() {
@@ -241,8 +277,8 @@ public class FragmentFullDisplay extends Fragment {
         submissionViewerIntent.putExtra(Constants.EXTRA_SUBMISSION_OBJ, mCurrSubmission);
         startActivity(submissionViewerIntent);
         closeFullDisplay();
-       // getActivity().finish();
     }
+
 
     private void initializePlayer(String url) {
 
@@ -299,5 +335,11 @@ public class FragmentFullDisplay extends Fragment {
         if (player != null) {
             player.release();
         }
+    }
+
+    @Override
+    public void onTaskCompleted(Uri uriToLoad) {
+        mVideoView.setVideoURI(uriToLoad);
+        mVideoView.start();
     }
 }

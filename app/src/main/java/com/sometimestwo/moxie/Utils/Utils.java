@@ -2,6 +2,9 @@ package com.sometimestwo.moxie.Utils;
 
 
 import android.app.Activity;
+import android.content.Context;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Looper;
 import android.widget.ProgressBar;
 
@@ -9,6 +12,8 @@ import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
+import com.sometimestwo.moxie.App;
+import com.sometimestwo.moxie.OnTaskCompletedListener;
 
 
 import java.io.File;
@@ -18,6 +23,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -274,5 +281,147 @@ public class Utils {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+
+    /***********[V.REDDIT SPECIFIC FUNCTIONS] ***************/
+    /****************************************************/
+    /****************************************************/
+    public static class FetchVRedditGifTask extends AsyncTask<String, Void, String> {
+        private Context context;
+        String url;
+        private OnTaskCompletedListener listener;
+
+        public FetchVRedditGifTask(Context context, String dirtyUrl, OnTaskCompletedListener listener) {
+            this.listener = listener;
+            this.url = dirtyUrl;
+            this.context = context;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+
+            if (!url.contains("DASH")) {
+                if (url.endsWith("/")) {
+                    url = url.substring(url.length() - 2);
+                }
+                url = url + "/DASH_9_6_M";
+            }
+
+            File videoFile = App.getProxy(context).getCacheFile(url);
+
+            if (videoFile.length() <= 0) {
+                try {
+                    if (!videoFile.exists()) {
+                        if (!videoFile.getParentFile().exists()) {
+                            videoFile.getParentFile().mkdirs();
+                        }
+                        videoFile.createNewFile();
+                    }
+
+                    HttpURLConnection conv = (HttpURLConnection) (new URL(url)).openConnection();
+                    conv.setRequestMethod("GET");
+                    conv.connect();
+
+                    String downloadsPath = context.getCacheDir().getAbsolutePath();
+                    String fileName = "video.mp4"; //temporary location for video
+                    File videoOutput = new File(downloadsPath, fileName);
+                    HttpURLConnection cona = (HttpURLConnection) new URL(
+                            url.toString().substring(0, url.lastIndexOf("/") + 1)
+                                    + "audio").openConnection();
+                    cona.setRequestMethod("GET");
+
+                    if (!videoOutput.exists()) {
+                        videoOutput.createNewFile();
+                    }
+
+                    FileOutputStream fos = new FileOutputStream(videoOutput);
+                    InputStream is = conv.getInputStream();
+                    int fileLength = conv.getContentLength() + cona.getContentLength();
+
+                    byte data[] = new byte[4096];
+                    long total = 0;
+                    int count;
+                    while ((count = is.read(data)) != -1) {
+                        // allow canceling with back button
+                        if (isCancelled()) {
+                            is.close();
+                        }
+                        total += count;
+                        fos.write(data, 0, count);
+                    }
+                    fos.close();
+                    is.close();
+
+                    cona.connect();
+
+                    String fileNameAudio = "audio.mp4"; //temporary location for audio
+                    File audioOutput = new File(downloadsPath, fileNameAudio);
+                    File muxedPath = new File(downloadsPath, "muxedvideo.mp4");
+                    muxedPath.createNewFile();
+
+                    if (!audioOutput.exists()) {
+                        audioOutput.createNewFile();
+                    }
+
+                    fos = new FileOutputStream(audioOutput);
+
+                    int stat = cona.getResponseCode();
+                    if (stat != 403) {
+                        InputStream isa = cona.getInputStream();
+
+                        byte dataa[] = new byte[4096];
+                        int counta;
+                        while ((counta = isa.read(dataa)) != -1) {
+                            // allow canceling with back button
+                            if (isCancelled()) {
+                                isa.close();
+                            }
+                            total += counta;
+
+                            fos.write(dataa, 0, counta);
+                        }
+                        fos.close();
+                        isa.close();
+
+                        Utils.mux(videoOutput.getAbsolutePath(), audioOutput.getAbsolutePath(),
+                                muxedPath.getAbsolutePath());
+
+                        Utils.copy(muxedPath, videoFile);
+                        new File(videoFile.getAbsolutePath() + ".a").createNewFile();
+                        //setMuteVisibility(true);
+
+                    } else {
+                        Utils.copy(videoOutput, videoFile);
+                        //no audio!
+                        //setMuteVisibility(false);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+            // found in cache???
+            else {
+                File isAudio = new File(videoFile.getAbsolutePath() + ".a");
+                if (isAudio.exists()) {
+                    //setMuteVisibility(true);
+                }
+            }
+            String toLoad = App.getProxy(context).getCacheFile(url).getAbsolutePath();
+
+            return toLoad;
+        }
+
+        @Override
+        protected void onPostExecute(String urlToLoad) {
+            listener.onTaskCompleted(Uri.parse(urlToLoad));
+        }
+
     }
 }

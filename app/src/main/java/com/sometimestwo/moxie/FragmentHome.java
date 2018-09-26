@@ -95,11 +95,6 @@ import retrofit2.Retrofit;
 import net.dean.jraw.models.SubredditSort;
 import net.dean.jraw.models.TimePeriod;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -112,7 +107,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.app.Activity.RESULT_OK;
 
-public class FragmentHome extends Fragment {
+public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     public final static String TAG = Constants.TAG_FRAG_HOME;
    // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
     private final static int KEY_LOG_IN = 2;
@@ -203,6 +198,7 @@ public class FragmentHome extends Fragment {
 
     // event listeners
     private HomeEventListener mHomeEventListener;
+    private OnTaskCompletedListener mVRedditConversionListener;
 
     public interface HomeEventListener {
         public void openSettings();
@@ -337,6 +333,7 @@ public class FragmentHome extends Fragment {
         super.onAttach(context);
         try {
             mHomeEventListener = (HomeEventListener) context;
+            //mVRedditConversionListener = (OnTaskCompletedListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
                     + " must implement listener inferfaces!");
@@ -1321,7 +1318,7 @@ public class FragmentHome extends Fragment {
                                     String url = item.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
 
                                     try {
-                                        new FetchVRedditGif(url).execute();
+                                        new Utils.FetchVRedditGifTask(getContext(),url, FragmentHome.this).execute();
 
                                     } catch (Exception e) {
                                         LogUtil.e(e, "Error v.redd.it url: " + url);
@@ -1616,6 +1613,11 @@ public class FragmentHome extends Fragment {
         }
     }
 
+    @Override
+    public void onTaskCompleted(Uri uriToLoad) {
+        mPreviewerVideoViewLarge.setVideoURI(uriToLoad);
+        mPreviewerVideoViewLarge.start();
+    }
 
     /*************************Async network tasks *******************************************/
 
@@ -1771,141 +1773,4 @@ public class FragmentHome extends Fragment {
     }
 
 
-    /***********[V.REDDIT SPECIFIC FUNCTIONS] ***************/
-    /****************************************************/
-    /****************************************************/
-    private class FetchVRedditGif extends AsyncTask<String, Void, String> {
-        String url;
-
-        public FetchVRedditGif(String url) {
-            this.url = url;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected String doInBackground(String... strings) {
-
-            if (!url.contains("DASH")) {
-                if (url.endsWith("/")) {
-                    url = url.substring(url.length() - 2);
-                }
-                url = url + "/DASH_9_6_M";
-            }
-
-            File videoFile = App.getProxy(getActivity()).getCacheFile(url);
-
-            if (videoFile.length() <= 0) {
-                try {
-                    if (!videoFile.exists()) {
-                        if (!videoFile.getParentFile().exists()) {
-                            videoFile.getParentFile().mkdirs();
-                        }
-                        videoFile.createNewFile();
-                    }
-
-                    HttpURLConnection conv = (HttpURLConnection) (new URL(url)).openConnection();
-                    conv.setRequestMethod("GET");
-                    conv.connect();
-
-                    String downloadsPath = getActivity().getCacheDir().getAbsolutePath();
-                    String fileName = "video.mp4"; //temporary location for video
-                    File videoOutput = new File(downloadsPath, fileName);
-                    HttpURLConnection cona = (HttpURLConnection) new URL(
-                            url.toString().substring(0, url.lastIndexOf("/") + 1)
-                                    + "audio").openConnection();
-                    cona.setRequestMethod("GET");
-
-                    if (!videoOutput.exists()) {
-                        videoOutput.createNewFile();
-                    }
-
-                    FileOutputStream fos = new FileOutputStream(videoOutput);
-                    InputStream is = conv.getInputStream();
-                    int fileLength = conv.getContentLength() + cona.getContentLength();
-
-                    byte data[] = new byte[4096];
-                    long total = 0;
-                    int count;
-                    while ((count = is.read(data)) != -1) {
-                        // allow canceling with back button
-                        if (isCancelled()) {
-                            is.close();
-                        }
-                        total += count;
-                        fos.write(data, 0, count);
-                    }
-                    fos.close();
-                    is.close();
-
-                    cona.connect();
-
-                    String fileNameAudio = "audio.mp4"; //temporary location for audio
-                    File audioOutput = new File(downloadsPath, fileNameAudio);
-                    File muxedPath = new File(downloadsPath, "muxedvideo.mp4");
-                    muxedPath.createNewFile();
-
-                    if (!audioOutput.exists()) {
-                        audioOutput.createNewFile();
-                    }
-
-                    fos = new FileOutputStream(audioOutput);
-
-                    int stat = cona.getResponseCode();
-                    if (stat != 403) {
-                        InputStream isa = cona.getInputStream();
-
-                        byte dataa[] = new byte[4096];
-                        int counta;
-                        while ((counta = isa.read(dataa)) != -1) {
-                            // allow canceling with back button
-                            if (isCancelled()) {
-                                isa.close();
-                            }
-                            total += counta;
-
-                            fos.write(dataa, 0, counta);
-                        }
-                        fos.close();
-                        isa.close();
-
-                        Utils.mux(videoOutput.getAbsolutePath(), audioOutput.getAbsolutePath(),
-                                muxedPath.getAbsolutePath());
-
-                        Utils.copy(muxedPath, videoFile);
-                        new File(videoFile.getAbsolutePath() + ".a").createNewFile();
-                        //setMuteVisibility(true);
-
-                    } else {
-                        Utils.copy(videoOutput, videoFile);
-                        //no audio!
-                        //setMuteVisibility(false);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-            }
-            // found in cache???
-            else {
-                File isAudio = new File(videoFile.getAbsolutePath() + ".a");
-                if (isAudio.exists()) {
-                    //setMuteVisibility(true);
-                }
-            }
-            String toLoad = App.getProxy(getActivity()).getCacheFile(url).getAbsolutePath();
-
-            return toLoad;
-        }
-
-        @Override
-        protected void onPostExecute(String urlToLoad) {
-            mPreviewerVideoViewLarge.setVideoURI(Uri.parse(urlToLoad));
-            mPreviewerVideoViewLarge.start();
-        }
-
-    }
 }

@@ -54,18 +54,28 @@
     </LinearLayout>
 
     <!-- Image view-->
-    <com.github.piasy.biv.view.BigImageView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/big_image_viewer"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clickable="true"
-        android:visibility="gone" />
+        android:id="@+id/full_displayer_big_image_container"
+        android:layout_above="@id/big_display_snack_bar_container"
+        android:layout_below="@id/big_display_title_container"
+        android:visibility="gone">
+        <com.github.piasy.biv.view.BigImageView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/big_image_viewer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:visibility="visible" />
+    </FrameLayout>
+
 
     <FrameLayout
         android:id="@+id/full_displayer_exoplayer_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_above="@id/big_display_snack_bar_container"
         android:layout_below="@id/big_display_title_container"
         android:background="@color/transparent"
@@ -75,13 +85,33 @@
             android:id="@+id/full_displayer_exoplayer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone"
+            android:layout_gravity="center_vertical"
+            android:visibility="visible"
             app:controller_layout_id="@layout/exo_playback_control_view_preview"
             app:player_layout_id="@layout/exo_player_view_preview_large"
             app:resize_mode="fixed_width"
             app:show_buffering="true"
             app:use_controller="false" />
 
+    </FrameLayout>
+
+    <!--Video view for VREDDIT videos -->
+    <FrameLayout
+        android:id="@+id/full_displayer_videoview_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/big_display_snack_bar_container"
+        android:layout_below="@id/big_display_title_container"
+        android:background="@color/transparent"
+        android:clickable="true">
+
+        <VideoView
+            android:id="@+id/full_displayer_videoview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@color/transparent"
+            android:visibility="visible" />
     </FrameLayout>
 
 

@@ -12,8 +12,10 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -22,12 +24,28 @@ import com.bumptech.glide.RequestManager;
 import com.github.piasy.biv.BigImageViewer;
 import com.github.piasy.biv.loader.glide.GlideImageLoader;
 import com.github.piasy.biv.view.BigImageView;
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.upstream.TransferListener;
+import com.google.android.exoplayer2.util.Util;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
 public class FragmentFullDisplay extends Fragment {
 
-    private RequestManager GlideApp;
     private SubmissionObj mCurrSubmission;
     private boolean mPrefsAllowNSFW;
     private boolean mAllowCloseOnClick;
@@ -47,6 +65,22 @@ public class FragmentFullDisplay extends Fragment {
     /* Big zoomie view*/
     private BigImageView mBigImageView;
 
+    private ProgressBar mProgressBar;
+
+    /* Exoplayer */
+    private FrameLayout mExoplayerContainer;
+    private BandwidthMeter bandwidthMeter;
+    private DefaultTrackSelector trackSelector;
+    private SimpleExoPlayer player;
+    private ProgressBar progressBar;
+    private DataSource.Factory mediaDataSourceFactory;
+    private int currentWindow;
+    private long playbackPosition;
+    private Timeline.Window window;
+    //private FrameLayout mExoplayerContainerLarge;
+    private PlayerView mExoplayer;
+
+
     public static FragmentFullDisplay newInstance() {
         return new FragmentFullDisplay();
     }
@@ -54,7 +88,6 @@ public class FragmentFullDisplay extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        GlideApp = Glide.with(this);
 
         unpackArgs();
 
@@ -83,40 +116,24 @@ public class FragmentFullDisplay extends Fragment {
         mButtonOverflow = (ImageView) v.findViewById(R.id.big_display_snack_bar_overflow);
         mSnackbarContainer = (LinearLayout) v.findViewById(R.id.big_display_snack_bar_container);
 
-
-        setupFullViewer();
-
-
-
-        /* Toolbar Copy Url button*//*
-        mButtonCopyURL = (ImageView) v.findViewById(R.id.big_display_button_copy_url);
-        mButtonCopyURL.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int sdk = android.os.Build.VERSION.SDK_INT;
-                if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
-                    android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-                    clipboard.setText(mCurrSubmission.getUrl());
-                } else {
-                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-                    android.content.ClipData clip = android.content.ClipData.newPlainText(mCurrSubmission.getTitle(), mCurrSubmission.getUrl());
-                    clipboard.setPrimaryClip(clip);
-                }
-               *//* Toast.makeText(getContext(), getContext().getResources()
-                        .getString(R.string.toast_copied_to_clipboard), Toast.LENGTH_SHORT).show();*//*
-            }
-        });
-        *//* Toolbar Share button*//*
-        mButtonShare = (ImageView) v.findViewById(R.id.big_display_button_share);*/
-
-
         /* Main zoomie image view*/
         mBigImageView = (BigImageView) v.findViewById(R.id.big_image_viewer);
-//        mBigImageView.bringToFront();
-        // mBigImageView.setScaleX(.5f);
-        // mBigImageView.set(.5f);
 
-        mBigImageView.showImage(Uri.parse(mCurrSubmission.getUrl()));
+
+        /* Loading progress bar */
+        //mProgressBar = (ProgressBar) v.findViewById(R.id.full_displayer_progress);
+
+        /* Exo player*/
+        mExoplayer = (PlayerView) v.findViewById(R.id.full_displayer_exoplayer);
+        bandwidthMeter = new DefaultBandwidthMeter();
+        mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(),
+                Util.getUserAgent(getContext(), "Moxie"),
+                (TransferListener<? super DataSource>) bandwidthMeter);
+        window = new Timeline.Window();
+        mExoplayerContainer = (FrameLayout) v.findViewById(R.id.full_displayer_exoplayer_container);
+
+
+        setupFullViewer();
 
         /* Exit on image tap if settings option is enabled*/
         mBigImageView.setClickable(true);
@@ -124,6 +141,15 @@ public class FragmentFullDisplay extends Fragment {
             @Override
             public void onClick(View view) {
                 if (mAllowCloseOnClick) {
+                    closeFullDisplay();
+                }
+            }
+        });
+
+        mExoplayerContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mAllowCloseOnClick){
                     closeFullDisplay();
                 }
             }
@@ -147,7 +173,7 @@ public class FragmentFullDisplay extends Fragment {
         // Don't need to pass anything back. Pass an empty intent for now
         Intent resultIntent = new Intent();
         getTargetFragment().onActivityResult(FragmentHome.KEY_INTENT_GOTO_BIG_DISPLAY, Activity.RESULT_OK, resultIntent);
-        //releaseExoPlayer();
+        releaseExoPlayer();
         super.onDestroy();
     }
 
@@ -173,12 +199,34 @@ public class FragmentFullDisplay extends Fragment {
 
 
     private void setupFullViewer() {
-        // set up title
+        /* title*/
         mTitleTextView.setText(mCurrSubmission.getCompactTitle() != null
                 ? mCurrSubmission.getCompactTitle() : mCurrSubmission.getTitle());
         mSubredditTextView.setText(mCurrSubmission.getSubreddit());
 
-        // visit comments
+
+        /* Set up image/gif view*/
+        // Prioritize using the cleaned URL. Some post URLS point to indirect images:
+        // Indirect url example: imgur.com/AktjAWe
+        // Cleaned url example: imgur.com/AktjAWe.jpg
+        String imageUrl = (mCurrSubmission.getCleanedUrl() != null)
+                ? mCurrSubmission.getCleanedUrl() : mCurrSubmission.getUrl();
+
+        if(mCurrSubmission.getSubmissionType() == Constants.SubmissionType.IMAGE){
+            mBigImageView.setVisibility(View.VISIBLE);
+            mExoplayer.setVisibility(View.GONE);
+            //TODO: handle invalid URL
+            mBigImageView.showImage(Uri.parse(mCurrSubmission.getUrl()));
+        }else if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.GIF
+                || mCurrSubmission.getSubmissionType() == Constants.SubmissionType.VIDEO){
+            mBigImageView.setVisibility(View.GONE);
+            mExoplayer.setVisibility(View.VISIBLE);
+            initializePlayer(imageUrl);
+        }
+
+
+
+        // button to visit comments
         mButtonComments.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -196,9 +244,60 @@ public class FragmentFullDisplay extends Fragment {
        // getActivity().finish();
     }
 
-   /* private void releaseExoPlayer() {
+    private void initializePlayer(String url) {
+
+        mExoplayer.requestFocus();
+        TrackSelection.Factory videoTrackSelectionFactory =
+                new AdaptiveTrackSelection.Factory(bandwidthMeter);
+
+        trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
+
+        player = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector);
+
+        mExoplayer.setPlayer(player);
+
+        player.addListener(new FragmentFullDisplay.PlayerEventListener());
+        player.setPlayWhenReady(true);
+/*        MediaSource mediaSource = new HlsMediaSource(Uri.parse("https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
+                mediaDataSourceFactory, mainHandler, null);*/
+
+
+        MediaSource mediaSource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
+                .createMediaSource(Uri.parse(url));
+
+        boolean haveStartPosition = currentWindow != C.INDEX_UNSET;
+        if (haveStartPosition) {
+            player.seekTo(currentWindow, playbackPosition);
+        }
+
+        // repeat mode: 0 = off, 1 = loop single video, 2 = loop playlist
+        player.setRepeatMode(1);
+        player.prepare(mediaSource, !haveStartPosition, false);
+
+    }
+    private class PlayerEventListener extends Player.DefaultEventListener {
+
+        @Override
+        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+            switch (playbackState) {
+                case Player.STATE_IDLE:       // The player does not have any media to play yet.
+                    //progressBar.setVisibility(View.VISIBLE);
+                    break;
+                case Player.STATE_BUFFERING:  // The player is buffering (loading the content)
+                    //   progressBar.setVisibility(View.VISIBLE);
+                    break;
+                case Player.STATE_READY:      // The player is able to immediately play
+                    // progressBar.setVisibility(View.GONE);
+                    break;
+                case Player.STATE_ENDED:      // The player has finished playing the media
+                    //  progressBar.setVisibility(View.GONE);
+                    break;
+            }
+        }
+    }
+   private void releaseExoPlayer() {
         if (player != null) {
             player.release();
         }
-    }*/
+    }
 }

@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -46,7 +47,9 @@ public class ActivitySubmissionViewer extends AppCompatActivity {
     private SubmissionObj mCurrSubmission;
     private Toolbar mToolbar;
     private TextView mSubmissionTitle;
+    private FrameLayout mImageViewContainer;
     private ImageView mImageView;
+    private ImageView mPlayButton;
     ProgressBar mProgressBar;
 
     // Submission info
@@ -72,7 +75,7 @@ public class ActivitySubmissionViewer extends AppCompatActivity {
     private long playbackPosition;
     private Timeline.Window window;
     //private FrameLayout mExoplayerContainerLarge;
-    private PlayerView mExoplayer;
+   // private PlayerView mExoplayer;
 
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,13 +88,15 @@ public class ActivitySubmissionViewer extends AppCompatActivity {
         mSubmissionTitle = (TextView) findViewById(R.id.submission_viewer_title);
 
         /* The actual view in which the image is displayed*/
+        mImageViewContainer = (FrameLayout) findViewById(R.id.submission_viewer_media_container);
         mImageView = (ImageView) findViewById(R.id.submission_media_view);
+        mPlayButton = (ImageView) findViewById(R.id.submission_viewer_play_button);
 
         /* Exo player*/
-        mExoplayer = (PlayerView) findViewById(R.id.submission_viewer_exoplayer);
+      /*  mExoplayer = (PlayerView) findViewById(R.id.submission_viewer_exoplayer);
         bandwidthMeter = new DefaultBandwidthMeter();
         mediaDataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "Moxie"), (TransferListener<? super DataSource>) bandwidthMeter);
-        window = new Timeline.Window();
+        window = new Timeline.Window();*/
 
         /* Loading progress bar */
         mProgressBar = (ProgressBar) findViewById(R.id.submission_viewer_media_progress);
@@ -149,20 +154,27 @@ public class ActivitySubmissionViewer extends AppCompatActivity {
         String imageUrl = (mCurrSubmission.getCleanedUrl() != null)
                 ? mCurrSubmission.getCleanedUrl() : mCurrSubmission.getUrl();
 
+
         if(mCurrSubmission.getSubmissionType() == Constants.SubmissionType.IMAGE){
-            mImageView.setVisibility(View.VISIBLE);
-            mExoplayer.setVisibility(View.GONE);
+            mPlayButton.setVisibility(View.GONE);
+           // mExoplayer.setVisibility(View.GONE);
             //TODO: handle invalid URL
             Glide.with(this)
                     .load(imageUrl)
                     .listener(new ProgressBarRequestListener(mProgressBar))
-                    //* .apply(options)*//*
                     .into(mImageView);
         }else if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.GIF
                 || mCurrSubmission.getSubmissionType() == Constants.SubmissionType.VIDEO){
-            mImageView.setVisibility(View.GONE);
+            mPlayButton.setVisibility(View.VISIBLE);
+            String videoSnapshotUrl = mCurrSubmission.getPreviewUrl();
+
+            Glide.with(this)
+                    .load(videoSnapshotUrl)
+                    .listener(new ProgressBarRequestListener(mProgressBar))
+                    .into(mImageView);
+           /* mImageView.setVisibility(View.GONE);
             mExoplayer.setVisibility(View.VISIBLE);
-            initializePlayer(imageUrl);
+            initializePlayer(imageUrl);*/
         }
     }
 
@@ -193,7 +205,7 @@ public class ActivitySubmissionViewer extends AppCompatActivity {
         ft.commit();
     }
 
-    private void initializePlayer(String url) {
+ /*   private void initializePlayer(String url) {
 
         mExoplayer.requestFocus();
 
@@ -208,8 +220,8 @@ public class ActivitySubmissionViewer extends AppCompatActivity {
 
         player.addListener(new ActivitySubmissionViewer.PlayerEventListener());
         player.setPlayWhenReady(true);
-/*        MediaSource mediaSource = new HlsMediaSource(Uri.parse("https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
-                mediaDataSourceFactory, mainHandler, null);*/
+*//*        MediaSource mediaSource = new HlsMediaSource(Uri.parse("https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
+                mediaDataSourceFactory, mainHandler, null);*//*
 
 
         MediaSource mediaSource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
@@ -224,12 +236,12 @@ public class ActivitySubmissionViewer extends AppCompatActivity {
         player.setRepeatMode(1);
         player.prepare(mediaSource, !haveStartPosition, false);
 
-     /*   ivHideControllerButton.setOnClickListener(new View.OnClickListener() {
+     *//*   ivHideControllerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 playerView.hideController();
             }
-        });*/
+        });*//*
     }
     private class PlayerEventListener extends Player.DefaultEventListener {
 
@@ -251,7 +263,7 @@ public class ActivitySubmissionViewer extends AppCompatActivity {
             }
         }
     }
-
+*/
 
     @Override
     protected void onResume() {

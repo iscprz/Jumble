@@ -12,13 +12,13 @@
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
         <!-- Header toolbar -->
-        <include layout="@layout/toolbar_main"/>
-       <!-- <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/submission_viewer_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/toolbar_height"
-            android:background="@color/transparent"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />-->
+        <include layout="@layout/toolbar_main" />
+        <!-- <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+             android:id="@+id/submission_viewer_toolbar"
+             android:layout_width="match_parent"
+             android:layout_height="@dimen/toolbar_height"
+             android:background="@color/transparent"
+             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />-->
 
     </android.support.design.widget.AppBarLayout>
 
@@ -42,7 +42,6 @@
                 android:layout_height="wrap_content">
 
 
-
                 <!-- Title -->
                 <TextView
                     android:id="@+id/submission_viewer_title"
@@ -58,7 +57,8 @@
                     android:id="@+id/submission_viewer_media_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/submission_viewer_title">
+                    android:layout_below="@id/submission_viewer_title"
+                    android:background="@color/transparent">
 
                     <!-- Loading progress bar-->
                     <ProgressBar
@@ -74,23 +74,16 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:clickable="false"
-                        android:visibility="gone" />
+                        android:clickable="false" />
 
-                    <!-- Gif/Video player-->
-                    <com.google.android.exoplayer2.ui.PlayerView
-                        android:id="@+id/submission_viewer_exoplayer"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:visibility="gone"
-
-                        app:controller_layout_id="@layout/exo_playback_control_view_preview"
-                        app:player_layout_id="@layout/exo_player_view_preview_large"
-                        app:resize_mode="fixed_width"
-                        app:show_buffering="true"
-                        app:use_controller="true" />
-
-
+                    <!-- Play button that will overlay imageview if GIF/VIDEO-->
+                    <ImageView
+                        android:id="@+id/submission_viewer_play_button"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/ic_play_unfilled_circle"
+                        android:visibility="gone"/>
                 </FrameLayout>
 
                 <!-- Vote, author, date (readable) info-->
@@ -273,11 +266,12 @@
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
+    <!-- Container for simple display-->
     <FrameLayout
         android:id="@+id/submission_viewer_simple_display_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-    </FrameLayout>
+        android:layout_height="wrap_content"
+        android:background="@color/transparent"></FrameLayout>
 
 </android.support.design.widget.CoordinatorLayout>
 

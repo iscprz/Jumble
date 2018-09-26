@@ -36,8 +36,7 @@ import com.sometimestwo.moxie.Utils.Constants;
             - centering very tall image in large hover
             - hide toolbar on large hover preview
  */
-public class ActivityHome extends AppCompatActivity implements FragmentHome.HomeEventListener,
-        FragmentSubmissionViewer.SubmissionDisplayerEventListener {
+public class ActivityHome extends AppCompatActivity implements FragmentHome.HomeEventListener{
 
     private final String TAG = ActivityHome.class.getSimpleName();
     private SharedPreferences prefs_settings;

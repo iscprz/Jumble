@@ -114,8 +114,10 @@ import static android.app.Activity.RESULT_OK;
 
 public class FragmentHome extends Fragment {
     public final static String TAG = Constants.TAG_FRAG_HOME;
-    public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
+   // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
     private final static int KEY_LOG_IN = 2;
+    public final static int KEY_INTENT_GOTO_BIG_DISPLAY = 1;
+
 
     private int mScreenWidth;
     private int mScreenHeight;
@@ -134,7 +136,7 @@ public class FragmentHome extends Fragment {
     //private String mCurrUsername = null;
     private boolean isImageViewPressed = false;
     private int mActivePointerId = -1;
-    private boolean isViewingSubmission = false;
+    private boolean isHome = true;
     private GestureDetector mGestureDetector;
     private ProgressBar mProgressBar;
     private boolean mInvalidateDataSource = false;
@@ -262,7 +264,7 @@ public class FragmentHome extends Fragment {
 
 
         /* Refresh layout setup*/
-        mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.recycler_refresh);
+        mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.home_refresh_layout);
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -398,7 +400,7 @@ public class FragmentHome extends Fragment {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        if (!isViewingSubmission) {
+        if (isHome) {
             menu.findItem(R.id.menu_submissions_sortby).setVisible(true);
             menu.findItem(R.id.menu_explore).setVisible(true);
             menu.findItem(R.id.menu_comments_sortby).setVisible(false);
@@ -419,7 +421,7 @@ public class FragmentHome extends Fragment {
             case android.R.id.home:
                 // Hacky workaround for handling conflict with opening drawer.
                 // Only offer the hamburger menu option if we're at the home screen
-                if (!isViewingSubmission && mCurrSubreddit == null) {
+                if (isHome && mCurrSubreddit == null) {
                     mDrawerLayout.openDrawer(GravityCompat.START);
                 } else {
                     mHomeEventListener.goBack();
@@ -518,9 +520,9 @@ public class FragmentHome extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         /* Returned from SubmissionViewer*/
-        if (requestCode == KEY_INTENT_GOTO_SUBMISSIONVIEWER) {
+        if (requestCode == KEY_INTENT_GOTO_BIG_DISPLAY) {
             if (resultCode == RESULT_OK) {
-                isViewingSubmission = false;
+                isHome = true;
                 // Lets the activity know we're back home so it can handle onBackPress()
                 mHomeEventListener.isHome(true);
                 mToolbar.setAlpha(1);
@@ -1301,7 +1303,8 @@ public class FragmentHome extends Fragment {
                             //mPopupWindow.showAtLocation(mParentView, Gravity.CENTER,0,0);
 
                         } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
-                            mHoverPreviewTitleLarge.setText(item.getTitle());
+                            mHoverPreviewTitleLarge.setText(item.getCompactTitle() != null
+                                                            ? item.getCompactTitle() : item.getTitle());
                             mHoverPreviewSubredditLarge.setText("/r/" + item.getSubreddit());
                             setupPreviewer(item);
                             if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
@@ -1395,9 +1398,9 @@ public class FragmentHome extends Fragment {
             public void onClick(View view) {
                 SubmissionObj submission = getItem(getLayoutPosition());
                 // prevent any weird double clicks from opening two submission viewers
-                if (!isViewingSubmission) {
-                    openSubmissionViewer(submission);
-                    isViewingSubmission = true;
+                if (isHome) {
+                    openFullMediaDisplayer(submission);
+                    isHome = false;
                     // Let our activity know we're no longer home. This prevents this fragment's
                     // activity from handling onBackPress() which would exit the app
                     mHomeEventListener.isHome(false);
@@ -1422,21 +1425,23 @@ public class FragmentHome extends Fragment {
         ft.commit();
     }
 
-    private void openSubmissionViewer(SubmissionObj submission) {
-        FragmentManager fm = getActivity().getSupportFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-        Fragment mediaDisplayerFragment = FragmentSubmissionViewer.newInstance();
-        Bundle args = new Bundle();
-        args.putSerializable(Constants.EXTRA_SUBMISSION_OBJ, submission);
-        mediaDisplayerFragment.setArguments(args);
 
-        mediaDisplayerFragment.setTargetFragment(FragmentHome.this, KEY_INTENT_GOTO_SUBMISSIONVIEWER);
+
+    public void openFullMediaDisplayer(SubmissionObj submissionObj){
+        FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+
+        Fragment bigDisplayFragment = FragmentFullDisplay.newInstance();
+        Bundle args = new Bundle();
+        args.putSerializable(Constants.ARGS_SUBMISSION_OBJ, submissionObj);
+        bigDisplayFragment.setArguments(args);
+
+        bigDisplayFragment.setTargetFragment(FragmentHome.this, KEY_INTENT_GOTO_BIG_DISPLAY);
+
 
         int parentContainerId = ((ViewGroup) getView().getParent()).getId();
-        ft.add(parentContainerId, mediaDisplayerFragment/*, Constants.TAG_FRAG_MEDIA_DISPLAY*/);
+        ft.add(parentContainerId, bigDisplayFragment/*, Constants.TAG*/);
         ft.addToBackStack(null);
         ft.commit();
-
     }
 
     private void refresh(boolean invalidateData) {

@@ -248,6 +248,14 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 s.setDomain(Utils.SubmissionDomain.OTHER);
             }
 
+            // add shortened title for displaying purposes if needed
+            if(submission.getTitle().length() > Constants.MAX_TITLE_LENGTH){
+                s.setCompactTitle(submission.getTitle().substring(0,
+                        Constants.MAX_TITLE_LENGTH) + "...");
+
+            }
+
+
             res.add(s);
         }
         return res;

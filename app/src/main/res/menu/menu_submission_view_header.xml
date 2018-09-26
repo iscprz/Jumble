@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ActivitySubmissionViewer">
+
+
+    <!-- Comments sort by-->
+    <item
+        android:id="@+id/menu_submission_view_comments_sortby"
+        android:icon="@drawable/ic_white_expand_down"
+        android:orderInCategory="100"
+        android:title="Sort by"
+        app:showAsAction="ifRoom">
+    </item>
+
+    <!-- Overflow -->
+    <item
+        android:id="@+id/menu_submission_view_overflow"
+        android:icon="@drawable/ic_white_overflow"
+        android:orderInCategory="200"
+        android:title="Overflow"
+        app:showAsAction="never" />
+    <!--<item
+        android:id="@+id/action_user"
+        android:orderInCategory="300"
+        android:title="User"
+        android:icon="@drawable/ic_user"
+        app:showAsAction="ifRoom" />-->
+</menu>

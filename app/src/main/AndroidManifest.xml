@@ -46,6 +46,11 @@
         <activity android:name=".ActivitySubredditViewer">
         </activity>
 
+        <activity
+            android:name=".ActivitySubmissionViewer"
+            android:theme="@style/Theme.AppCompat.Translucent">
+        </activity>
+
     </application>
 
 </manifest>

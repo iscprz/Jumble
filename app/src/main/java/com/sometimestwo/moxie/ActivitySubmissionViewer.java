@@ -1,15 +1,17 @@
 package com.sometimestwo.moxie;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.GestureDetector;
-import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -19,7 +21,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.github.piasy.biv.view.BigImageView;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
@@ -40,18 +41,12 @@ import com.google.android.exoplayer2.util.Util;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
-public class FragmentSubmissionViewer extends Fragment {
-    private static final String TAG = Constants.TAG_FRAG_MEDIA_DISPLAY;
-
+public class ActivitySubmissionViewer extends AppCompatActivity {
     private RequestManager GlideApp;
     private SubmissionObj mCurrSubmission;
-    private BigImageView mBigImageView;
+    private Toolbar mToolbar;
     private TextView mSubmissionTitle;
     private ImageView mImageView;
-    private LinearLayout mCommentsContainer;
-    private View mClicker;
-    private GestureDetector mDetector;
-    Toolbar mToolbar;
     ProgressBar mProgressBar;
 
     // Submission info
@@ -80,147 +75,70 @@ public class FragmentSubmissionViewer extends Fragment {
     private PlayerView mExoplayer;
 
 
-    private SubmissionDisplayerEventListener mMediaDisplayerEventListener;
-
-    public interface SubmissionDisplayerEventListener { }
-
-    public static FragmentSubmissionViewer newInstance() {
-        return new FragmentSubmissionViewer();
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //setContentView(R.layout.drawer_layout);
+        setContentView(R.layout.submission_viewer);
         GlideApp = Glide.with(this);
 
-        unpackArgs();
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        View v = inflater.inflate(R.layout.submission_viewer, container, false);
-
-        /* Toolbar setup*/
-        mToolbar = (Toolbar) v.findViewById(R.id.toolbar_main);
-        ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
-
-        mSubmissionTitle = (TextView) v.findViewById(R.id.submission_viewer_title);
+        /* Title(s)*/
+        mSubmissionTitle = (TextView) findViewById(R.id.submission_viewer_title);
 
         /* The actual view in which the image is displayed*/
-        mImageView = (ImageView) v.findViewById(R.id.submission_media_view);
-        mImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openFullMediaDisplay();
-            }
-               // closeMediaPlayer();
-        });
-        /*mBigImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.e(TAG, "Clicked media viewer(not the background)! ");
-                mMediaDisplayerEventListener.closeMediaDisplayer();
-            }
-        });*/
+        mImageView = (ImageView) findViewById(R.id.submission_media_view);
 
         /* Exo player*/
-        mExoplayer = (PlayerView) v.findViewById(R.id.submission_viewer_exoplayer);
+        mExoplayer = (PlayerView) findViewById(R.id.submission_viewer_exoplayer);
         bandwidthMeter = new DefaultBandwidthMeter();
-        mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(), Util.getUserAgent(getContext(), "Moxie"), (TransferListener<? super DataSource>) bandwidthMeter);
+        mediaDataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "Moxie"), (TransferListener<? super DataSource>) bandwidthMeter);
         window = new Timeline.Window();
 
         /* Loading progress bar */
-        mProgressBar = (ProgressBar) v.findViewById(R.id.submission_viewer_media_progress);
+        mProgressBar = (ProgressBar) findViewById(R.id.submission_viewer_media_progress);
 
         /* Post info : Vote count, comment count, author */
-        mSubmissionInfo = (LinearLayout) v.findViewById(R.id.submission_viewer_submission_info);
-        mTextViewAuthor = (TextView) v.findViewById(R.id.submission_viewer_author);
-        mTextViewVoteCount = (TextView) v.findViewById(R.id.submission_viewer_vote_count);
-        mCommentCount = (TextView) v.findViewById(R.id.submission_viewer_comment_count);
+        mSubmissionInfo = (LinearLayout) findViewById(R.id.submission_viewer_submission_info);
+        mTextViewAuthor = (TextView) findViewById(R.id.submission_viewer_author);
+        mTextViewVoteCount = (TextView) findViewById(R.id.submission_viewer_vote_count);
+        mCommentCount = (TextView) findViewById(R.id.submission_viewer_comment_count);
 
         /* Upvote/downvote/save/overflow*/
-        mVotebar = (LinearLayout) v.findViewById(R.id.submission_viewer_vote_bar);
-        mButtonUpvote = (ImageView) v.findViewById(R.id.submission_viewer_commit_upvote);
-        mButtonDownvote = (ImageView) v.findViewById(R.id.submission_viewer_commit_downvote);
-        mButtonSave = (ImageView) v.findViewById(R.id.submission_viewer_commit_save);
-        mButtonOverflow = (ImageView) v.findViewById(R.id.submission_viewer_votebar_overflow);
+        mVotebar = (LinearLayout) findViewById(R.id.submission_viewer_vote_bar);
+        mButtonUpvote = (ImageView) findViewById(R.id.submission_viewer_commit_upvote);
+        mButtonDownvote = (ImageView) findViewById(R.id.submission_viewer_commit_downvote);
+        mButtonSave = (ImageView) findViewById(R.id.submission_viewer_commit_save);
+        mButtonOverflow = (ImageView) findViewById(R.id.submission_viewer_votebar_overflow);
 
-        /* Comments */
-        mCommentsContainer = (LinearLayout) v.findViewById(R.id.media_viewer_comments_container);
-
+        unpackExtras();
+        setupToolbar();
         setupMedia();
         setupSubmissionInfoBar();
         setupVotebar();
-      /*  mToolbar = (Toolbar) v.findViewById(R.id.toolbar_top);
-        ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);*/
-        return v;
+
+        mImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openSimpleMediaDisplay();
+            }
+            // closeMediaPlayer();
+        });
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        try {
-            mMediaDisplayerEventListener = (SubmissionDisplayerEventListener) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString()
-                    + " must implement listener inferfaces!");
-        }
+
+    private void unpackExtras() {
+        mCurrSubmission = (SubmissionObj) getIntent().getExtras().get(Constants.EXTRA_SUBMISSION_OBJ);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        setupToolbar();
-    }
+    private void setupToolbar(){
+        mToolbar = (Toolbar) findViewById(R.id.toolbar_main);
+        setSupportActionBar(mToolbar);
 
-    @Override
-    public void onPause() {
-        super.onPause();
+        ActionBar toolbar = getSupportActionBar();
+        toolbar.show();
+        toolbar.setDisplayHomeAsUpEnabled(true);
+        toolbar.setHomeAsUpIndicator(R.drawable.ic_white_back_arrow);
+        toolbar.setTitle("/r/" + mCurrSubmission.getSubreddit());
     }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        releaseExoPlayer();
-    }
-
-    @Override
-    public void onDestroy() {
-        // Notify calling fragment that we're closing the submission viewer
-        // Don't need to pass anything back. Pass an empty intent for now
-      //  Intent resultIntent = new Intent();
-       //getTargetFragment().onActivityResult(1, Activity.RESULT_OK, resultIntent);
-        releaseExoPlayer();
-        super.onDestroy();
-    }
-
-    private void unpackArgs(){
-        try{
-            // Submission to be viewed
-            mCurrSubmission = (SubmissionObj) this.getArguments().get(Constants.EXTRA_SUBMISSION_OBJ);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private void setupToolbar() {
-        //toolbar setup
-        ActionBar toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        if (toolbar != null) {
-            toolbar.setDisplayHomeAsUpEnabled(true);
-            toolbar.setHomeAsUpIndicator(R.drawable.ic_white_back_arrow);
-            toolbar.setTitle("/r/" + mCurrSubmission.getSubreddit());
-        }
-        mToolbar.setAlpha(1);
-    }
-
-    private void releaseExoPlayer() {
-        if (player != null) {
-            player.release();
-        }
-    }
-
 
     private void setupMedia() {
         mSubmissionTitle.setText(mCurrSubmission.getTitle());
@@ -258,8 +176,23 @@ public class FragmentSubmissionViewer extends Fragment {
         // change icon color depending on of user has voted on this already (only for logged in users)
     }
 
+    private void openSimpleMediaDisplay(){
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        Fragment simpleViewerFragment = FragmentSimpleImageDisplay.newInstance();
 
-    /* Exoplayer */
+        Bundle args = new Bundle();
+        args.putSerializable(Constants.ARGS_SUBMISSION_OBJ, mCurrSubmission);
+        simpleViewerFragment.setArguments(args);
+
+
+       // int parentContainerId = ((ViewGroup) getView().getParent()).getId();
+        ft.add(R.id.submission_viewer_simple_display_container,
+                simpleViewerFragment,
+                Constants.TAG_FRAG_SIMPLE_DISPLAYER);
+        ft.addToBackStack(null);
+        ft.commit();
+    }
+
     private void initializePlayer(String url) {
 
         mExoplayer.requestFocus();
@@ -269,11 +202,11 @@ public class FragmentSubmissionViewer extends Fragment {
 
         trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
 
-        player = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector);
+        player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
 
         mExoplayer.setPlayer(player);
 
-        player.addListener(new PlayerEventListener());
+        player.addListener(new ActivitySubmissionViewer.PlayerEventListener());
         player.setPlayWhenReady(true);
 /*        MediaSource mediaSource = new HlsMediaSource(Uri.parse("https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
                 mediaDataSourceFactory, mainHandler, null);*/
@@ -298,7 +231,6 @@ public class FragmentSubmissionViewer extends Fragment {
             }
         });*/
     }
-
     private class PlayerEventListener extends Player.DefaultEventListener {
 
         @Override
@@ -320,18 +252,67 @@ public class FragmentSubmissionViewer extends Fragment {
         }
     }
 
-    public void openFullMediaDisplay(){
-        FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
 
-        Fragment bigDisplayFragment = FragmentFullDisplay.newInstance();
-        Bundle args = new Bundle();
-        args.putSerializable(Constants.ARGS_SUBMISSION_OBJ, mCurrSubmission);
-        args.putBoolean(Constants.ARGS_IMAGE_ONLY_REQUEST, true);
-        bigDisplayFragment.setArguments(args);
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
-        int parentContainerId = ((ViewGroup) getView().getParent()).getId();
-        ft.add(parentContainerId, bigDisplayFragment/*, Constants.TAG*/);
-        ft.addToBackStack(null);
-        ft.commit();
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_submission_view_header,menu);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        switch(id){
+            case android.R.id.home:
+                FragmentSimpleImageDisplay simpleImageDisplayFragment
+                        = (FragmentSimpleImageDisplay) getSupportFragmentManager()
+                        .findFragmentByTag(Constants.TAG_FRAG_SIMPLE_DISPLAYER);
+                if(simpleImageDisplayFragment != null && simpleImageDisplayFragment.isVisible()){
+                    getSupportFragmentManager().popBackStack();
+                }
+                else{
+                    finish();
+                }
+                return true;
+            case R.id.menu_submission_view_comments_sortby:
+                return true;
+        }
+
+
+        return super.onOptionsItemSelected(item);
     }
 }

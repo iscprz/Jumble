@@ -15,7 +15,6 @@ import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
 public class ActivitySubredditViewer extends AppCompatActivity implements FragmentHome.HomeEventListener,
-        FragmentSubmissionViewer.SubmissionDisplayerEventListener,
         Fragment404.Fragment404EventListener {
 
     public final String TAG = this.getClass().getCanonicalName();

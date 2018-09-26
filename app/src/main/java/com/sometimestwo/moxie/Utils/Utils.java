@@ -120,6 +120,9 @@ public class Utils {
         if (hash.contains("-size_restricted")){
             hash = hash.replace("-size_restricted", "");
         }
+        if(hash.contains("?autoplay=enabled")){
+            hash = hash.replace("?autoplay=enabled", "");
+        }
         // remove trailing slash
         return hash.substring(1);
         //return gfycatUrl.substring(gfycatUrl.lastIndexOf("/", gfycatUrl.length()));

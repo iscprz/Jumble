@@ -1,252 +1,287 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/media_viewer_scroll_container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorBgBlackTintDarkest">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/post_container"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/submission_viewer_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
         <!-- Header toolbar -->
-        <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+        <include layout="@layout/toolbar_main"/>
+       <!-- <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/submission_viewer_toolbar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/toolbar_height"
             android:background="@color/transparent"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />-->
 
-        <!-- Title -->
-        <TextView
-            android:id="@+id/submission_viewer_title"
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/submission_viewer_refresh_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <!-- main content-->
+        <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/submission_viewer_scroll_container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/submission_viewer_toolbar"
-            android:gravity="center"
-            android:padding="10dp"
-            android:textColor="@color/colorWhite"
-            android:textSize="16sp" />
+            android:layout_height="match_parent"
+            android:background="@color/transparent">
 
-        <!-- Image/gif/video section-->
-        <FrameLayout
-            android:id="@+id/submission_viewer_media_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/submission_viewer_title">
-
-            <!-- Loading progress bar-->
-            <ProgressBar
-                android:id="@+id/submission_viewer_media_progress"
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/post_container"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:visibility="visible" />
-
-            <!-- Image-->
-            <ImageView
-                android:id="@+id/submission_media_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:clickable="false"
-                android:visibility="gone" />
-
-            <!-- Gif/Video player-->
-            <com.google.android.exoplayer2.ui.PlayerView
-                android:id="@+id/submission_viewer_exoplayer"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone"
-
-                app:controller_layout_id="@layout/exo_playback_control_view_preview"
-                app:player_layout_id="@layout/exo_player_view_preview_large"
-                app:resize_mode="fixed_width"
-                app:show_buffering="true"
-                app:use_controller="true" />
+                android:layout_height="wrap_content">
 
 
-        </FrameLayout>
 
-        <!-- Vote, author, date (readable) info-->
-        <LinearLayout
-            android:id="@+id/submission_viewer_submission_info"
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_below="@id/submission_viewer_media_container"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <!-- Vote counter-->
-            <LinearLayout
-                android:id="@+id/submission_viewer_vote_count_container"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight=".2"
-                android:background="@color/colorThemeDarkPrimary"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:id="@+id/submission_viewer_vote_counter_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/ic_white_upvote" />
-
+                <!-- Title -->
                 <TextView
-                    android:id="@+id/submission_viewer_vote_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:id="@+id/submission_viewer_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:textColor="@color/colorWhite" />
-            </LinearLayout>
+                    android:padding="10dp"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="16sp" />
 
-            <!-- Comment counter-->
-            <LinearLayout
-                android:id="@+id/submission_viewer_comment_count_container"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight=".2"
-                android:background="@color/colorThemeDarkPrimary"
-                android:gravity="center"
-                android:orientation="horizontal">
+                <!-- Image/gif/video section-->
+                <FrameLayout
+                    android:id="@+id/submission_viewer_media_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/submission_viewer_title">
 
-                <ImageView
-                    android:id="@+id/submission_viewer_comment_count_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/ic_white_chat" />
+                    <!-- Loading progress bar-->
+                    <ProgressBar
+                        android:id="@+id/submission_viewer_media_progress"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:visibility="visible" />
 
-                <TextView
-                    android:id="@+id/submission_viewer_comment_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    <!-- Image-->
+                    <ImageView
+                        android:id="@+id/submission_media_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:clickable="false"
+                        android:visibility="gone" />
+
+                    <!-- Gif/Video player-->
+                    <com.google.android.exoplayer2.ui.PlayerView
+                        android:id="@+id/submission_viewer_exoplayer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:visibility="gone"
+
+                        app:controller_layout_id="@layout/exo_playback_control_view_preview"
+                        app:player_layout_id="@layout/exo_player_view_preview_large"
+                        app:resize_mode="fixed_width"
+                        app:show_buffering="true"
+                        app:use_controller="true" />
+
+
+                </FrameLayout>
+
+                <!-- Vote, author, date (readable) info-->
+                <LinearLayout
+                    android:id="@+id/submission_viewer_submission_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:layout_below="@id/submission_viewer_media_container"
+                    android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:textColor="@color/colorWhite" />
-            </LinearLayout>
+                    android:orientation="horizontal">
 
-            <!-- Author-->
-            <LinearLayout
-                android:id="@+id/submission_viewer_author_container"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight=".6"
-                android:background="@color/colorThemeDarkPrimary"
-                android:gravity="end"
-                android:orientation="horizontal"
-                android:paddingRight="10dp">
+                    <!-- Vote counter-->
+                    <LinearLayout
+                        android:id="@+id/submission_viewer_vote_count_container"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight=".2"
+                        android:background="@color/colorThemeDarkPrimary"
+                        android:gravity="center"
+                        android:orientation="horizontal">
 
-                <ImageView
-                    android:id="@+id/submission_viewer_author_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/ic_white_author_icon" />
+                        <ImageView
+                            android:id="@+id/submission_viewer_vote_counter_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/ic_white_upvote" />
 
-                <TextView
-                    android:id="@+id/submission_viewer_author"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                        <TextView
+                            android:id="@+id/submission_viewer_vote_count"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:textColor="@color/colorWhite" />
+                    </LinearLayout>
+
+                    <!-- Comment counter-->
+                    <LinearLayout
+                        android:id="@+id/submission_viewer_comment_count_container"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight=".2"
+                        android:background="@color/colorThemeDarkPrimary"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/submission_viewer_comment_count_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/ic_white_chat" />
+
+                        <TextView
+                            android:id="@+id/submission_viewer_comment_count"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:textColor="@color/colorWhite" />
+                    </LinearLayout>
+
+                    <!-- Author-->
+                    <LinearLayout
+                        android:id="@+id/submission_viewer_author_container"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight=".6"
+                        android:background="@color/colorThemeDarkPrimary"
+                        android:gravity="end"
+                        android:orientation="horizontal"
+                        android:paddingRight="10dp">
+
+                        <ImageView
+                            android:id="@+id/submission_viewer_author_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/ic_white_author_icon" />
+
+                        <TextView
+                            android:id="@+id/submission_viewer_author"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:background="@color/colorThemeDarkPrimary"
+                            android:gravity="center"
+                            android:textColor="@color/colorWhite" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Separator-->
+                <FrameLayout
+                    android:id="@+id/submission_viewer_separator_info_votebar"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:layout_below="@+id/submission_viewer_submission_info"
+                    android:background="@color/colorDarkGray" />
+
+                <!-- Upvote/downvote/save/overflow-->
+                <LinearLayout
+                    android:id="@+id/submission_viewer_vote_bar"
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:layout_below="@+id/submission_viewer_separator_info_votebar"
+
                     android:background="@color/colorThemeDarkPrimary"
-                    android:gravity="center"
-                    android:textColor="@color/colorWhite" />
-            </LinearLayout>
-        </LinearLayout>
+                    android:orientation="horizontal">
 
-        <!-- Separator-->
-        <FrameLayout
-            android:id="@+id/submission_viewer_separator_info_votebar"
-            android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:layout_below="@+id/submission_viewer_submission_info"
-            android:background="@color/colorDarkGray" />
+                    <!-- Upvote -->
+                    <FrameLayout
+                        android:id="@+id/submission_viewer_commit_upvote_container"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:layout_weight=".25">
 
-        <!-- Upvote/downvote/save/overflow-->
-        <LinearLayout
-            android:id="@+id/submission_viewer_vote_bar"
-            android:layout_width="match_parent"
-            android:layout_height="32dp"
-            android:layout_below="@+id/submission_viewer_separator_info_votebar"
+                        <ImageView
+                            android:id="@+id/submission_viewer_commit_upvote"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"
+                            android:background="@drawable/ic_white_upvote_medium" />
+                    </FrameLayout>
 
-            android:background="@color/colorThemeDarkPrimary"
-            android:orientation="horizontal">
+                    <!-- Downvote-->
+                    <FrameLayout
+                        android:id="@+id/submission_viewer_commit_downvote_container"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight=".25">
 
-            <!-- Upvote -->
-            <FrameLayout
-                android:id="@+id/submission_viewer_commit_upvote_container"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:layout_weight=".25">
-
-                <ImageView
-                    android:id="@+id/submission_viewer_commit_upvote"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:background="@drawable/ic_white_upvote_medium" />
-            </FrameLayout>
-
-            <!-- Downvote-->
-            <FrameLayout
-                android:id="@+id/submission_viewer_commit_downvote_container"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight=".25">
-
-                <ImageView
-                    android:id="@+id/submission_viewer_commit_downvote"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:background="@drawable/ic_white_downvote_medium" />
-            </FrameLayout>
+                        <ImageView
+                            android:id="@+id/submission_viewer_commit_downvote"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"
+                            android:background="@drawable/ic_white_downvote_medium" />
+                    </FrameLayout>
 
 
-            <!-- Save-->
-            <FrameLayout
-                android:id="@+id/submission_viewer_commit_save_container"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight=".25">
+                    <!-- Save-->
+                    <FrameLayout
+                        android:id="@+id/submission_viewer_commit_save_container"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight=".25">
 
-                <ImageView
-                    android:id="@+id/submission_viewer_commit_save"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:background="@drawable/ic_white_star_medium" />
-            </FrameLayout>
+                        <ImageView
+                            android:id="@+id/submission_viewer_commit_save"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"
+                            android:background="@drawable/ic_white_star_medium" />
+                    </FrameLayout>
 
 
-            <!-- Overflow-->
-            <FrameLayout
-                android:id="@+id/submission_viewer_commit_overflow_container"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight=".25">
+                    <!-- Overflow-->
+                    <FrameLayout
+                        android:id="@+id/submission_viewer_commit_overflow_container"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight=".25">
 
-                <ImageView
-                    android:id="@+id/submission_viewer_votebar_overflow"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:background="@drawable/ic_white_overflow_medium" />
-            </FrameLayout>
-        </LinearLayout>
+                        <ImageView
+                            android:id="@+id/submission_viewer_votebar_overflow"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"
+                            android:background="@drawable/ic_white_overflow_medium" />
+                    </FrameLayout>
+                </LinearLayout>
 
-        <!-- Comments -->
-        <LinearLayout
-            android:id="@+id/media_viewer_comments_container"
-            android:layout_width="match_parent"
-            android:layout_height="500dp"
-            android:layout_below="@id/submission_viewer_vote_bar"
-            android:orientation="vertical"></LinearLayout>
-    </RelativeLayout>
+                <!-- Comments -->
+                <LinearLayout
+                    android:id="@+id/media_viewer_comments_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="500dp"
+                    android:layout_below="@id/submission_viewer_vote_bar"
+                    android:orientation="vertical"></LinearLayout>
+            </RelativeLayout>
 
-</ScrollView>
+        </ScrollView>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <FrameLayout
+        android:id="@+id/submission_viewer_simple_display_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </FrameLayout>
+
+</android.support.design.widget.CoordinatorLayout>
+
+
 
 
 

@@ -18,10 +18,7 @@ import android.widget.ProgressBar;
 import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.RequestManager;
 import com.facebook.stetho.common.LogUtil;
-import com.github.piasy.biv.BigImageViewer;
-import com.github.piasy.biv.loader.glide.GlideImageLoader;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
@@ -59,7 +56,6 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnTaskComple
 
     /* Big zoomie view*/
     private ZoomieView mZoomieImageView;
-    //private BigImageView mZoomieImageView;
 
     /* Exo player*/
     private FrameLayout mExoplayerContainerLarge;
@@ -90,7 +86,6 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnTaskComple
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        BigImageViewer.initialize(GlideImageLoader.with(getContext()));
         View v = inflater.inflate(R.layout.layout_simple_display, container, false);
 
         /* Contains any image/gif/video - this is to handle click-to-close events*/

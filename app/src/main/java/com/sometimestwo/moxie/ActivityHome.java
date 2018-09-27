@@ -36,7 +36,7 @@ import com.sometimestwo.moxie.Utils.Constants;
             - centering very tall image in large hover
             - hide toolbar on large hover preview
  */
-public class ActivityHome extends AppCompatActivity implements FragmentHome.HomeEventListener{
+public class ActivityHome extends AppCompatActivity implements FragmentHome.HomeEventListener, OnCloseClickEventListener{
 
     private final String TAG = ActivityHome.class.getSimpleName();
     private SharedPreferences prefs_settings;
@@ -44,6 +44,9 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
     // False if user has navigated to a submission or different subreddit.
     // This allows us to know if we should handle onBackPressed() or not
     private boolean isHome = true;
+
+    // Permissions we will need to check
+    private boolean mAllowCloseOnClick;
 
     //screen size metrics for flexibility in displaying dialogs
     private DisplayMetrics mDisplayMetrics;
@@ -59,6 +62,7 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
         mScreenHeight = getResources().getDisplayMetrics().heightPixels;
 
         prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        mAllowCloseOnClick = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
 
         loadReddit(false);
     }
@@ -201,5 +205,12 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
     @Override
     public void set404(boolean is404) {
         // This is added for the sake of being useful in ActivitySubredditViewer
+    }
+
+    @Override
+    public void onCloseClickDetected() {
+        if(mAllowCloseOnClick){
+            getSupportFragmentManager().popBackStack();
+        }
     }
 }

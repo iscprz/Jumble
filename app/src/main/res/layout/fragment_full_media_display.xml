@@ -2,7 +2,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBgBlackTintDarker"
-    android:clickable="true"
     android:orientation="vertical"
     android:paddingTop="20dp">
 
@@ -53,22 +52,22 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Image view-->
-    <FrameLayout
+
+    <com.sometimestwo.moxie.ZoomieView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/full_displayer_image_zoomie_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/full_displayer_big_image_container"
+        android:layout_gravity="center"
 
-        android:visibility="gone">
-        <com.github.piasy.biv.view.BigImageView xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/big_image_viewer"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:clickable="true"
-            android:visibility="visible" />
-    </FrameLayout>
+        app:zoomage_restrictBounds="false"
+        app:zoomage_animateOnReset="true"
+        app:zoomage_autoResetMode="UNDER"
+        app:zoomage_autoCenter="true"
+        app:zoomage_zoomable="true"
+        app:zoomage_translatable="true"
+        app:zoomage_minScale="0.6"
+        app:zoomage_maxScale="8"/>
 
 
     <FrameLayout
@@ -120,8 +119,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
-        android:background="@color/transparent">
+        android:background="@color/transparent"
+        android:orientation="horizontal">
 
         <FrameLayout
             android:layout_width="0dp"

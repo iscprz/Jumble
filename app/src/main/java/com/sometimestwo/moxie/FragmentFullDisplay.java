@@ -20,10 +20,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
 
+import com.bumptech.glide.Glide;
 import com.facebook.stetho.common.LogUtil;
-import com.github.piasy.biv.BigImageViewer;
-import com.github.piasy.biv.loader.glide.GlideImageLoader;
-import com.github.piasy.biv.view.BigImageView;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
@@ -64,8 +62,8 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     private LinearLayout mSnackbarContainer;
 
     /* Big zoomie view*/
-    private FrameLayout mBigImageViewContainer;
-    private BigImageView mBigImageView;
+    //private FrameLayout mZoomieImageViewContainer;
+    private ZoomieView mZoomieImageView;
 
     /* Video view for VREDDIT videos*/
     private FrameLayout mVideoviewContainer;
@@ -107,7 +105,6 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        BigImageViewer.initialize(GlideImageLoader.with(getContext()));
         View v = inflater.inflate(R.layout.fragment_full_media_display, container, false);
 
 
@@ -123,8 +120,8 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         mSnackbarContainer = (LinearLayout) v.findViewById(R.id.big_display_snack_bar_container);
 
         /* Main zoomie image view*/
-        mBigImageViewContainer = (FrameLayout) v.findViewById(R.id.full_displayer_big_image_container);
-        mBigImageView = (BigImageView) v.findViewById(R.id.big_image_viewer);
+       // mZoomieImageViewContainer = (FrameLayout) v.findViewById(R.id.full_displayer_big_image_container);
+        mZoomieImageView = (ZoomieView) v.findViewById(R.id.full_displayer_image_zoomie_view);
 
         /* Video view*/
         mVideoviewContainer = (FrameLayout) v.findViewById(R.id.full_displayer_videoview_container);
@@ -142,18 +139,8 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                 (TransferListener<? super DataSource>) bandwidthMeter);
         window = new Timeline.Window();
 
-
         setupFullViewer();
 
-        /* Exit on tap if settings option is enabled*/
-        mBigImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mAllowCloseOnClick) {
-                    closeFullDisplay();
-                }
-            }
-        });
         mExoplayerContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -231,16 +218,16 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         if(mCurrSubmission.getSubmissionType() == Constants.SubmissionType.IMAGE){
             mExoplayerContainer.setVisibility(View.GONE);
             mVideoviewContainer.setVisibility(View.GONE);
-            mBigImageViewContainer.setVisibility(View.VISIBLE);
-            mBigImageView.showImage(Uri.parse(mCurrSubmission.getUrl()));
-
-            //mBigImageView.setVisibility(View.VISIBLE);
+            mZoomieImageView.setVisibility(View.VISIBLE);
+           // mZoomieImageViewContainer.setVisibility(View.VISIBLE);
+            Glide.with(this)
+                    .load(imageUrl)
+                    .into(mZoomieImageView);
             //mExoplayer.setVisibility(View.GONE);
             //TODO: handle invalid URL
         }else if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.GIF
                 || mCurrSubmission.getSubmissionType() == Constants.SubmissionType.VIDEO){
-           // mBigImageView.setVisibility(View.GONE);
-                mBigImageViewContainer.setVisibility(View.GONE);
+            mZoomieImageView.setVisibility(View.GONE);
             // VREDDIT submissions require a video view
             if(mCurrSubmission.getDomain() == Utils.SubmissionDomain.VREDDIT){
                 mVideoviewContainer.setVisibility(View.VISIBLE);

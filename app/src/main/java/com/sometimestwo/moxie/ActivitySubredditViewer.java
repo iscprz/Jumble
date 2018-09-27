@@ -15,7 +15,7 @@ import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
 public class ActivitySubredditViewer extends AppCompatActivity implements FragmentHome.HomeEventListener,
-        Fragment404.Fragment404EventListener {
+        Fragment404.Fragment404EventListener, OnCloseClickEventListener{
 
     public final String TAG = this.getClass().getCanonicalName();
     private SharedPreferences prefs_settings;
@@ -24,10 +24,14 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
     private String mExploreCategory;
     private boolean mIs404 = false;    // activity hosts a 404 page
 
+    // Permissions we'll need to make use of
+    private boolean mAllowCloseOnClick;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subreddit_viewer);
         prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        mAllowCloseOnClick = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
 
         unpackExtras();
         displaySubreddit(true);
@@ -180,5 +184,13 @@ public class ActivitySubredditViewer extends AppCompatActivity implements Fragme
     @Override
     public void refresh404(String tag) {
         this.retrySubredditLoad(tag, true);
+    }
+
+
+    @Override
+    public void onCloseClickDetected() {
+        if(mAllowCloseOnClick){
+            getSupportFragmentManager().popBackStack();
+        }
     }
 }

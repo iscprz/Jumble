@@ -45,7 +45,7 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
     // This allows us to know if we should handle onBackPressed() or not
     private boolean isHome = true;
 
-    // Permissions we will need to check
+    // Permissions we'll need to make use of
     private boolean mAllowCloseOnClick;
 
     //screen size metrics for flexibility in displaying dialogs

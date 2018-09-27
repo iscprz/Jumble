@@ -249,9 +249,11 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                 //mExoplayer.setVisibility(View.GONE);
             }
             else{
+                //exo player has its own progress bar
+                mProgressBar.setVisibility(View.GONE);
+
                 mExoplayer.setVisibility(View.VISIBLE);
                 mVideoviewContainer.setVisibility(View.GONE);
-               // mVideoView.setVisibility(View.GONE);
                 initializeExoPlayer(imageUrl);
             }
 
@@ -324,10 +326,10 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                     //mProgressBar.setVisibility(View.VISIBLE);
                     break;
                 case Player.STATE_READY:      // The player is able to immediately play
-                    //mProgressBar.setVisibility(View.GONE);
+                    mProgressBar.setVisibility(View.GONE);
                     break;
                 case Player.STATE_ENDED:      // The player has finished playing the media
-                    //mProgressBar.setVisibility(View.GONE);
+                    mProgressBar.setVisibility(View.GONE);
                     break;
             }
         }

@@ -968,7 +968,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         the ones we need according to which viewer has been selected in settings.
      */
     private void setupPreviewer(SubmissionObj item) {
-        mProgressBar.setVisibility(View.VISIBLE);
         if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
             mHoverPreviewContainerSmall.setVisibility(View.VISIBLE);
             mHoverPreviewContainerLarge.setVisibility(View.GONE);
@@ -1227,6 +1226,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                             .into(holder.thumbnailImageView);
                 } else {
                     GlideApp.load(thumbnail)
+                            .listener(new ProgressBarRequestListener(mProgressBar))
                             .apply(new RequestOptions().centerCrop().diskCacheStrategy(DiskCacheStrategy.ALL))
                             .into(holder.thumbnailImageView);
                 }
@@ -1588,6 +1588,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         mPreviewerVideoViewLarge.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                mProgressBar.setVisibility(View.GONE);
                 mp.start();
                 mp.setLooping(true);
             }

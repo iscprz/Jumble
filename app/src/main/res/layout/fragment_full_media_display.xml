@@ -52,13 +52,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Loading progress bar-->
-    <ProgressBar
-        android:id="@+id/full_displayer_progress"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_centerInParent="true"
-        android:visibility="gone" />
+
 
     <TextView
         android:id="@+id/full_displayer_failed_load_text"
@@ -131,6 +125,13 @@
             android:visibility="visible" />
     </FrameLayout>
 
+    <!-- Loading progress bar-->
+    <ProgressBar
+        android:id="@+id/full_displayer_progress"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_centerInParent="true"
+        android:visibility="visible" />
 
     <!-- Snack bar-->
     <LinearLayout

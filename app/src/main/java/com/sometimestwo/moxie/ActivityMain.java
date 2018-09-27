@@ -69,8 +69,8 @@ public class ActivityMain extends AppCompatActivity {
 
 
         // Allow NSFW
-        if (prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false) == false) {
-            prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
+        if (prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW, true) == true) {
+            prefs_settings_editor.putBoolean(Constants.SETTINGS_HIDE_NSFW, true);
         }
 
         // Hide NSFW thumbs

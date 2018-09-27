@@ -184,7 +184,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         for (Submission submission : submissions) {
             // filter some submissions out here
             if (submission.isSelfPost()
-                    || submission.isNsfw() && !mMoxieInfoObj.isAllowNSFW()) {
+                    || submission.isNsfw() && mMoxieInfoObj.isHideNSFW()) {
                 continue;
             }
             SubmissionObj s = new SubmissionObj();

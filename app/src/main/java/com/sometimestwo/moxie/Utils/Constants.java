@@ -42,7 +42,7 @@ public class Constants {
 
     /*SharedPrefs */
     public final static String KEY_GET_PREFS_SETTINGS = "KEY_GET_PREFS_SETTINGS";
-    public final static String SETTINGS_ALLOW_NSFW = "SETTINGS_ALLOW_NSFW";
+    public final static String SETTINGS_HIDE_NSFW = "SETTINGS_HIDE_NSFW";
     public final static String SETTINGS_ALLOW_HOVER_PREVIEW = "SETTINGS_ALLOW_HOVER_PREVIEW";
     public final static String SETTINGS_PREVIEW_SIZE = "SETTINGS_PREVIEW_SIZE";
     public final static String SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK = "SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK";

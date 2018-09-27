@@ -13,7 +13,7 @@ public class MoxieInfoObj {
     Stack<String> mSubredditStack = new Stack<>();
     SubredditSort mSortBy;
     TimePeriod mTimePeriod;
-    boolean allowNSFW = false;
+    boolean hideNSFW = true;
 
     public SubredditSort getmSortBy() {
         return mSortBy == null ? SubredditSort.HOT : mSortBy;
@@ -39,11 +39,11 @@ public class MoxieInfoObj {
         this.mSubredditStack = mSubredditStack;
     }
 
-    public boolean isAllowNSFW() {
-        return allowNSFW;
+    public boolean isHideNSFW() {
+        return hideNSFW;
     }
 
-    public void setAllowNSFW(boolean allowNSFW) {
-        this.allowNSFW = allowNSFW;
+    public void setHideNSFW(boolean hideNSFW) {
+        this.hideNSFW = hideNSFW;
     }
 }

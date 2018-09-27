@@ -140,7 +140,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
     // User's preferences. Initialize with default values for safety
     SharedPreferences prefs_settings;
-    private boolean mAllowNSFW = false;
+    private boolean mBlockNSFW = true;
     private boolean mAllowImagePreview = false;
     private boolean mAllowBigDisplayClickClose = true;
     private boolean mDisplayDomainIcon = false;
@@ -1019,12 +1019,12 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     private void validatePreferences() throws Exception {
         if (prefs_settings != null) {
 
-            mAllowNSFW = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
+            mBlockNSFW = prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW, true);
             mAllowImagePreview = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true);
             mAllowBigDisplayClickClose = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
-            mPreviewSize = prefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL)
-                    .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
-                    ? Constants.HoverPreviewSize.SMALL : Constants.HoverPreviewSize.LARGE;
+            mPreviewSize = prefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE)
+                    .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_LARGE)
+                    ? Constants.HoverPreviewSize.LARGE : Constants.HoverPreviewSize.SMALL;
             mDisplayDomainIcon = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false);
             mHideNSFWThumbs = prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false);
             mDisplayFiletypeIcons = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false);
@@ -1033,7 +1033,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
             mNumDisplayColumns = 3;//prefs_settings.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
 
 
-            App.getMoxieInfoObj().setAllowNSFW(mAllowNSFW);
+            App.getMoxieInfoObj().setHideNSFW(mBlockNSFW);
             //App.getMoxieInfoObj().setSubreddit("pics");
 
         } else {

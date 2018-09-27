@@ -54,15 +54,15 @@
             android:text="@string/title_filters"
             android:textColor="@color/colorWhite" />
 
-        <!--......... Settings Block: Allow NSFW ..............-->
+        <!--......... Settings LinearLayout: Hide NSFW ..............-->
         <LinearLayout
-            android:id="@+id/settings_block_allow_nsfw"
+            android:id="@+id/settings_LL_hide_nsfw"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/settings_block_max_height"
+            android:layout_height="@dimen/settings_LL_max_height"
             android:clickable="true">
 
             <RelativeLayout
-                android:id="@+id/settings_allow_nsfw_container"
+                android:id="@+id/settings_hide_nsfw_container"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight=".9">
@@ -73,21 +73,21 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/settings_title_allow_nsfw"
+                        android:id="@+id/settings_title_hide_nsfw"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
                         android:paddingLeft="@dimen/settings_padding_left"
-                        android:text="Allow NSFW submissions"
+                        android:text="Hide NSFW submissions"
                         android:textColor="@color/colorWhite"
                         android:textSize="16sp" />
 
                     <!-- Subtitle-->
                     <TextView
-                        android:id="@+id/settings_allow_nsfw_subtitle"
+                        android:id="@+id/settings_hide_nsfw_subtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_below="@id/settings_title_allow_nsfw"
+                        android:layout_below="@id/settings_title_hide_nsfw"
                         android:paddingLeft="@dimen/settings_padding_left"
                         android:text="Allow Not Safe For Work (NSFW) submissions to be displayed"
                         android:textColor="@color/colorWhite"
@@ -97,13 +97,13 @@
             </RelativeLayout>
 
             <RelativeLayout
-                android:id="@+id/settings_allow_nsfw_checkbox_container"
+                android:id="@+id/settings_hide_nsfw_checkbox_container"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight=".1">
 
                 <CheckBox
-                    android:id="@+id/settings_allow_nsfw_checkbox"
+                    android:id="@+id/settings_hide_nsfw_checkbox"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:buttonTint="@color/colorWhite" />
@@ -113,11 +113,11 @@
 
 
 
-        <!--......... Settings Block: Hide NSFW thumbnails ..............-->
+        <!--......... Settings LL: Hide NSFW thumbnails ..............-->
         <LinearLayout
-            android:id="@+id/settings_block_nsfw_overlay"
+            android:id="@+id/settings_LL_nsfw_overlay"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/settings_block_max_height"
+            android:layout_height="@dimen/settings_LL_max_height"
             android:clickable="true">
 
             <RelativeLayout
@@ -181,11 +181,11 @@
             android:textColor="@color/colorWhite" />
 
 
-        <!--......... Settings Block: Big display close-to-click ..............-->
+        <!--......... Settings LL: Big display close-to-click ..............-->
         <LinearLayout
-            android:id="@+id/settings_block_bigdisplay_closeclick"
+            android:id="@+id/settings_LL_bigdisplay_closeclick"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/settings_block_max_height"
+            android:layout_height="@dimen/settings_LL_max_height"
             android:clickable="true">
 
             <RelativeLayout
@@ -240,11 +240,11 @@
         </LinearLayout>
 
 
-        <!--........... Settings Block: Preview on long press ................-->
+        <!--........... Settings LL: Preview on long press ................-->
         <LinearLayout
-            android:id="@+id/settings_block_allow_previewer"
+            android:id="@+id/settings_LL_allow_previewer"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/settings_block_max_height"
+            android:layout_height="@dimen/settings_LL_max_height"
             android:clickable="true">
 
             <RelativeLayout
@@ -299,8 +299,9 @@
         </LinearLayout>
 
 
+        <!-- TODO: Removing this for now. Feature for later-->
         <!-- Previewer size Radio buttons-->
-        <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+<!--        <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/radio_group_preview_size"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -322,7 +323,7 @@
                 android:onClick="onRadioButtonClicked"
                 android:text="Small"
                 android:textColor="@color/colorWhite" />
-        </RadioGroup>
+        </RadioGroup>-->
 
         <!--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Section Title: Click actions^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
         <TextView
@@ -334,11 +335,11 @@
             android:text="@string/title_appearance"
             android:textColor="@color/colorWhite" />
 
-        <!--.............. Settings Block: Display domain icon .................-->
+        <!--.............. Settings LL: Display domain icon .................-->
         <LinearLayout
-            android:id="@+id/settings_block_display_domain_icon"
+            android:id="@+id/settings_LL_display_domain_icon"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/settings_block_max_height"
+            android:layout_height="@dimen/settings_LL_max_height"
             android:clickable="true">
 
             <RelativeLayout
@@ -391,11 +392,11 @@
             </RelativeLayout>
         </LinearLayout>
 
-        <!--.............. Settings Block: Display filetype icon .................-->
+        <!--.............. Settings LL: Display filetype icon .................-->
         <LinearLayout
-            android:id="@+id/settings_block_filetype_icon"
+            android:id="@+id/settings_LL_filetype_icon"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/settings_block_max_height"
+            android:layout_height="@dimen/settings_LL_max_height"
             android:clickable="true">
 
             <RelativeLayout
@@ -450,11 +451,11 @@
         </LinearLayout>
 
 
-        <!-- ...Settings Block: Display NSFW icon on thumbnails......-->
+        <!-- ...Settings LL: Display NSFW icon on thumbnails......-->
         <LinearLayout
-            android:id="@+id/settings_block_nsfw_icon"
+            android:id="@+id/settings_LL_nsfw_icon"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/settings_block_max_height"
+            android:layout_height="@dimen/settings_LL_max_height"
             android:clickable="true">
 
             <RelativeLayout

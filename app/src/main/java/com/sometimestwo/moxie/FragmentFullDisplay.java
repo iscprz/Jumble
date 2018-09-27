@@ -100,7 +100,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         // Read relevant permission settings
         SharedPreferences prefs = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
 
-        mPrefsAllowNSFW = prefs.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
+        mPrefsAllowNSFW = prefs.getBoolean(Constants.SETTINGS_HIDE_NSFW, false);
         mAllowCloseOnClick = prefs.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
     }
 

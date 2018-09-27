@@ -164,9 +164,6 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
         retrySubredditLoad(Constants.TAG_FRAG_SUBREDDIT_VIEWER, invalidateData);
     }
 
-    @Override
-    public void isHome(boolean isHome) {
-    }
 
     @Override
     public void menuGoBack() {

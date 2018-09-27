@@ -42,10 +42,6 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     private final String TAG = ActivityHome.class.getSimpleName();
     private SharedPreferences prefs_settings;
 
-    // False if user has navigated to a submission or different subreddit.
-    // This allows us to know if we should handle onBackPressed() or not
-    private boolean isHome = true;
-
     // Permissions we'll need to make use of
     private boolean mAllowCloseOnClick;
 
@@ -221,10 +217,6 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         refreshFragment(Constants.TAG_FRAG_HOME, invalidateData);
     }
 
-    @Override
-    public void isHome(boolean isHome) {
-        this.isHome = isHome;
-    }
 
     @Override
     public void menuGoBack() {

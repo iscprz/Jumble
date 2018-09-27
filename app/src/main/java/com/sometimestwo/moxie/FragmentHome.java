@@ -126,13 +126,10 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     private NavigationView mNavigationViewLeft;
     private NavigationView mNavigationViewRight;
     private ActionBarDrawerToggle mDrawerToggle;
-    private int mNumDisplayColumns;
     private String mCurrSubreddit;
     private String mCurrExploreTitle;
-    //private String mCurrUsername = null;
     private boolean isImageViewPressed = false;
     private int mActivePointerId = -1;
-    private boolean isHome = true;
     private GestureDetector mGestureDetector;
     private ProgressBar mProgressBar;
     private boolean mInvalidateDataSource = false;
@@ -140,7 +137,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
     // User's preferences. Initialize with default values for safety
     SharedPreferences prefs_settings;
-    private boolean mBlockNSFW = true;
+    private boolean mHideNSFW = true;
     private boolean mAllowImagePreview = false;
     private boolean mAllowBigDisplayClickClose = true;
     private boolean mDisplayDomainIcon = false;
@@ -1019,7 +1016,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     private void validatePreferences() throws Exception {
         if (prefs_settings != null) {
 
-            mBlockNSFW = prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW, true);
+            mHideNSFW = prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW, true);
             mAllowImagePreview = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true);
             mAllowBigDisplayClickClose = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
             mPreviewSize = prefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE)
@@ -1030,10 +1027,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
             mDisplayFiletypeIcons = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false);
             mDisplayNSFWIcon = prefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false);
 
-            mNumDisplayColumns = 3;//prefs_settings.getInt(Constants.SETTINGS_NUM_DISPLAY_COLS);
-
-
-            App.getMoxieInfoObj().setHideNSFW(mBlockNSFW);
+            App.getMoxieInfoObj().setHideNSFW(mHideNSFW);
             //App.getMoxieInfoObj().setSubreddit("pics");
 
         } else {

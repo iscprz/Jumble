@@ -43,7 +43,7 @@ public class Utils {
        imgur links will be given in the following format :
        https://i.imgur.com/CtyvHl6.gifv
      */
-    public static String getFileExtensionFromPostUrl(String postURL) {
+    public static String getFileExtensionFromUrl(String postURL) {
         String split[] = postURL.split("\\.");
         return split.length > 0 ? split[split.length - 1] : "";
     }
@@ -70,8 +70,8 @@ public class Utils {
         OTHER
     }
 
-    public static Constants.SubmissionType getSubmissionType(String url) {
-        String extension = getFileExtensionFromPostUrl(url);
+ /*   public static Constants.SubmissionType getSubmissionType(String url) {
+        String extension = getFileExtensionFromUrl(url);
         if ("gif".equalsIgnoreCase(extension)
                 || "gifv".equalsIgnoreCase(extension)) {
             return Constants.SubmissionType.GIF;
@@ -81,15 +81,32 @@ public class Utils {
             return Constants.SubmissionType.IMAGE;
         }
         //youtube
-        /* else if()*/
+        *//* else if()*//*
 
+        return null;
+    }*/
+
+    public static Constants.SubmissionType getSubmissionType(String url) {
+
+        if(url != null){
+            url = url.toLowerCase().trim();
+            if(url.contains(".gifv") || url.contains(".gif")){
+                return Constants.SubmissionType.GIF;
+            }
+            else if(url.contains(".jpg") || url.contains(".jpeg") || url.contains(".png")){
+                return Constants.SubmissionType.IMAGE;
+            }
+            else if(url.contains("youtube") || url.contains("youtu.be")){
+                return Constants.SubmissionType.VIDEO;
+            }
+        }
         return null;
     }
 
     // takes a URL and ensures it takes us directly to an image URL (.jpg, .jpeg, .png)
     public static String ensureImageUrl(String url) {
         //  url = url.toLowerCase();
-        if (Arrays.asList(Constants.VALID_IMAGE_EXTENSION).contains(getFileExtensionFromPostUrl(url))) {
+        if (Arrays.asList(Constants.VALID_IMAGE_EXTENSION).contains(getFileExtensionFromUrl(url))) {
             // already directly points to image, no change needed
             return url;
         }

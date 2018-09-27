@@ -7,7 +7,8 @@ public interface HomeEventListener {
 
     public void isHome(boolean isHome);
 
-    public void goBack();
+    // back arrow at top of screen (as opposed to hardware back button)
+    public void menuGoBack();
 
     public void set404(boolean is404);
 }

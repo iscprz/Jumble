@@ -220,9 +220,16 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             s.setEmbeddedMedia(submission.getEmbeddedMedia());
             s.setPreviewUrl(submission.getPreview() == null ?
                     null : submission.getPreview().getImages().get(0).getSource().getUrl());
-            // thumbnail will be "nsfw" here if user has selected to hide NSFW thumbnails through
-            // reddit preferences. If "nsfw", set postURL as thumbnail for now.
-            if ("nsfw".equalsIgnoreCase(submission.getThumbnail())) {
+
+            // Thumbnail can be many different things. Default to submission's URL if no thumbnail.
+            // Note: We're ignoring spoiler, nsfw, and potentially any subreddit specific rules
+            // which disallow thumbnails(?)
+            if (!submission.hasThumbnail()
+                    || submission.getThumbnail() == null
+                    || "image".equalsIgnoreCase(submission.getThumbnail())
+                    || "nsfw".equalsIgnoreCase(submission.getThumbnail())
+                    || "spoiler".equalsIgnoreCase(submission.getThumbnail())
+                    || submission.getThumbnail().length() < 1) {
                 s.setThumbnail(submission.getUrl());
             } else {
                 s.setThumbnail(submission.getThumbnail());
@@ -252,8 +259,17 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             if(submission.getTitle().length() > Constants.MAX_TITLE_LENGTH){
                 s.setCompactTitle(submission.getTitle().substring(0,
                         Constants.MAX_TITLE_LENGTH) + "...");
-
             }
+
+           /* // Thumbnail will have value "nsfw" for Guest requests.
+            // Thumnail will have "spoiler" in spoiler requests.
+            // We're pretty much ignoring them for now.
+            if("nsfw".equalsIgnoreCase(submission.getThumbnail())
+                    || "spoiler".equalsIgnoreCase(submission.getThumbnail())){
+                // Videos
+                if(Utils.getSubmissionType(submission.getUrl()) == )
+                // Images
+            }*/
 
 
             res.add(s);

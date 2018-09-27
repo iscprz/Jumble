@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 
 import com.sometimestwo.moxie.Utils.Constants;
@@ -134,44 +135,60 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         if(drawer.isDrawerOpen(GravityCompat.START) || drawer.isDrawerOpen(GravityCompat.END) ){
             drawer.closeDrawers();
         }
+        // Back arrow should open left nav menu drawer if we're not currently in any fragments
+        else if((getSupportFragmentManager().getBackStackEntryCount() == 0)
+                && !drawer.isDrawerOpen(GravityCompat.START)){
+            drawer.openDrawer(GravityCompat.START);
+        }
         // Not at the home screen, pop back stack instead of closing activity
         else if(getSupportFragmentManager().getBackStackEntryCount() > 0){
             getSupportFragmentManager().popBackStack();
-        }
-        // Confirm exit app
-        else{
-            AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.TransparentDialog);
-            builder.setTitle("Confirm exit");
-            builder.setMessage("Really exit app?");
-            builder.setIcon(R.drawable.ic_white_exclamation);
-
-            builder.setPositiveButton("Exit", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    ActivityHome.this.exitApp();
-                }
-            });
-            builder.setNegativeButton(android.R.string.no, null);
-            AlertDialog alertDialog = builder.create();
-
-            // button color setup
-            alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-                @Override
-                public void onShow(DialogInterface dialogInterface) {
-                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                            .setTextColor(getResources().getColor(R.color.colorWhite));
-                    alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-                            .setTextColor(getResources().getColor(R.color.colorWhite));
-                }
-            });
-
-            // resize the alert dialog
-            alertDialog.show();
-            alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
         }
     }
 
     public void exitApp() {
         super.onBackPressed();
+    }
+
+    /* Hacky workaround for differentiating between hardware back button and menu back button*/
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+            if(getSupportFragmentManager().getBackStackEntryCount() > 0){
+                onBackPressed();
+            }
+            // Confirm exit app
+            else{
+                AlertDialog.Builder builder = new AlertDialog.Builder(ActivityHome.this, R.style.TransparentDialog);
+                builder.setTitle("Confirm exit");
+                builder.setMessage("Really exit app?");
+                builder.setIcon(R.drawable.ic_white_exclamation);
+
+                builder.setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        ActivityHome.this.exitApp();
+                    }
+                });
+                builder.setNegativeButton(android.R.string.no, null);
+                AlertDialog alertDialog = builder.create();
+
+                // button color setup
+                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialogInterface) {
+                        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                                .setTextColor(getResources().getColor(R.color.colorWhite));
+                        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                                .setTextColor(getResources().getColor(R.color.colorWhite));
+                    }
+                });
+
+                // resize the alert dialog
+                alertDialog.show();
+                alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
+            }
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
@@ -209,8 +226,8 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     }
 
     @Override
-    public void goBack() {
-        super.onBackPressed();
+    public void menuGoBack() {
+        onBackPressed();
     }
 
     @Override

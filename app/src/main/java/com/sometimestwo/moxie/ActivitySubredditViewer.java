@@ -169,7 +169,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
     }
 
     @Override
-    public void goBack() {
+    public void menuGoBack() {
         onBackPressed();
     }
 

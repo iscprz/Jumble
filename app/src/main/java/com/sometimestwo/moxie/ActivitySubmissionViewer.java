@@ -187,72 +187,12 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
 
 
        // int parentContainerId = ((ViewGroup) getView().getParent()).getId();
-        ft.replace(R.id.submission_viewer_simple_display_container,
+        ft.add(R.id.submission_viewer_simple_display_container,
                 simpleViewerFragment,
                 Constants.TAG_FRAG_SIMPLE_DISPLAYER);
         ft.addToBackStack(null);
         ft.commit();
     }
-
- /*   private void initializePlayer(String url) {
-
-        mExoplayer.requestFocus();
-
-        TrackSelection.Factory videoTrackSelectionFactory =
-                new AdaptiveTrackSelection.Factory(bandwidthMeter);
-
-        trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
-
-        player = ExoPlayerFactory.newSimpleInstance(this, trackSelector);
-
-        mExoplayer.setPlayer(player);
-
-        player.addListener(new ActivitySubmissionViewer.PlayerEventListener());
-        player.setPlayWhenReady(true);
-*//*        MediaSource mediaSource = new HlsMediaSource(Uri.parse("https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
-                mediaDataSourceFactory, mainHandler, null);*//*
-
-
-        MediaSource mediaSource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
-                .createMediaSource(Uri.parse(url));
-
-        boolean haveStartPosition = currentWindow != C.INDEX_UNSET;
-        if (haveStartPosition) {
-            player.seekTo(currentWindow, playbackPosition);
-        }
-
-        // repeat mode: 0 = off, 1 = loop single video, 2 = loop playlist
-        player.setRepeatMode(1);
-        player.prepare(mediaSource, !haveStartPosition, false);
-
-     *//*   ivHideControllerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                playerView.hideController();
-            }
-        });*//*
-    }
-    private class PlayerEventListener extends Player.DefaultEventListener {
-
-        @Override
-        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-            switch (playbackState) {
-                case Player.STATE_IDLE:       // The player does not have any media to play yet.
-                    //progressBar.setVisibility(View.VISIBLE);
-                    break;
-                case Player.STATE_BUFFERING:  // The player is buffering (loading the content)
-                    //   progressBar.setVisibility(View.VISIBLE);
-                    break;
-                case Player.STATE_READY:      // The player is able to immediately play
-                    // progressBar.setVisibility(View.GONE);
-                    break;
-                case Player.STATE_ENDED:      // The player has finished playing the media
-                    //  progressBar.setVisibility(View.GONE);
-                    break;
-            }
-        }
-    }
-*/
 
     @Override
     protected void onResume() {
@@ -280,7 +220,7 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {}
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) { }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {

@@ -312,9 +312,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         //ivHideControllerButton = findViewById(R.id.exo_controller);
         // progressBar = findViewById(R.id.progress_bar);
 
-        /* Gfycat player*/
-        // mHoverPreviewGfycatLarge = (GfycatPlayer) v.findViewById(R.id.large_previewer_gfycat);
-
         return v;
     }
 
@@ -401,7 +398,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         TimePeriod timePeriod;
         switch (item.getItemId()) {
             case android.R.id.home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
+                mHomeEventListener.menuGoBack();
                 return true;
             case R.id.menu_explore:
                 mDrawerLayout.openDrawer(GravityCompat.END);

@@ -100,13 +100,11 @@ dependencies {
     implementation 'com.makeramen:roundedimageview:2.3.0'
 
     // https://github.com/danikula/AndroidVideoCache
-
-    //implementation 'com.danikula:videocache:2.7.1'
-
-    //
     implementation 'com.googlecode.mp4parser:isoparser:1.1.21'
-
     // Logger
     implementation 'org.slf4j:slf4j-android:1.7.21'
+
+    implementation 'com.jsibbold:zoomage:1.2.0'
+
 
 }

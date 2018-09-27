@@ -270,8 +270,9 @@
     <FrameLayout
         android:id="@+id/submission_viewer_simple_display_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/transparent"></FrameLayout>
+        android:layout_height="match_parent"
+        android:background="@color/transparent"
+        />
 
 </android.support.design.widget.CoordinatorLayout>
 

@@ -1,7 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBgBlackTint"
+    android:background="@color/colorBgBlackTintDarker"
     android:clickable="true"
     android:orientation="vertical"
     android:paddingTop="20dp">
@@ -58,8 +58,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/full_displayer_big_image_container"
-        android:layout_above="@id/big_display_snack_bar_container"
-        android:layout_below="@id/big_display_title_container"
+
         android:visibility="gone">
         <com.github.piasy.biv.view.BigImageView xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -121,7 +120,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:background="@color/transparent">
 
         <FrameLayout
             android:layout_width="0dp"

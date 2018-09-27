@@ -1,45 +1,80 @@
 package com.sometimestwo.moxie;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.Toast;
+import android.widget.ProgressBar;
+import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
+import com.facebook.stetho.common.LogUtil;
 import com.github.piasy.biv.BigImageViewer;
 import com.github.piasy.biv.loader.glide.GlideImageLoader;
-import com.github.piasy.biv.view.BigImageView;
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.ui.PlayerView;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.upstream.TransferListener;
+import com.google.android.exoplayer2.util.Util;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Utils;
 
-public class FragmentSimpleImageDisplay extends Fragment {
+public class FragmentSimpleImageDisplay extends Fragment implements OnTaskCompletedListener{
 
-    private RequestManager GlideApp;
     private SubmissionObj mCurrSubmission;
     private boolean mPrefsAllowNSFW;
     private boolean mAllowCloseOnClick;
+
 
     private ImageView mButtonShare;
     private ImageView mButtonCopyURL;
     private ImageView mButtonDownload;
 
+    // will hold any image/gif/video to handle click-to-close
+    private FrameLayout mMediaContainer;
+
     /* Big zoomie view*/
-    private BigImageView mBigImageView;
+    private ZoomieView mZoomieImageView;
+    //private BigImageView mZoomieImageView;
+
+    /* Exo player*/
+    private FrameLayout mExoplayerContainerLarge;
+    private PlayerView mSimpleDisplayExoplayer;
+    private BandwidthMeter bandwidthMeter;
+    private DefaultTrackSelector trackSelector;
+    private SimpleExoPlayer player;
+    private ProgressBar progressBar;
+    private DataSource.Factory mediaDataSourceFactory;
+    private int currentWindow;
+    private long playbackPosition;
+    private Timeline.Window window;
+
+    /* Video view for VREDDIT videos*/
+    private VideoView mSimpleDisplayVideoView;
 
     public static FragmentSimpleImageDisplay newInstance() {
         return new FragmentSimpleImageDisplay();
@@ -48,15 +83,8 @@ public class FragmentSimpleImageDisplay extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        GlideApp = Glide.with(this);
-
         unpackArgs();
 
-        // Read relevant permission settings
-        SharedPreferences prefs = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
-
-        mPrefsAllowNSFW = prefs.getBoolean(Constants.SETTINGS_ALLOW_NSFW, false);
-        mAllowCloseOnClick = prefs.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
     }
 
     @Nullable
@@ -65,13 +93,29 @@ public class FragmentSimpleImageDisplay extends Fragment {
         BigImageViewer.initialize(GlideImageLoader.with(getContext()));
         View v = inflater.inflate(R.layout.layout_simple_display, container, false);
 
-        // bottom buttons
+        /* Contains any image/gif/video - this is to handle click-to-close events*/
+        mMediaContainer = (FrameLayout) v.findViewById(R.id.simple_display_media_container);
+
+        /* Exo player*/
+        mSimpleDisplayExoplayer = (PlayerView) v.findViewById(R.id.simple_display_exoplayer);
+        bandwidthMeter = new DefaultBandwidthMeter();
+        mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(), Util.getUserAgent(getContext(), "Moxie"), (TransferListener<? super DataSource>) bandwidthMeter);
+        window = new Timeline.Window();
+
+        /* Video view for VREDDIT */
+        mSimpleDisplayVideoView = (VideoView) v.findViewById(R.id.simple_display_video_view);
+
+        /* Main zoomie image view*/
+        mZoomieImageView = (ZoomieView) v.findViewById(R.id.simple_display_image_viewer);
+        /* Bottom buttons */
         mButtonCopyURL = (ImageView) v.findViewById(R.id.simple_display_button_copy_url);
         mButtonShare = (ImageView) v.findViewById(R.id.simple_display_button_share);
         mButtonDownload = (ImageView) v.findViewById(R.id.simple_display_button_download);
 
 
+        setupMedia();
 
+        /* Bottom toolbar actions */
         mButtonCopyURL.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -88,14 +132,8 @@ public class FragmentSimpleImageDisplay extends Fragment {
             }
         });
 
-
-        /* Main zoomie image view*/
-        mBigImageView = (BigImageView) v.findViewById(R.id.simple_display_image_viewer);
-        mBigImageView.showImage(Uri.parse(mCurrSubmission.getUrl()));
-
-        /* Exit on image tap if settings option is enabled*/
-        mBigImageView.setClickable(true);
-        mBigImageView.setOnClickListener(new View.OnClickListener() {
+        /* Exit on tap if settings option is enabled*/
+        mMediaContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (mAllowCloseOnClick) {
@@ -103,6 +141,7 @@ public class FragmentSimpleImageDisplay extends Fragment {
                 }
             }
         });
+
         return v;
     }
 
@@ -113,21 +152,31 @@ public class FragmentSimpleImageDisplay extends Fragment {
 
     @Override
     public void onResume() {
-        ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
-
         super.onResume();
+        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        startExoPlayer();
     }
 
     @Override
     public void onDestroy() {
-        //releaseExoPlayer();
+        mSimpleDisplayVideoView.stopPlayback();
+        releaseExoPlayer();
         super.onDestroy();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        ((AppCompatActivity)getActivity()).getSupportActionBar().show();
+        if(player != null){
+            player.stop();
+        }
+        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        pauseExoPlayer();
     }
 
     private void unpackArgs() {
@@ -151,10 +200,123 @@ public class FragmentSimpleImageDisplay extends Fragment {
     }
 
 
+    private void setupMedia() {
+        String imageUrl = (mCurrSubmission.getCleanedUrl() != null)
+                ? mCurrSubmission.getCleanedUrl() : mCurrSubmission.getUrl();
 
-   /* private void releaseExoPlayer() {
+        if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+            mZoomieImageView.setVisibility(View.VISIBLE);
+            mSimpleDisplayExoplayer.setVisibility(View.GONE);
+            mSimpleDisplayVideoView.setVisibility(View.GONE);
+
+            Glide.with(this)
+                    .load(Uri.parse(imageUrl))
+                    .into(mZoomieImageView);
+        } else {
+            mZoomieImageView.setVisibility(View.GONE);
+            // VREDDIT needs VideoView
+            if (mCurrSubmission.getDomain() == Utils.SubmissionDomain.VREDDIT) {
+                mSimpleDisplayVideoView.setVisibility(View.VISIBLE);
+                mSimpleDisplayExoplayer.setVisibility(View.GONE);
+
+                String url = mCurrSubmission.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
+                try {
+                    new Utils.FetchVRedditGifTask(getContext(), url, this).execute();
+                } catch (Exception e) {
+                    LogUtil.e(e, "Error v.redd.it url: " + url);
+                }
+            }
+            // Non VREDDIT GIF/VIDEO
+            else {
+                mSimpleDisplayExoplayer.setVisibility(View.VISIBLE);
+                mSimpleDisplayVideoView.setVisibility(View.GONE);
+                mZoomieImageView.setVisibility(View.GONE);
+                initializePlayer(imageUrl);
+            }
+
+        }
+
+    }
+    private void releaseExoPlayer() {
         if (player != null) {
             player.release();
         }
-    }*/
+    }
+
+    private void pauseExoPlayer(){
+        if(player != null){
+            player.setPlayWhenReady(false);
+            player.getPlaybackState();
+        }
+    }
+    private void startExoPlayer(){
+        if(player != null){
+            player.setPlayWhenReady(true);
+            player.getPlaybackState();
+        }
+    }
+
+    private void initializePlayer(String url) {
+
+        mSimpleDisplayExoplayer.requestFocus();
+
+        TrackSelection.Factory videoTrackSelectionFactory =
+                new AdaptiveTrackSelection.Factory(bandwidthMeter);
+
+        trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
+
+        player = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector);
+
+        mSimpleDisplayExoplayer.setPlayer(player);
+
+        player.addListener(new FragmentSimpleImageDisplay.PlayerEventListener());
+        player.setPlayWhenReady(true);
+       /* MediaSource mediaSource = new HlsMediaSource(Uri.parse("https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
+        mediaDataSourceFactory, mainHandler, null);*/
+
+
+        MediaSource mediaSource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
+                .createMediaSource(Uri.parse(url));
+
+        boolean haveStartPosition = currentWindow != C.INDEX_UNSET;
+        if (haveStartPosition) {
+            player.seekTo(currentWindow, playbackPosition);
+        }
+
+        // repeat mode: 0 = off, 1 = loop single video, 2 = loop playlist
+        player.setRepeatMode(1);
+        player.prepare(mediaSource, !haveStartPosition, false);
+
+
+    }
+
+    private class PlayerEventListener extends Player.DefaultEventListener {
+
+        @Override
+        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+            switch (playbackState) {
+                case Player.STATE_IDLE:       // The player does not have any media to play yet.
+                    //progressBar.setVisibility(View.VISIBLE);
+                    break;
+                case Player.STATE_BUFFERING:  // The player is buffering (loading the content)
+                    //   progressBar.setVisibility(View.VISIBLE);
+                    break;
+                case Player.STATE_READY:      // The player is able to immediately play
+                    // progressBar.setVisibility(View.GONE);
+                    break;
+                case Player.STATE_ENDED:      // The player has finished playing the media
+                    //  progressBar.setVisibility(View.GONE);
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public void onTaskCompleted(Uri uriToLoad) {
+        mSimpleDisplayVideoView.setVideoURI(uriToLoad);
+        mSimpleDisplayVideoView.start();
+    }
+
 }
+
+

@@ -2,6 +2,7 @@ package com.sometimestwo.moxie;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -42,8 +43,7 @@ import com.google.android.exoplayer2.util.Util;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
-public class ActivitySubmissionViewer extends AppCompatActivity {
-    private RequestManager GlideApp;
+public class ActivitySubmissionViewer extends AppCompatActivity implements OnCloseClickEventListener {
     private SubmissionObj mCurrSubmission;
     private Toolbar mToolbar;
     private TextView mSubmissionTitle;
@@ -51,6 +51,9 @@ public class ActivitySubmissionViewer extends AppCompatActivity {
     private ImageView mImageView;
     private ImageView mPlayButton;
     ProgressBar mProgressBar;
+
+    // Permissions from shared prefs that we will use
+    Boolean mAllowCloseOnClick;
 
     // Submission info
     LinearLayout mSubmissionInfo;
@@ -65,24 +68,15 @@ public class ActivitySubmissionViewer extends AppCompatActivity {
     ImageView mButtonSave;
     ImageView mButtonOverflow;
 
-    // Exo player stuff
-    private BandwidthMeter bandwidthMeter;
-    private DefaultTrackSelector trackSelector;
-    private SimpleExoPlayer player;
-    private ProgressBar progressBar;
-    private DataSource.Factory mediaDataSourceFactory;
-    private int currentWindow;
-    private long playbackPosition;
-    private Timeline.Window window;
-    //private FrameLayout mExoplayerContainerLarge;
-   // private PlayerView mExoplayer;
-
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.drawer_layout);
         setContentView(R.layout.submission_viewer);
-        GlideApp = Glide.with(this);
+
+        // Read relevant permission settings
+        SharedPreferences prefs = getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        mAllowCloseOnClick = prefs.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
 
         /* Title(s)*/
         mSubmissionTitle = (TextView) findViewById(R.id.submission_viewer_title);
@@ -92,11 +86,7 @@ public class ActivitySubmissionViewer extends AppCompatActivity {
         mImageView = (ImageView) findViewById(R.id.submission_media_view);
         mPlayButton = (ImageView) findViewById(R.id.submission_viewer_play_button);
 
-        /* Exo player*/
-      /*  mExoplayer = (PlayerView) findViewById(R.id.submission_viewer_exoplayer);
-        bandwidthMeter = new DefaultBandwidthMeter();
-        mediaDataSourceFactory = new DefaultDataSourceFactory(this, Util.getUserAgent(this, "Moxie"), (TransferListener<? super DataSource>) bandwidthMeter);
-        window = new Timeline.Window();*/
+
 
         /* Loading progress bar */
         mProgressBar = (ProgressBar) findViewById(R.id.submission_viewer_media_progress);
@@ -326,5 +316,12 @@ public class ActivitySubmissionViewer extends AppCompatActivity {
 
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onCloseClickDetected() {
+        if(mAllowCloseOnClick) {
+            getSupportFragmentManager().popBackStack();
+        }
     }
 }

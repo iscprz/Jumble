@@ -1,32 +1,80 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBgBlackTintDarker">
+    android:background="@color/colorBgBlackTintDarkest">
 
 
-    <com.github.piasy.biv.view.BigImageView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/simple_display_image_viewer"
+    <FrameLayout
+        android:id="@+id/simple_display_media_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:clickable="true"
-        app:failureImageInitScaleType="center"
-        app:optimizeDisplay="true" />
+        app:layout_constraintTop_toBottomOf="@+id/simple_display_toolbar">
 
+<!--        <com.github.piasy.biv.view.BigImageView
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/simple_display_image_viewer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:background="@color/test_404"
+            android:visibility="gone"
+            app:failureImageInitScaleType="center"
+            app:optimizeDisplay="true" />-->
+
+
+        <com.sometimestwo.moxie.ZoomieView
+            android:id="@+id/simple_display_image_viewer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:zoomage_restrictBounds="false"
+            app:zoomage_animateOnReset="true"
+            app:zoomage_autoResetMode="UNDER"
+            app:zoomage_autoCenter="true"
+            app:zoomage_zoomable="true"
+            app:zoomage_translatable="true"
+            app:zoomage_minScale="0.6"
+            app:zoomage_maxScale="8"/>
+
+
+        <!-- Gif/Video player-->
+        <com.google.android.exoplayer2.ui.PlayerView
+            android:id="@+id/simple_display_exoplayer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:visibility="gone"
+
+            app:controller_layout_id="@layout/exo_playback_control_view_preview"
+            app:player_layout_id="@layout/exo_player_view_preview_large"
+            app:resize_mode="fixed_width"
+            app:show_buffering="true"
+            app:use_controller="false" />
+
+        <!--Video view for VREDDIT videos -->
+        <VideoView
+
+            android:id="@+id/simple_display_video_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+    </FrameLayout>
     <!-- Icon toolbar-->
     <LinearLayout
+        android:id="@+id/simple_display_toolbar"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
-        android:background="@color/transparent">
+        android:layout_alignParentTop="true"
+        android:background="@color/transparent"
+        android:orientation="horizontal">
 
         <View
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@color/transparent"/>
+            android:background="@color/transparent" />
 
         <!-- Share -->
         <FrameLayout
@@ -75,4 +123,4 @@
 
         </FrameLayout>
     </LinearLayout>
-</RelativeLayout>
+</android.support.constraint.ConstraintLayout>

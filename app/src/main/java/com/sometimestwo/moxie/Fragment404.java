@@ -20,11 +20,11 @@ public class Fragment404 extends Fragment {
     private TextView mRetryButton;
     private Fragment404EventListener m404EventListener;
 
-    public interface Fragment404EventListener{
+    public interface Fragment404EventListener {
         public void refresh404(String fragmentTag);
     }
 
-    public static Fragment404 newInstance(){
+    public static Fragment404 newInstance() {
         return new Fragment404();
     }
 
@@ -58,7 +58,8 @@ public class Fragment404 extends Fragment {
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
                     + " must implement listener inferfaces!");
-        }    }
+        }
+    }
 
     @Override
     public void onStart() {

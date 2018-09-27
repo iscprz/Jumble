@@ -187,7 +187,7 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
 
 
        // int parentContainerId = ((ViewGroup) getView().getParent()).getId();
-        ft.add(R.id.submission_viewer_simple_display_container,
+        ft.replace(R.id.submission_viewer_simple_display_container,
                 simpleViewerFragment,
                 Constants.TAG_FRAG_SIMPLE_DISPLAYER);
         ft.addToBackStack(null);
@@ -280,9 +280,7 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-    }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {}
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {

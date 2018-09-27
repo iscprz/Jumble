@@ -2,6 +2,7 @@ package com.sometimestwo.moxie;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -40,7 +41,7 @@ import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
 
-public class FragmentSimpleImageDisplay extends Fragment implements OnTaskCompletedListener{
+public class FragmentSimpleImageDisplay extends Fragment implements OnTaskCompletedListener {
 
     private SubmissionObj mCurrSubmission;
     private boolean mPrefsAllowNSFW;
@@ -69,6 +70,7 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnTaskComple
     private long playbackPosition;
     private Timeline.Window window;
 
+    OnCloseClickEventListener closeClickEventListener;
     /* Video view for VREDDIT videos*/
     private VideoView mSimpleDisplayVideoView;
 
@@ -99,6 +101,12 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnTaskComple
 
         /* Video view for VREDDIT */
         mSimpleDisplayVideoView = (VideoView) v.findViewById(R.id.simple_display_video_view);
+        mSimpleDisplayVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.setLooping(true);
+            }
+        });
 
         /* Main zoomie image view*/
         mZoomieImageView = (ZoomieView) v.findViewById(R.id.simple_display_image_viewer);
@@ -131,9 +139,7 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnTaskComple
         mMediaContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mAllowCloseOnClick) {
-                    closeSimpleImageViewer();
-                }
+                closeClickEventListener.onCloseClickDetected();
             }
         });
 
@@ -142,6 +148,12 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnTaskComple
 
     @Override
     public void onAttach(Context context) {
+        try {
+            closeClickEventListener = (OnCloseClickEventListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement listener inferfaces!");
+        }
         super.onAttach(context);
     }
 
@@ -162,7 +174,7 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnTaskComple
     @Override
     public void onStop() {
         super.onStop();
-        if(player != null){
+        if (player != null) {
             player.stop();
         }
         ((AppCompatActivity) getActivity()).getSupportActionBar().show();
@@ -232,20 +244,22 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnTaskComple
         }
 
     }
+
     private void releaseExoPlayer() {
         if (player != null) {
             player.release();
         }
     }
 
-    private void pauseExoPlayer(){
-        if(player != null){
+    private void pauseExoPlayer() {
+        if (player != null) {
             player.setPlayWhenReady(false);
             player.getPlaybackState();
         }
     }
-    private void startExoPlayer(){
-        if(player != null){
+
+    private void startExoPlayer() {
+        if (player != null) {
             player.setPlayWhenReady(true);
             player.getPlaybackState();
         }

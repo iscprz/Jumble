@@ -48,7 +48,7 @@
 
         <activity
             android:name=".ActivitySubmissionViewer"
-            android:theme="@style/Theme.AppCompat.Translucent">
+            android:theme="@style/AppThemeDark">
         </activity>
 
     </application>

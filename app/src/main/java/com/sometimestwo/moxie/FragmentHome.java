@@ -1001,6 +1001,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
             if (item.getDomain() == Utils.SubmissionDomain.VREDDIT) {
                 mPreviewerVideoViewLarge.setVisibility(View.VISIBLE);
                 mHoverImagePreviewLarge.setVisibility(View.GONE);
+                mExoplayerLarge.setVisibility(View.GONE);
             } else {
                 if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
                     mHoverImagePreviewLarge.setVisibility(View.VISIBLE);

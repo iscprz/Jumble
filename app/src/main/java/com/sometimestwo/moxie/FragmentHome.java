@@ -109,7 +109,7 @@ import static android.app.Activity.RESULT_OK;
 
 public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     public final static String TAG = Constants.TAG_FRAG_HOME;
-   // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
+    // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
     private final static int KEY_LOG_IN = 2;
     public final static int KEY_INTENT_GOTO_BIG_DISPLAY = 1;
 
@@ -200,17 +200,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     private HomeEventListener mHomeEventListener;
     private OnTaskCompletedListener mVRedditConversionListener;
 
-    public interface HomeEventListener {
-        public void openSettings();
-
-        public void refreshFeed(boolean invalidateData);
-
-        public void isHome(boolean isHome);
-
-        public void goBack();
-
-        public void set404(boolean is404);
-    }
 
     public static FragmentHome newInstance() {
         return new FragmentHome();
@@ -397,15 +386,10 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        if (isHome) {
-            menu.findItem(R.id.menu_submissions_sortby).setVisible(true);
-            menu.findItem(R.id.menu_explore).setVisible(true);
-            menu.findItem(R.id.menu_comments_sortby).setVisible(false);
-        } else {
-            menu.findItem(R.id.menu_comments_sortby).setVisible(true);
-            menu.findItem(R.id.menu_submissions_sortby).setVisible(false);
-            menu.findItem(R.id.menu_explore).setVisible(false);
-        }
+        menu.findItem(R.id.menu_submissions_sortby).setVisible(true);
+        menu.findItem(R.id.menu_explore).setVisible(true);
+        menu.findItem(R.id.menu_comments_sortby).setVisible(false);
+
 
         super.onPrepareOptionsMenu(menu);
     }
@@ -416,13 +400,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         TimePeriod timePeriod;
         switch (item.getItemId()) {
             case android.R.id.home:
-                // Hacky workaround for handling conflict with opening drawer.
-                // Only offer the hamburger menu option if we're at the home screen
-                if (isHome && mCurrSubreddit == null) {
-                    mDrawerLayout.openDrawer(GravityCompat.START);
-                } else {
-                    mHomeEventListener.goBack();
-                }
+                mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
             case R.id.menu_explore:
                 mDrawerLayout.openDrawer(GravityCompat.END);
@@ -519,10 +497,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         /* Returned from SubmissionViewer*/
         if (requestCode == KEY_INTENT_GOTO_BIG_DISPLAY) {
             if (resultCode == RESULT_OK) {
-                isHome = true;
-                // Lets the activity know we're back home so it can handle onBackPress()
-                mHomeEventListener.isHome(true);
-                mToolbar.setAlpha(1);
+                //mToolbar.setAlpha(1);
             }
         }
 
@@ -1301,7 +1276,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
                         } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
                             mHoverPreviewTitleLarge.setText(item.getCompactTitle() != null
-                                                            ? item.getCompactTitle() : item.getTitle());
+                                    ? item.getCompactTitle() : item.getTitle());
                             mHoverPreviewSubredditLarge.setText("/r/" + item.getSubreddit());
                             setupPreviewer(item);
                             if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
@@ -1318,7 +1293,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                                     String url = item.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
 
                                     try {
-                                        new Utils.FetchVRedditGifTask(getContext(),url, FragmentHome.this).execute();
+                                        new Utils.FetchVRedditGifTask(getContext(), url, FragmentHome.this).execute();
 
                                     } catch (Exception e) {
                                         LogUtil.e(e, "Error v.redd.it url: " + url);
@@ -1394,14 +1369,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
             @Override
             public void onClick(View view) {
                 SubmissionObj submission = getItem(getLayoutPosition());
-                // prevent any weird double clicks from opening two submission viewers
-                if (isHome) {
-                    openFullMediaDisplayer(submission);
-                    isHome = false;
-                    // Let our activity know we're no longer home. This prevents this fragment's
-                    // activity from handling onBackPress() which would exit the app
-                    mHomeEventListener.isHome(false);
-                }
+                openFullMediaDisplayer(submission);
             }
         }
     }
@@ -1423,8 +1391,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     }
 
 
-
-    public void openFullMediaDisplayer(SubmissionObj submissionObj){
+    public void openFullMediaDisplayer(SubmissionObj submissionObj) {
         FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
 
         Fragment bigDisplayFragment = FragmentFullDisplay.newInstance();

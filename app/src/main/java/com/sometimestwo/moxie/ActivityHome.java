@@ -36,7 +36,7 @@ import com.sometimestwo.moxie.Utils.Constants;
             - centering very tall image in large hover
             - hide toolbar on large hover preview
  */
-public class ActivityHome extends AppCompatActivity implements FragmentHome.HomeEventListener, OnCloseClickEventListener{
+public class ActivityHome extends AppCompatActivity implements HomeEventListener, OnCloseClickEventListener{
 
     private final String TAG = ActivityHome.class.getSimpleName();
     private SharedPreferences prefs_settings;
@@ -117,6 +117,17 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+
+    @Override
     public void onBackPressed() {
         // Back button should close nav view drawers if they're open (on either side)
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -124,10 +135,10 @@ public class ActivityHome extends AppCompatActivity implements FragmentHome.Home
             drawer.closeDrawers();
         }
         // Not at the home screen, pop back stack instead of closing activity
-        else if(!isHome){
+        else if(getSupportFragmentManager().getBackStackEntryCount() > 0){
             getSupportFragmentManager().popBackStack();
         }
-        // isHome == true. Confirm exit app
+        // Confirm exit app
         else{
             AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.TransparentDialog);
             builder.setTitle("Confirm exit");

@@ -68,7 +68,6 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
     ImageView mButtonSave;
     ImageView mButtonOverflow;
 
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.drawer_layout);
@@ -300,15 +299,15 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
 
         switch(id){
             case android.R.id.home:
-                FragmentSimpleImageDisplay simpleImageDisplayFragment
+              /*  FragmentSimpleImageDisplay simpleImageDisplayFragment
                         = (FragmentSimpleImageDisplay) getSupportFragmentManager()
                         .findFragmentByTag(Constants.TAG_FRAG_SIMPLE_DISPLAYER);
                 if(simpleImageDisplayFragment != null && simpleImageDisplayFragment.isVisible()){
                     getSupportFragmentManager().popBackStack();
-                }
-                else{
+                }*/
+             //   else{
                     finish();
-                }
+                //}
                 return true;
             case R.id.menu_submission_view_comments_sortby:
                 return true;

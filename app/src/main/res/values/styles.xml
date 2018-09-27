@@ -6,11 +6,9 @@
         <item name="colorPrimary">@color/colorThemeDarkPrimary</item>
         <item name="colorPrimaryDark">@color/colorThemeDarkPrimaryDark</item>
         <item name="colorAccent">@color/colorWhite</item>
-        <!--
-                <item name="android:popupMenuStyle"></item>
-        -->
-
     </style>
+
+
 
     <style name="AppThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->

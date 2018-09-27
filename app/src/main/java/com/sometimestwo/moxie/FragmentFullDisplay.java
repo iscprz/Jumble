@@ -228,6 +228,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         }else if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.GIF
                 || mCurrSubmission.getSubmissionType() == Constants.SubmissionType.VIDEO){
             mZoomieImageView.setVisibility(View.GONE);
+
             // VREDDIT submissions require a video view
             if(mCurrSubmission.getDomain() == Utils.SubmissionDomain.VREDDIT){
                 mVideoviewContainer.setVisibility(View.VISIBLE);

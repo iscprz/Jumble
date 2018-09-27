@@ -187,6 +187,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
                 alertDialog.show();
                 alertDialog.getWindow().setLayout((6 * mScreenWidth) / 7, (4 * mScreenHeight) / 18);
             }
+            return true;
         }
         return super.onKeyDown(keyCode, event);
     }

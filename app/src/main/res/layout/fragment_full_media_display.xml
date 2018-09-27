@@ -2,8 +2,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBgBlackTintDarkest"
-    android:paddingTop="20dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingTop="20dp">
 
     <!-- Submission title/subreddit info -->
 
@@ -52,7 +52,26 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- Loading progress bar-->
+    <ProgressBar
+        android:id="@+id/full_displayer_progress"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
 
+    <TextView
+        android:id="@+id/full_displayer_failed_load_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="Failed to load media."
+        android:textColor="@color/colorWhite"
+        android:textSize="18sp"
+        android:visibility="gone" />
+
+    <!-- Images -->
     <com.sometimestwo.moxie.ZoomieView xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/full_displayer_image_zoomie_view"
@@ -60,22 +79,23 @@
         android:layout_height="match_parent"
         android:layout_gravity="center"
 
-        app:zoomage_restrictBounds="false"
         app:zoomage_animateOnReset="true"
-        app:zoomage_autoResetMode="UNDER"
         app:zoomage_autoCenter="true"
-        app:zoomage_zoomable="true"
-        app:zoomage_translatable="true"
+        app:zoomage_autoResetMode="UNDER"
+        app:zoomage_maxScale="8"
         app:zoomage_minScale="0.6"
-        app:zoomage_maxScale="8"/>
+        app:zoomage_restrictBounds="false"
+        app:zoomage_translatable="true"
+        app:zoomage_zoomable="true" />
 
-
+    <!-- Exo player-->
     <FrameLayout
         android:id="@+id/full_displayer_exoplayer_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/big_display_snack_bar_container"
         android:layout_below="@id/big_display_title_container"
+        android:layout_centerVertical="true"
         android:background="@color/transparent"
         android:clickable="true">
 
@@ -83,7 +103,6 @@
             android:id="@+id/full_displayer_exoplayer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
             android:visibility="visible"
             app:controller_layout_id="@layout/exo_playback_control_view_preview"
             app:player_layout_id="@layout/exo_player_view_preview_large"
@@ -181,11 +200,5 @@
 
     </LinearLayout>
 
-    <!-- Loading progress bar-->
-    <!--    <ProgressBar
-            android:id="@+id/full_displayer_progress"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:visibility="visible" />-->
+
 </RelativeLayout>

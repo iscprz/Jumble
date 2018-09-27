@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -999,23 +1000,24 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
             //v.redd.it links will always be non-image. Display in video view.
             if (item.getDomain() == Utils.SubmissionDomain.VREDDIT) {
-                mPreviewerVideoViewLarge.setVisibility(View.VISIBLE);
-                mHoverImagePreviewLarge.setVisibility(View.GONE);
-                mExoplayerLarge.setVisibility(View.GONE);
+                focusView(mPreviewerVideoViewLarge);
             } else {
                 if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-                    mHoverImagePreviewLarge.setVisibility(View.VISIBLE);
-                    mExoplayerLarge.setVisibility(View.GONE);
-                    mPreviewerVideoViewLarge.setVisibility(View.GONE);
+                    focusView(mHoverImagePreviewLarge);
                 }
                 if (item.getSubmissionType() == Constants.SubmissionType.GIF) { // and video?
                     initializePreviewExoPlayer(item.getUrl());
-                    mExoplayerLarge.setVisibility(View.VISIBLE);
-                    mHoverImagePreviewLarge.setVisibility(View.GONE);
-                    mPreviewerVideoViewLarge.setVisibility(View.GONE);
+                    focusView(mExoplayerLarge);
                 }
             }
         }
+    }
+
+    /* Focuses a view depending on which one needs to be displayed*/
+    private void focusView(View focused){
+        mPreviewerVideoViewLarge.setVisibility(focused == mPreviewerVideoViewLarge ? View.VISIBLE : View.GONE);
+        mHoverImagePreviewLarge.setVisibility(focused == mHoverImagePreviewLarge ? View.VISIBLE : View.GONE);
+        mExoplayerLarge.setVisibility(focused == mExoplayerLarge ? View.VISIBLE : View.GONE);
     }
 
     private void validatePreferences() throws Exception {
@@ -1266,15 +1268,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                             } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
 
                             }
-
-
-                            //qqq
-                            // mPopupWindow = new PopupWindow(getActivity());
-
-                            //mPopupWindow = new PopupWindow(mPopupView, RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                            // mPopupWindow.setContentView(mHoverPreviewContainerSmall);
-                            //mPopupWindow.showAtLocation(mParentView, Gravity.CENTER,0,0);
-
                         } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
                             mHoverPreviewTitleLarge.setText(item.getCompactTitle() != null
                                     ? item.getCompactTitle() : item.getTitle());
@@ -1338,8 +1331,10 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
                                     } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
                                         mHoverPreviewContainerLarge.setVisibility(View.GONE);
-                                        mPreviewerVideoViewLarge.stopPlayback();
-                                        //mExoplayerContainerLarge.setVisibility(View.GONE);
+                                        clearVideoView();
+                                        mHoverImagePreviewLarge.setVisibility(View.GONE);
+                                        mExoplayerLarge.setVisibility(View.GONE);
+                                        stopExoPlayer();
                                         // restore the toolbar
                                         mToolbar.setAlpha(1);
                                     }
@@ -1575,16 +1570,32 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         }
     }
 
-    public void releaseExoPlayer() {
+    private void releaseExoPlayer() {
         if (player != null) {
             player.release();
         }
     }
+    private void stopExoPlayer(){
+        if(player !=null){
+            player.stop();
+        }
+    }
 
+    private void clearVideoView(){
+        mPreviewerVideoViewLarge.stopPlayback();
+        mPreviewerVideoViewLarge.setVisibility(View.GONE);
+    }
     @Override
     public void onTaskCompleted(Uri uriToLoad) {
         mPreviewerVideoViewLarge.setVideoURI(uriToLoad);
-        mPreviewerVideoViewLarge.start();
+        mPreviewerVideoViewLarge.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.start();
+                mp.setLooping(true);
+            }
+
+        });
     }
 
     /*************************Async network tasks *******************************************/

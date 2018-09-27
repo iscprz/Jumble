@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -23,6 +24,7 @@ import android.widget.VideoView;
 import com.bumptech.glide.Glide;
 import com.facebook.stetho.common.LogUtil;
 import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -70,13 +72,13 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     private VideoView mVideoView;
 
     private ProgressBar mProgressBar;
+    private TextView mFailedLoadText;
 
     /* Exoplayer */
     private FrameLayout mExoplayerContainer;
     private BandwidthMeter bandwidthMeter;
     private DefaultTrackSelector trackSelector;
     private SimpleExoPlayer player;
-    private ProgressBar progressBar;
     private DataSource.Factory mediaDataSourceFactory;
     private int currentWindow;
     private long playbackPosition;
@@ -128,7 +130,10 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         mVideoView = (VideoView) v.findViewById(R.id.full_displayer_videoview);
 
         /* Loading progress bar */
-        //mProgressBar = (ProgressBar) v.findViewById(R.id.full_displayer_progress);
+        mProgressBar = (ProgressBar) v.findViewById(R.id.full_displayer_progress);
+
+        /* Failure to load text */
+        mFailedLoadText = (TextView) v.findViewById(R.id.full_displayer_failed_load_text);
 
         /* Exo player*/
         mExoplayerContainer = (FrameLayout) v.findViewById(R.id.full_displayer_exoplayer_container);
@@ -219,9 +224,11 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
             mExoplayerContainer.setVisibility(View.GONE);
             mVideoviewContainer.setVisibility(View.GONE);
             mZoomieImageView.setVisibility(View.VISIBLE);
+            mProgressBar.setVisibility(View.VISIBLE);
            // mZoomieImageViewContainer.setVisibility(View.VISIBLE);
             Glide.with(this)
                     .load(imageUrl)
+                    .listener(new ProgressBarRequestListener(mProgressBar))
                     .into(mZoomieImageView);
             //mExoplayer.setVisibility(View.GONE);
             //TODO: handle invalid URL
@@ -245,7 +252,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                 mExoplayer.setVisibility(View.VISIBLE);
                 mVideoviewContainer.setVisibility(View.GONE);
                // mVideoView.setVisibility(View.GONE);
-                initializePlayer(imageUrl);
+                initializeExoPlayer(imageUrl);
             }
 
         }
@@ -268,7 +275,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     }
 
 
-    private void initializePlayer(String url) {
+    private void initializeExoPlayer(String url) {
 
         mExoplayer.requestFocus();
         TrackSelection.Factory videoTrackSelectionFactory =
@@ -300,21 +307,27 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
 
     }
     private class PlayerEventListener extends Player.DefaultEventListener {
+        @Override
+        public void onPlayerError(ExoPlaybackException error) {
+            mExoplayer.setVisibility(View.GONE);
+            mFailedLoadText.setVisibility(View.VISIBLE);
+            super.onPlayerError(error);
+        }
 
         @Override
         public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
             switch (playbackState) {
                 case Player.STATE_IDLE:       // The player does not have any media to play yet.
-                    //progressBar.setVisibility(View.VISIBLE);
+                    //mProgressBar.setVisibility(View.VISIBLE);
                     break;
                 case Player.STATE_BUFFERING:  // The player is buffering (loading the content)
-                    //   progressBar.setVisibility(View.VISIBLE);
+                    //mProgressBar.setVisibility(View.VISIBLE);
                     break;
                 case Player.STATE_READY:      // The player is able to immediately play
-                    // progressBar.setVisibility(View.GONE);
+                    //mProgressBar.setVisibility(View.GONE);
                     break;
                 case Player.STATE_ENDED:      // The player has finished playing the media
-                    //  progressBar.setVisibility(View.GONE);
+                    //mProgressBar.setVisibility(View.GONE);
                     break;
             }
         }
@@ -328,6 +341,14 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     @Override
     public void onTaskCompleted(Uri uriToLoad) {
         mVideoView.setVideoURI(uriToLoad);
-        mVideoView.start();
+        // loop
+        mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mProgressBar.setVisibility(View.GONE);
+                mp.start();
+                mp.setLooping(true);
+            }
+        });
     }
 }

@@ -65,22 +65,6 @@
         android:textSize="18sp"
         android:visibility="gone" />
 
-    <!-- Images -->
-    <com.sometimestwo.moxie.ZoomieView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/full_displayer_image_zoomie_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-
-        app:zoomage_animateOnReset="true"
-        app:zoomage_autoCenter="true"
-        app:zoomage_autoResetMode="UNDER"
-        app:zoomage_maxScale="8"
-        app:zoomage_minScale="0.6"
-        app:zoomage_restrictBounds="false"
-        app:zoomage_translatable="true"
-        app:zoomage_zoomable="true" />
 
     <!-- Exo player-->
     <FrameLayout
@@ -124,6 +108,23 @@
             android:background="@color/transparent"
             android:visibility="visible" />
     </FrameLayout>
+
+    <!-- Images  NOTE: This needs to be at the bottom here -->
+    <com.sometimestwo.moxie.ZoomieView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/full_displayer_image_zoomie_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+
+        app:zoomage_animateOnReset="true"
+        app:zoomage_autoCenter="true"
+        app:zoomage_autoResetMode="UNDER"
+        app:zoomage_maxScale="8"
+        app:zoomage_minScale="0.6"
+        app:zoomage_restrictBounds="false"
+        app:zoomage_translatable="true"
+        app:zoomage_zoomable="true" />
 
     <!-- Loading progress bar-->
     <ProgressBar

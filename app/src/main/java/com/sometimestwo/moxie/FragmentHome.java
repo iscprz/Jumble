@@ -999,8 +999,16 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                     focusView(mHoverImagePreviewLarge);
                 }
                 if (item.getSubmissionType() == Constants.SubmissionType.GIF) { // and video?
-                    initializePreviewExoPlayer(item.getUrl());
-                    focusView(mExoplayerLarge);
+                    //initializePreviewExoPlayer(item.getUrl());
+
+                    //IREDDIT Gifs to be played in ImageView via Glide
+                    if(item.getDomain() == Utils.SubmissionDomain.IREDDIT){
+                        focusView(mHoverImagePreviewLarge);
+                    }
+                    // All other gifs to be played using Exoplayer
+                    else{
+                        focusView(mExoplayerLarge);
+                    }
                 }
             }
         }
@@ -1149,6 +1157,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                 // i.redd.it
                 else if (item.getDomain() == Utils.SubmissionDomain.IREDDIT) {
                     thumbnail = item.getThumbnail();
+
                     if (mDisplayDomainIcon) {
                         holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_reddit_circle_orange));
                         holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
@@ -1269,7 +1278,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                                         .listener(new ProgressBarRequestListener(mProgressBar))
                                         /*.apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))*/
                                         .into(mHoverImagePreviewLarge);
-                                // make sure the gif/video player isn't showing
                             } else if (item.getSubmissionType() == Constants.SubmissionType.GIF
                                     || item.getSubmissionType() == Constants.SubmissionType.VIDEO) {
 
@@ -1283,7 +1291,14 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                                     } catch (Exception e) {
                                         LogUtil.e(e, "Error v.redd.it url: " + url);
                                     }
-                                } else {
+                                }
+                                else if(item.getDomain() == Utils.SubmissionDomain.IREDDIT){
+                                    GlideApp.asGif()
+                                            .load(item.getUrl())
+                                            .into(mHoverImagePreviewLarge);
+
+                                }
+                                else {
                                     initializePreviewExoPlayer(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl());
                                 }
                             }

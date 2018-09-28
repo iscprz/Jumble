@@ -221,39 +221,43 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                 ? mCurrSubmission.getCleanedUrl() : mCurrSubmission.getUrl();
 
         if(mCurrSubmission.getSubmissionType() == Constants.SubmissionType.IMAGE){
-            mExoplayerContainer.setVisibility(View.GONE);
-            mVideoviewContainer.setVisibility(View.GONE);
-            mZoomieImageView.setVisibility(View.VISIBLE);
+            focusView(mZoomieImageView);
             mProgressBar.setVisibility(View.VISIBLE);
-           // mZoomieImageViewContainer.setVisibility(View.VISIBLE);
             Glide.with(this)
                     .load(imageUrl)
                     .listener(new ProgressBarRequestListener(mProgressBar))
                     .into(mZoomieImageView);
-            //mExoplayer.setVisibility(View.GONE);
             //TODO: handle invalid URL
         }else if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.GIF
                 || mCurrSubmission.getSubmissionType() == Constants.SubmissionType.VIDEO){
-            mZoomieImageView.setVisibility(View.GONE);
 
             // VREDDIT submissions require a video view
             if(mCurrSubmission.getDomain() == Utils.SubmissionDomain.VREDDIT){
-                mVideoviewContainer.setVisibility(View.VISIBLE);
-                mExoplayerContainer.setVisibility(View.GONE);
+                focusView(mVideoView);
                 String url = mCurrSubmission.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
                 try {
                     new Utils.FetchVRedditGifTask(getContext(),url, this).execute();
                 } catch (Exception e) {
                     LogUtil.e(e, "Error v.redd.it url: " + url);
                 }
-                //mExoplayer.setVisibility(View.GONE);
             }
+            // IREDDIT requires Imageview to play GIF
+            else if(mCurrSubmission.getDomain() == Utils.SubmissionDomain.IREDDIT){
+                focusView(mZoomieImageView);
+
+                //TODO Progress bar
+                mProgressBar.setVisibility(View.GONE);
+                Glide.with(this)
+                        .asGif()
+                        .load(imageUrl)
+                        /*.listener(new ProgressBarRequestListener(mProgressBar))*/
+                        .into(mZoomieImageView);
+            }
+            // Every other domain for GIF
             else{
                 //exo player has its own progress bar
                 mProgressBar.setVisibility(View.GONE);
-
-                mExoplayer.setVisibility(View.VISIBLE);
-                mVideoviewContainer.setVisibility(View.GONE);
+                focusView(mExoplayer);
                 initializeExoPlayer(imageUrl);
             }
 
@@ -268,7 +272,11 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         });
     }
 
-
+    private void focusView(View focused){
+        mZoomieImageView.setVisibility(focused == mZoomieImageView ? View.VISIBLE : View.GONE);
+        mExoplayer.setVisibility(focused == mExoplayer ? View.VISIBLE : View.GONE);
+        mVideoView.setVisibility(focused == mVideoView ? View.VISIBLE : View.GONE);
+    }
     private void openSubmissionViewer() {
         Intent submissionViewerIntent = new Intent(getContext(), ActivitySubmissionViewer.class);
         submissionViewerIntent.putExtra(Constants.EXTRA_SUBMISSION_OBJ, mCurrSubmission);

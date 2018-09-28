@@ -5,7 +5,7 @@
     android:id="@+id/settings_scroll_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBgBlackTintDarkest">
+    android:background="@color/colorBlack">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -49,7 +49,7 @@
             android:id="@+id/settings_section_title_filters"
             android:layout_width="match_parent"
             android:layout_height="20dp"
-            android:background="@color/colorBlack"
+            android:background="@color/colorDarkerGray"
             android:paddingLeft="@dimen/settings_padding_left"
             android:text="@string/title_filters"
             android:textColor="@color/colorWhite" />
@@ -175,7 +175,7 @@
             android:id="@+id/settings_section_title_previews"
             android:layout_width="match_parent"
             android:layout_height="20dp"
-            android:background="@color/colorBlack"
+            android:background="@color/colorDarkerGray"
             android:paddingLeft="@dimen/settings_padding_left"
             android:text="@string/title_click_actions"
             android:textColor="@color/colorWhite" />
@@ -330,7 +330,7 @@
             android:id="@+id/settings_section_title_appearance"
             android:layout_width="match_parent"
             android:layout_height="20dp"
-            android:background="@color/colorBlack"
+            android:background="@color/colorDarkerGray"
             android:paddingLeft="10dp"
             android:text="@string/title_appearance"
             android:textColor="@color/colorWhite" />

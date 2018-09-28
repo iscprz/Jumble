@@ -134,45 +134,8 @@ public class ActivitySettings extends Activity {
             @Override
             public void onClick(View view) {
                 // only care about clicks if NSFW submissions are allowed
-                if(mHideNSFW) {
+                if(!mHideNSFW) {
                     mCheckboxNSFWOverlay.setChecked(!mCheckboxNSFWOverlay.isChecked());
-                }
-            }
-        });
-
-
-
-
-        /** NSFW icon  **/
-        mCheckboxNSFWIcon = (CheckBox) findViewById(R.id.settings_nsfw_icon_checkbox);
-        mLLNSFWIcon = (LinearLayout) findViewById(R.id.settings_LL_nsfw_icon);
-        // Title and subtitle text views to control their text color
-        mTitleNSFWIcon = (TextView) findViewById(R.id.settings_title_nsfw_icon);
-        mSubtitleNSFWIcon = (TextView) findViewById(R.id.settings_nsfw_icon_subtitle);
-
-        boolean showNSFWIcon = prefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false);
-        mCheckboxNSFWIcon.setChecked(showNSFWIcon);
-        /*mTitleNSFWIcon.setTextColor(mHideNSFW ? mColorWhite
-                : mColorGrayout);*/
-
-        // Will need to "disable" this LL if NSFW posts are not allowed
-        setupNSFWIconLL(mCheckboxNSFWIcon.isChecked());
-
-        mCheckboxNSFWIcon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                //boolean newValue = mCheckboxPreviewImage.isChecked();
-                prefs_settings_editor.putBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, b);
-                mModified = true;
-            }
-        });
-
-        mLLNSFWIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // only care about clicks if NSFW submissions are allowed
-                if(mHideNSFW) {
-                    mCheckboxNSFWIcon.setChecked(!mCheckboxNSFWIcon.isChecked());
                 }
             }
         });
@@ -277,6 +240,40 @@ public class ActivitySettings extends Activity {
         });
 
 
+        /** NSFW icon  **/
+        mCheckboxNSFWIcon = (CheckBox) findViewById(R.id.settings_nsfw_icon_checkbox);
+        mLLNSFWIcon = (LinearLayout) findViewById(R.id.settings_LL_nsfw_icon);
+        // Title and subtitle text views to control their text color
+        mTitleNSFWIcon = (TextView) findViewById(R.id.settings_title_nsfw_icon);
+        mSubtitleNSFWIcon = (TextView) findViewById(R.id.settings_nsfw_icon_subtitle);
+
+        boolean showNSFWIcon = prefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false);
+        mCheckboxNSFWIcon.setChecked(showNSFWIcon);
+        /*mTitleNSFWIcon.setTextColor(mHideNSFW ? mColorWhite
+                : mColorGrayout);*/
+
+        // Will need to "disable" this LL if NSFW posts are not allowed
+        setupNSFWIconLL(mCheckboxHideNSFW.isChecked());
+
+        mCheckboxNSFWIcon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                //boolean newValue = mCheckboxPreviewImage.isChecked();
+                prefs_settings_editor.putBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, b);
+                mModified = true;
+            }
+        });
+
+        mLLNSFWIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // only care about clicks if NSFW submissions are allowed
+                if(!mHideNSFW) {
+                    mCheckboxNSFWIcon.setChecked(!mCheckboxNSFWIcon.isChecked());
+                }
+            }
+        });
+
         /* Exit settings */
         mBackButton = (ImageView) findViewById(R.id.settings_button_back);
         mBackButton.setOnClickListener(new View.OnClickListener() {
@@ -312,6 +309,8 @@ public class ActivitySettings extends Activity {
             mTitleNSFWOverlay.setTextColor(mColorWhite);
             mSubtitleNSFWOverlay.setTextColor(mColorWhite);
             mCheckboxNSFWOverlay.setEnabled(true);
+            // Color issues with disabled check boxes:
+            //https://stackoverflow.com/questions/5854047/how-to-change-the-color-of-a-checkbox/31354418
         }
     }
 
@@ -328,6 +327,7 @@ public class ActivitySettings extends Activity {
             mCheckboxNSFWIcon.setEnabled(true);
         }
     }
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();

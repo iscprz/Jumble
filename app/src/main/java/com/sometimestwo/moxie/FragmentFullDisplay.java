@@ -210,7 +210,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         /* title*/
         mTitleTextView.setText(mCurrSubmission.getCompactTitle() != null
                 ? mCurrSubmission.getCompactTitle() : mCurrSubmission.getTitle());
-        mSubredditTextView.setText(mCurrSubmission.getSubreddit());
+        mSubredditTextView.setText("/r/" + mCurrSubmission.getSubreddit());
 
 
         /* Set up image/gif view*/

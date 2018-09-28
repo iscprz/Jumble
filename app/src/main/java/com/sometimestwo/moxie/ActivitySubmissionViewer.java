@@ -6,15 +6,14 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -22,24 +21,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.RequestManager;
-import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.ui.PlayerView;
-import com.google.android.exoplayer2.upstream.BandwidthMeter;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.upstream.TransferListener;
-import com.google.android.exoplayer2.util.Util;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
@@ -50,7 +31,8 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
     private FrameLayout mImageViewContainer;
     private ImageView mImageView;
     private ImageView mPlayButton;
-    ProgressBar mProgressBar;
+    private ProgressBar mProgressBar;
+    private SwipeRefreshLayout mRefreshLayout;
 
     // Permissions from shared prefs that we will use
     Boolean mAllowCloseOnClick;
@@ -70,13 +52,15 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.drawer_layout);
         setContentView(R.layout.submission_viewer);
 
         // Read relevant permission settings
         SharedPreferences prefs = getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
         mAllowCloseOnClick = prefs.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
 
+        /* Refresh layout */
+        mRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.submission_viewer_refresh_layout);
+        mRefreshLayout.setDistanceToTriggerSync(Constants.REFRESH_PULL_TOLERANCE);
         /* Title(s)*/
         mSubmissionTitle = (TextView) findViewById(R.id.submission_viewer_title);
 
@@ -84,8 +68,6 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
         mImageViewContainer = (FrameLayout) findViewById(R.id.submission_viewer_media_container);
         mImageView = (ImageView) findViewById(R.id.submission_media_view);
         mPlayButton = (ImageView) findViewById(R.id.submission_viewer_play_button);
-
-
 
         /* Loading progress bar */
         mProgressBar = (ProgressBar) findViewById(R.id.submission_viewer_media_progress);

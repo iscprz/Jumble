@@ -248,6 +248,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
         /* Refresh layout setup*/
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.home_refresh_layout);
+        mRefreshLayout.setDistanceToTriggerSync(Constants.REFRESH_PULL_TOLERANCE);
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {

@@ -66,6 +66,7 @@ public class Constants {
     public final static String USERNAME_USERLESS = "<userless>";
     public final static String USERNAME_USERLESS_PRETTY = "Guest";
     public final static int MAX_TITLE_LENGTH = 120;
+    public final static int REFRESH_PULL_TOLERANCE = 700;
 
 
     /* Enums*/

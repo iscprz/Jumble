@@ -9,16 +9,28 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/error_404_message"
-        android:gravity="center_horizontal"
+        android:gravity="center"
+        android:layout_centerInParent="true"
         android:text="@string/error_404"
         android:textSize="20dp"
         android:textColor="@color/colorWhite"/>
 
     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/error_404_message_expanded"
+        android:layout_below="@id/error_404_message"
+        android:layout_centerHorizontal="true"
+
+        android:text="@string/error_404_expanded"
+        android:textSize="14dp"
+        android:textColor="@color/colorGray"/>
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/error_404_retry"
-        android:layout_below="@id/error_404_message"
+        android:layout_below="@id/error_404_message_expanded"
         android:layout_marginTop="15dp"
         android:text="@string/error_404_retry"
         android:textSize="20sp"

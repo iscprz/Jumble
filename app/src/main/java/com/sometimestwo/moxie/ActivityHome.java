@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -12,9 +13,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.sometimestwo.moxie.Utils.Constants;
 
@@ -37,7 +39,9 @@ import com.sometimestwo.moxie.Utils.Constants;
             - centering very tall image in large hover
             - hide toolbar on large hover preview
  */
-public class ActivityHome extends AppCompatActivity implements HomeEventListener, OnCloseClickEventListener{
+public class ActivityHome extends AppCompatActivity implements HomeEventListener,
+        OnCloseClickEventListener,
+        Fragment404.Fragment404EventListener{
 
     private final String TAG = ActivityHome.class.getSimpleName();
     private SharedPreferences prefs_settings;
@@ -50,10 +54,14 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     private int mScreenWidth;
     private int mScreenHeight;
 
+    private ProgressBar mProgressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        mProgressBar = findViewById(R.id.progress_bar_home);
 
         mScreenWidth = getResources().getDisplayMetrics().widthPixels;
         mScreenHeight = getResources().getDisplayMetrics().heightPixels;
@@ -132,10 +140,18 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         }
     }
 
-    public void exitApp() {
+    private void exitApp() {
         super.onBackPressed();
     }
 
+/*    private boolean isCurrently404(){
+        Fragment404 fragment404 = (Fragment404) getSupportFragmentManager().findFragmentByTag(Constants.TAG_FRAG_404);
+        if(fragment404 != null
+                && fragment404.getTag().equalsIgnoreCase(getSupportFragmentManager().getBackStackEntryAt(0).getName())){
+            return true;
+        }
+        return false;
+    }*/
     /* Hacky workaround for differentiating between hardware back button and menu back button*/
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -213,9 +229,10 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         onBackPressed();
     }
 
+    // hosting a 404 page as the top of the backstack
     @Override
     public void set404(boolean is404) {
-        // This is added for the sake of being useful in ActivitySubredditViewer
+        //this.mIs404 = is404;
     }
 
     @Override
@@ -224,4 +241,12 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
             getSupportFragmentManager().popBackStack();
         }
     }
+
+    // Called on Retry button click
+    @Override
+    public void refresh404(String tag) {
+        refreshFragment(tag, true);
+    }
+
+
 }

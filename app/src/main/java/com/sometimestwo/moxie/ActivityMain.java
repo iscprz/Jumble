@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.Menu;
 
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Utils;
 
 import java.lang.ref.WeakReference;
 
@@ -110,6 +111,12 @@ public class ActivityMain extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        // Example of how to check for internet. Not using now as we are
+        // leaving SubmissionsDataSource to handle 404 page
+/*        new Utils.InternetCheck(internet -> {
+            boolean a = internet;
+            System.out.println(a);
+        });*/
         super.onResume();
     }
 
@@ -126,10 +133,6 @@ public class ActivityMain extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        /*if (requestCode == Constants.INTENT_SETTINGS) {
-            if (resultCode == RESULT_OK) {
-            }
-        }*/
     }
 
     private class FetchRedditUser extends AsyncTask<Void, Void, Boolean> {

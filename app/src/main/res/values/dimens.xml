@@ -9,4 +9,5 @@
     <dimen name="domain_icon_size">18dp</dimen>
     <dimen name="filetype_icon_size">20dp</dimen>
     <dimen name="round_corner_radius">20dp</dimen>
+    <dimen name="progress_bar_default">30dp</dimen>
 </resources>

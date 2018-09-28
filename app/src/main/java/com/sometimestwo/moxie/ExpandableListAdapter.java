@@ -22,6 +22,39 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private Context context;
     private List<ExpandableMenuModel> listDataHeader;
     private HashMap<ExpandableMenuModel, List<ExpandableMenuModel>> listDataChild;
+
+/*09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: FATAL EXCEPTION: main
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: Process: com.sometimestwo.moxie, PID: 27891
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: java.lang.RuntimeException: Unable to start activity ComponentInfo{com.sometimestwo.moxie/com.sometimestwo.moxie.ActivityHome}: java.lang.IllegalStateException: No current authenticated client
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2858)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:2933)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.app.ActivityThread.-wrap11(Unknown Source:0)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:1612)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:105)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:164)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:6710)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at com.android.internal.os.Zygote$MethodAndArgsCaller.run(Zygote.java:240)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:770)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: Caused by: java.lang.IllegalStateException: No current authenticated client
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at net.dean.jraw.oauth.AccountHelper.getReddit(AccountHelper.kt:54)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at com.sometimestwo.moxie.ExpandableListAdapter.<init>(ExpandableListAdapter.java:25)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at com.sometimestwo.moxie.FragmentHome.populateExpandableList(FragmentHome.java:837)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at com.sometimestwo.moxie.FragmentHome.setupLeftNavView(FragmentHome.java:593)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at com.sometimestwo.moxie.FragmentHome.onCreateView(FragmentHome.java:239)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.support.v4.app.Fragment.performCreateView(Fragment.java:2442)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.support.v4.app.FragmentManagerImpl.moveToState(FragmentManager.java:1460)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.support.v4.app.FragmentManagerImpl.moveFragmentToExpectedState(FragmentManager.java:1784)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.support.v4.app.FragmentManagerImpl.moveToState(FragmentManager.java:1852)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.support.v4.app.FragmentManagerImpl.dispatchStateChange(FragmentManager.java:3269)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.support.v4.app.FragmentManagerImpl.dispatchActivityCreated(FragmentManager.java:3229)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.support.v4.app.FragmentController.dispatchActivityCreated(FragmentController.java:201)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.support.v4.app.FragmentActivity.onStart(FragmentActivity.java:620)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.support.v7.app.AppCompatActivity.onStart(AppCompatActivity.java:178)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.app.Instrumentation.callActivityOnStart(Instrumentation.java:1334)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.app.Activity.performStart(Activity.java:6999)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2821)
+09-28 07:12:05.878 10349 27891 27891 E AndroidRuntime: 	... 9 more*/
     private String mCurrLoggedInUser = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
 
     public ExpandableListAdapter(Context context, List<ExpandableMenuModel> listDataHeader,

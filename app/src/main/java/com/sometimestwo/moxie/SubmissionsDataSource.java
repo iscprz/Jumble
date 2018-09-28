@@ -11,13 +11,13 @@ import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
 
 import net.dean.jraw.RedditClient;
-import net.dean.jraw.http.NetworkException;
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.models.SubredditSort;
 import net.dean.jraw.models.TimePeriod;
 import net.dean.jraw.pagination.DefaultPaginator;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,7 +122,14 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                     mEndOfSubreddit = true;
                 }
                 submissionObjs = mapSubmissions(submissions);
-            } catch (NetworkException e) {
+            } catch (Exception e) {
+                // network issue
+                if(e instanceof UnknownHostException){
+                    mIs404 = true;
+                    submissionObjs = new ArrayList<SubmissionObj>();
+                    submissionObjs.add(new SubmissionObj(true));
+                }
+                //java.net.UnknownHostException: Unable to resolve host "www.reddit.com": No address associated with hostname
                 Log.e(SubmissionsDataSource.class.getSimpleName(),
                         " Failed to request initial submissions from reddit: " + e.getMessage());
             }

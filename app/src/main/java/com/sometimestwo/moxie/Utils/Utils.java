@@ -3,6 +3,8 @@ package com.sometimestwo.moxie.Utils;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Looper;
@@ -24,6 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.URL;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -300,10 +305,14 @@ public class Utils {
         }
     }
 
+    public static boolean isNetworkAvailable(Context context){
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
 
-    /***********[V.REDDIT SPECIFIC FUNCTIONS] ***************/
-    /****************************************************/
-    /****************************************************/
+
+    /***********[V.REDDIT SPECIFIC FUNCTION] ***************/
     public static class FetchVRedditGifTask extends AsyncTask<String, Void, String> {
         private Context context;
         String url;
@@ -439,6 +448,28 @@ public class Utils {
         protected void onPostExecute(String urlToLoad) {
             listener.onTaskCompleted(Uri.parse(urlToLoad));
         }
-
     }
+
+
+
+    /* Check for internet connection*/
+    // stolen from : https://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-times-out/27312494#27312494
+    public static class InternetCheck extends AsyncTask<Void,Void,Boolean> {
+
+        private Consumer mConsumer;
+        public  interface Consumer { void accept(Boolean internet); }
+
+        public  InternetCheck(Consumer consumer) { mConsumer = consumer; execute(); }
+
+        @Override protected Boolean doInBackground(Void... voids) { try {
+            Socket sock = new Socket();
+            sock.connect(new InetSocketAddress("8.8.8.8", 53), 1500);
+            sock.close();
+            return true;
+        } catch (IOException e) { return false; } }
+
+        @Override protected void onPostExecute(Boolean internet) { mConsumer.accept(internet); }
+    }
+
+
 }

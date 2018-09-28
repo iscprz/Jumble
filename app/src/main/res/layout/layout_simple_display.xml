@@ -34,7 +34,7 @@
             android:visibility="gone"
 
             app:controller_layout_id="@layout/exo_playback_control_view_preview"
-            app:player_layout_id="@layout/exo_player_view_preview_large"
+            app:player_layout_id="@layout/exo_player_view_previewer_large"
             app:resize_mode="fixed_width"
             app:show_buffering="true"
             app:use_controller="false" />

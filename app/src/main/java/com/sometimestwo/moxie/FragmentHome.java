@@ -1188,7 +1188,8 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                 }
                 // Domain not recognized - hope submission is linked to a valid media extension
                 else {
-                    thumbnail = item.getThumbnail();
+                    thumbnail = "android.resource://com.sometimestwo.moxie/" + R.drawable.ic_reddit_404_thumbnail;
+                    item.setThumbnail(thumbnail);
                     Log.e("DOMAIN_NOT_FOUND", "Domain not recognized: " + item.getDomain() + ". Position: " + position);
                 }
 

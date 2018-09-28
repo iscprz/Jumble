@@ -73,7 +73,6 @@
         android:layout_height="match_parent"
         android:layout_above="@id/big_display_snack_bar_container"
         android:layout_below="@id/big_display_title_container"
-        android:layout_centerVertical="true"
         android:background="@color/transparent"
         android:clickable="true">
 
@@ -83,7 +82,7 @@
             android:layout_height="match_parent"
             android:visibility="visible"
             app:controller_layout_id="@layout/exo_playback_control_view_preview"
-            app:player_layout_id="@layout/exo_player_view_preview_large"
+            app:player_layout_id="@layout/exo_player_view_default"
             app:resize_mode="fixed_width"
             app:show_buffering="true"
             app:use_controller="false" />

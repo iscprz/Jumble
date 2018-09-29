@@ -1,0 +1,12 @@
+<!--
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" />-->
+
+<com.google.android.youtube.player.YouTubePlayerView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/youtube_player_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorBlack"
+    android:layout_gravity="center"/>

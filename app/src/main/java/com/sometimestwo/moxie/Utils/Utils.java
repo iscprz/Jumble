@@ -28,12 +28,13 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.URL;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Utils {
 
@@ -61,21 +62,7 @@ public class Utils {
         return Arrays.toString(split);
     }
 
-    public enum MediaType {
-        IMAGE,
-        GIF,
-        YOUTUBE
-    }
-    public enum SubmissionDomain{
-        IMGUR,
-        GFYCAT,
-        VREDDIT,
-        IREDDIT,
-        YOUTUBE,
-        OTHER
-    }
-
- /*   public static Constants.SubmissionType getSubmissionType(String url) {
+    /*   public static Constants.SubmissionType getSubmissionType(String url) {
         String extension = getFileExtensionFromUrl(url);
         if ("gif".equalsIgnoreCase(extension)
                 || "gifv".equalsIgnoreCase(extension)) {
@@ -157,6 +144,16 @@ public class Utils {
         //return gfycatUrl.substring(gfycatUrl.lastIndexOf("/", gfycatUrl.length()));
     }
 
+    public static String getYouTubeID(String url){
+        String pattern = "(?<=watch\\?v=|/videos/|embed\\/|youtu.be\\/|\\/v\\/|\\/e\\/|watch\\?v%3D|watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%\u200C\u200B2F|youtu.be%2F|%2Fv%2F)[^#\\&\\?\\n]*";
+
+        Pattern compiledPattern = Pattern.compile(pattern);
+        Matcher matcher = compiledPattern.matcher(url);
+        if (matcher.find()) {
+            return matcher.group();
+        }
+        return "";
+    }
 
     /**
      * Shows a ProgressBar in the UI. If this method is called from a non-main thread, it will run
@@ -446,7 +443,7 @@ public class Utils {
 
         @Override
         protected void onPostExecute(String urlToLoad) {
-            listener.onTaskCompleted(Uri.parse(urlToLoad));
+            listener.onVRedditMuxTaskCompleted(Uri.parse(urlToLoad));
         }
     }
 

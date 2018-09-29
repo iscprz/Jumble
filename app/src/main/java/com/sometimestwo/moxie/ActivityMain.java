@@ -1,10 +1,15 @@
 package com.sometimestwo.moxie;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,6 +18,8 @@ import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
         TODOS:
@@ -47,6 +54,11 @@ public class ActivityMain extends AppCompatActivity {
 
     private SharedPreferences prefs_settings;
     private SharedPreferences.Editor prefs_settings_editor;
+    public static final int MULTIPLE_PERMISSIONS = 10; // code you want.
+
+    String[] permissions= new String[]{
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.INTERNET};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +121,23 @@ public class ActivityMain extends AppCompatActivity {
         new FetchRedditUser(this).execute();
     }
 
+
+    private  boolean checkPermissions() {
+      /*  int result;
+        List<String> listPermissionsNeeded = new ArrayList<>();
+        for (String p: permissions) {
+            result = ContextCompat.checkSelfPermission(this,p);
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                listPermissionsNeeded.add(p);
+            }
+        }
+        if (!listPermissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]),MULTIPLE_PERMISSIONS );
+            return false;
+        }*/
+        return true;
+    }
+
     @Override
     protected void onResume() {
         // Example of how to check for internet. Not using now as we are
@@ -133,6 +162,11 @@ public class ActivityMain extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private class FetchRedditUser extends AsyncTask<Void, Void, Boolean> {
@@ -167,7 +201,9 @@ public class ActivityMain extends AppCompatActivity {
         protected void onPostExecute(Boolean b) {
             Activity activity = this.activity.get();
             if (activity != null) {
-                activity.startActivity(new Intent(activity, ActivityHome.class));
+                if(checkPermissions()) {
+                    activity.startActivity(new Intent(activity, ActivityHome.class));
+                }
             }
         }
     }

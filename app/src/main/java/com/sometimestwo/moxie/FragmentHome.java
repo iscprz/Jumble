@@ -56,7 +56,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
-import com.facebook.stetho.common.LogUtil;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
@@ -75,6 +74,9 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
+import com.google.android.youtube.player.YouTubeInitializationResult;
+import com.google.android.youtube.player.YouTubeThumbnailLoader;
+import com.google.android.youtube.player.YouTubeThumbnailView;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.sometimestwo.moxie.API.GfycatAPI;
 import com.sometimestwo.moxie.Imgur.client.ImgurClient;
@@ -131,7 +133,8 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     private boolean isImageViewPressed = false;
     private int mActivePointerId = -1;
     private GestureDetector mGestureDetector;
-    private ProgressBar mProgressBar;
+    private ProgressBar mPreviewerProgressBar;
+    private ProgressBar mProgressbarMain;
     private boolean mInvalidateDataSource = false;
     private boolean is404 = false;
 
@@ -185,7 +188,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     private BandwidthMeter bandwidthMeter;
     private DefaultTrackSelector trackSelector;
     private SimpleExoPlayer player;
-    private ProgressBar progressBar;
+    private ProgressBar exoplayerProgressbar;
     private DataSource.Factory mediaDataSourceFactory;
     private int currentWindow;
     private long playbackPosition;
@@ -284,8 +287,9 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         /* for detecting click types when needed */
         mGestureDetector = new GestureDetector(getContext(), new SingleTapConfirm());
 
+        mProgressbarMain = (ProgressBar) v.findViewById(R.id.progress_bar_home);
         /* Progress bar for loading images/gifs/videos*/
-        mProgressBar = (ProgressBar) v.findViewById(R.id.hover_view_large_image_media_progress);
+        mPreviewerProgressBar = (ProgressBar) v.findViewById(R.id.hover_view_large_image_media_progress);
 
         /* hover view small*/
         mHoverPreviewContainerSmall = (RelativeLayout) v.findViewById(R.id.hover_view_container_small);
@@ -993,7 +997,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
             mHoverPreviewMediaContainerLarge.setVisibility(View.VISIBLE);
 
             //v.redd.it links will always be non-image. Display in video view.
-            if (item.getDomain() == Utils.SubmissionDomain.VREDDIT) {
+            if (item.getDomain() == Constants.SubmissionDomain.VREDDIT) {
                 focusView(mPreviewerVideoViewLarge);
             } else {
                 if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
@@ -1003,11 +1007,11 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                     //initializePreviewExoPlayer(item.getUrl());
 
                     //IREDDIT Gifs to be played in ImageView via Glide
-                    if(item.getDomain() == Utils.SubmissionDomain.IREDDIT){
+                    if (item.getDomain() == Constants.SubmissionDomain.IREDDIT) {
                         focusView(mHoverImagePreviewLarge);
                     }
                     // All other gifs to be played using Exoplayer
-                    else{
+                    else {
                         focusView(mExoplayerLarge);
                     }
                 }
@@ -1016,7 +1020,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     }
 
     /* Focuses a view depending on which one needs to be displayed*/
-    private void focusView(View focused){
+    private void focusView(View focused) {
         mPreviewerVideoViewLarge.setVisibility(focused == mPreviewerVideoViewLarge ? View.VISIBLE : View.GONE);
         mHoverImagePreviewLarge.setVisibility(focused == mHoverImagePreviewLarge ? View.VISIBLE : View.GONE);
         mExoplayerLarge.setVisibility(focused == mExoplayerLarge ? View.VISIBLE : View.GONE);
@@ -1077,16 +1081,20 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         @SuppressLint("ClickableViewAccessibility")
         @Override
         public void onBindViewHolder(@NonNull final ItemViewHolder holder, int position) {
+            mProgressbarMain.setVisibility(View.GONE);
             // empty subreddit, nothing to display
-            if (is404) {
-                return;
-            }
-            SubmissionObj item = (getItem(position) == null ? new SubmissionObj(true) : getItem(position));
+            if (is404) return;
 
-            // initialize all view holder icons to GONE to avoid conflicts when recycling
+            // prevent null-ness from empty subreddit or any unexpected submission type errors
+            SubmissionObj item = getItem(holder.getAdapterPosition()) == null
+                    ? new SubmissionObj(true) : getItem(holder.getAdapterPosition());
+
+            // initialize anything that might overlay the thumbnail
+            // to GONE to avoid conflicts when recycling
             holder.thumbnailNSFWIcon.setVisibility(View.GONE);
             holder.thumbnailFiletypeIcon.setVisibility(View.GONE);
             holder.thumbnailDomainIcon.setVisibility(View.GONE);
+            holder.thumbnailYouTube.setVisibility(View.GONE);
 
             // Workaround for checking if requested subreddit is empty (or invalid).
             // If invalid subreddit, there should exist only 1 element and this field will be true
@@ -1104,260 +1112,290 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
             String thumbnail = Constants.THUMBNAIL_NOT_FOUND;
             item.setSubmissionType(Utils.getSubmissionType(item.getUrl()));
 
-            if (item != null && !item.isSelfPost()) {
-                is404 = false;
-                // Imgur
-                //TODO: imgur albums. Example URL https://imgur.com/a/K8bJ9pV (nsfw)
-                if (item.getDomain() == Utils.SubmissionDomain.IMGUR) {
-                    // Check if submission type is null. This will happen if the item's URL is
-                    // to a non-direct image/gif link such as https://imgur.com/qTadRtq
-                    if (item.getSubmissionType() == null) {
-                        String imgurHash = Utils.getImgurHash(item.getUrl());
-                        // Async call to Imgur API
-                        fixIndirectImgurUrl(item, imgurHash);
-                    }
-
-                    // imgur image
-                    if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-                    }
-                    // imgur gif
-                    else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
-                        // Assume we're given .gifv link. Need to fetch .mp4 link from Imgur API
-                        String imgurHash = Utils.getImgurHash(item.getUrl());
-                        getMp4LinkImgur(item, imgurHash);
-                    }
-                    // We assume item will always have a thumbnail in an image format
-                    thumbnail = item.getThumbnail();
-                    if (mDisplayDomainIcon) {
-                        holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_imgur_i_black_bg));
-                        holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
-                    }
+            is404 = false;
+            // Imgur
+            //TODO: imgur albums. Example URL https://imgur.com/a/K8bJ9pV (nsfw)
+            if (item.getDomain() == Constants.SubmissionDomain.IMGUR) {
+                // Check if submission type is null. This will happen if the item's URL is
+                // to a non-direct image/gif link such as https://imgur.com/qTadRtq
+                if (item.getSubmissionType() == null) {
+                    String imgurHash = Utils.getImgurHash(item.getUrl());
+                    // Async call to Imgur API
+                    fixIndirectImgurUrl(item, imgurHash);
                 }
-                //v.redd.it
+                // imgur image handled by default (this may change later)
 
-                else if (item.getDomain() == Utils.SubmissionDomain.VREDDIT) {
-                    if (item.getEmbeddedMedia() == null) {
+                // Else if imgur gif
+                if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
+                    // Assume we're given .gifv link. Need to fetch .mp4 link from Imgur API
+                    String imgurHash = Utils.getImgurHash(item.getUrl());
+                    getMp4LinkImgur(item, imgurHash);
+                }
+                // We assume item will always have a thumbnail in an image format
+                thumbnail = item.getThumbnail();
+                if (mDisplayDomainIcon) {
+                    holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_imgur_i_black_bg));
+                    holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
+                }
+            }
+            //v.redd.it
+            else if (item.getDomain() == Constants.SubmissionDomain.VREDDIT) {
+                   /* if (item.getEmbeddedMedia() == null) {
                         // v.redd.it Videos/GIFS that are crossposted will not have EmbeddedMedia
                         // and instead have some sort of crosspost field that JRAW does handle.
                         // Since these aren't too common, let's skip support for them for now.
-                        return;
-                    }
-                    if ("hosted:video".equalsIgnoreCase(item.getPostHint())) {
-                        item.setSubmissionType(Constants.SubmissionType.VIDEO);
-                    } else {
-                        item.setSubmissionType(Constants.SubmissionType.GIF);
-                    }
-
-                    thumbnail = item.getThumbnail();
-                    if (mDisplayDomainIcon) {
-                        holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_reddit_blue_circle));
-                        holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
-                    }
-                }
-
-                // i.redd.it
-                else if (item.getDomain() == Utils.SubmissionDomain.IREDDIT) {
-                    thumbnail = item.getThumbnail();
-
-                    if (mDisplayDomainIcon) {
-                        holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_reddit_circle_orange));
-                        holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
-                    }
-                }
-                //gfycat
-                else if (item.getDomain() == Utils.SubmissionDomain.GFYCAT) {
-                    // We're given a URL in this format: //https://gfycat.com/SpitefulGoldenAracari
-                    // extract gfycat ID (looks like:SpitefulGoldenAracari)
-                    String gfycatHash = Utils.getGfycatHash(item.getUrl());
-                    // get Gfycat .mp4 "clean url"
-                    getGfycat(gfycatHash, item);
-                    // Assume all Gfycat links are of submission type GIF
+                        //return;
+                    }*/
+                if ("hosted:video".equalsIgnoreCase(item.getPostHint())) {
+                    item.setSubmissionType(Constants.SubmissionType.VIDEO);
+                } else {
                     item.setSubmissionType(Constants.SubmissionType.GIF);
-                    thumbnail = item.getThumbnail();
-                    if (mDisplayDomainIcon) {
-                        holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_gfycat_circle_blue));
-                        holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
-                    }
-                }
-                //youtube
-                else if (item.getDomain() == Utils.SubmissionDomain.YOUTUBE) {
-                    Log.e("VIDEO_DOMAIN_FOUND", " Found YOUTUBE link. Not working yet.");
-                    if (mDisplayDomainIcon) {
-                        holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_youtube_red));
-                        holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
-                    }
-                }
-                // Domain not recognized - hope submission is linked to a valid media extension
-                else {
-                    thumbnail = "android.resource://com.sometimestwo.moxie/" + R.drawable.ic_reddit_404_thumbnail;
-                    item.setThumbnail(thumbnail);
-                    Log.e("DOMAIN_NOT_FOUND", "Domain not recognized: " + item.getDomain() + ". Position: " + position);
                 }
 
-                /* Display file type icons if option is enabled through settings*/
-                if (item.getSubmissionType() != null && mDisplayFiletypeIcons) {
-                    switch (item.getSubmissionType()) {
-                        case IMAGE:
-                            holder.thumbnailFiletypeIcon.setBackground(
-                                    getResources().getDrawable(R.drawable.ic_filetype_image));
-                            holder.thumbnailFiletypeIcon.setVisibility(View.VISIBLE);
-                            break;
-                        case GIF:
-                            holder.thumbnailFiletypeIcon.setBackground(
-                                    getResources().getDrawable(R.drawable.ic_filetype_gif));
-                            holder.thumbnailFiletypeIcon.setVisibility(View.VISIBLE);
-                            break;
-                        case VIDEO:
-                            holder.thumbnailFiletypeIcon.setBackground(
-                                    getResources().getDrawable(R.drawable.ic_filetype_video));
-                            holder.thumbnailFiletypeIcon.setVisibility(View.VISIBLE);
-                            break;
-                        default:
-                            break;
-                    }
+                thumbnail = item.getThumbnail();
+                if (mDisplayDomainIcon) {
+                    holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_reddit_blue_circle));
+                    holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
                 }
+            }
+            // i.redd.it
+            else if (item.getDomain() == Constants.SubmissionDomain.IREDDIT) {
+                thumbnail = item.getThumbnail();
 
-                // Display NSFW icon on top right if enabled through settings
-                if (mDisplayNSFWIcon && item.isNSFW()) {
-                    holder.thumbnailNSFWIcon.setVisibility(View.VISIBLE);
-                } else {
-                    holder.thumbnailNSFWIcon.setVisibility(View.GONE);
+                if (mDisplayDomainIcon) {
+                    holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_reddit_circle_orange));
+                    holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
                 }
-
-                // Finally load thumbnail into recyclerview
-                if (item.isNSFW() && mHideNSFWThumbs) {
-                    GlideApp.load(getResources().getDrawable(R.drawable.ic_reddit_nsfw_dark))
-                            .apply(new RequestOptions().centerInside().diskCacheStrategy(DiskCacheStrategy.ALL))
-                            .into(holder.thumbnailImageView);
-                } else {
-                    GlideApp.load(thumbnail)
-                            .listener(new ProgressBarRequestListener(mProgressBar))
-                            .apply(new RequestOptions().centerCrop().diskCacheStrategy(DiskCacheStrategy.ALL))
-                            .into(holder.thumbnailImageView);
+            }
+            //gfycat
+            else if (item.getDomain() == Constants.SubmissionDomain.GFYCAT) {
+                // We're given a URL in this format: //https://gfycat.com/SpitefulGoldenAracari
+                // extract gfycat ID (looks like:SpitefulGoldenAracari)
+                String gfycatHash = Utils.getGfycatHash(item.getUrl());
+                // get Gfycat .mp4 "clean url"
+                getGfycat(gfycatHash, item);
+                // Assume all Gfycat links are of submission type GIF
+                item.setSubmissionType(Constants.SubmissionType.GIF);
+                thumbnail = item.getThumbnail();
+                if (mDisplayDomainIcon) {
+                    holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_gfycat_circle_blue));
+                    holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
                 }
+            }
+            //youtube
+            else if (item.getDomain() == Constants.SubmissionDomain.YOUTUBE) {
+                //item.setSubmissionType(Constants.SubmissionType.VIDEO);
+                if (mDisplayDomainIcon) {
+                    holder.thumbnailDomainIcon.setBackground(getResources().getDrawable(R.drawable.ic_youtube_red));
+                    holder.thumbnailDomainIcon.setVisibility(View.VISIBLE);
+                }
+            }
+            // Domain not recognized - hope submission is linked to a valid media extension
+            else {
+                thumbnail = "android.resource://com.sometimestwo.moxie/" + R.drawable.ic_reddit_404_thumbnail;
+                item.setThumbnail(thumbnail);
+                Log.e("DOMAIN_NOT_FOUND",
+                        "Domain not recognized: "
+                                + item.getDomain()
+                                + ". Position: "
+                                + holder.getAdapterPosition());
+            }
 
+            /* Display file type icons if option is enabled through settings*/
+            if (item.getSubmissionType() != null && mDisplayFiletypeIcons) {
+                switch (item.getSubmissionType()) {
+                    case IMAGE:
+                        holder.thumbnailFiletypeIcon.setBackground(
+                                getResources().getDrawable(R.drawable.ic_filetype_image));
+                        holder.thumbnailFiletypeIcon.setVisibility(View.VISIBLE);
+                        break;
+                    case GIF:
+                        holder.thumbnailFiletypeIcon.setBackground(
+                                getResources().getDrawable(R.drawable.ic_filetype_gif));
+                        holder.thumbnailFiletypeIcon.setVisibility(View.VISIBLE);
+                        break;
+                    case VIDEO:
+                        holder.thumbnailFiletypeIcon.setBackground(
+                                getResources().getDrawable(R.drawable.ic_filetype_video));
+                        holder.thumbnailFiletypeIcon.setVisibility(View.VISIBLE);
+                        break;
+                    default:
+                        break;
+                }
+            }
 
-                /* open submission viewer when image clicked*/
-                holder.thumbnailImageView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        holder.onClick(holder.thumbnailImageView);
-                    }
-                });
+            // Display NSFW icon on top right if enabled through settings
+            if (mDisplayNSFWIcon && item.isNSFW()) {
+                holder.thumbnailNSFWIcon.setVisibility(View.VISIBLE);
+            } else {
+                holder.thumbnailNSFWIcon.setVisibility(View.GONE);
+            }
 
-                /* Long press previewer */
-                holder.thumbnailImageView.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View pView) {
-                        // do nothing if previewing has been disabled through settings
-                        if (!mAllowImagePreview) {
-                            return true;
-                        }
-                        // prevent recyclerview from handling touch events, otherwise bad things happen
-                        mRecyclerMain.setHandleTouchEvents(false);
-                        isImageViewPressed = true;
+            /*************** Finally load thumbnail into recyclerview ************/
+            // Check if we need to hide thumbnail (settings option)
+            if (item.isNSFW() && mHideNSFWThumbs) {
+                GlideApp.load(getResources().getDrawable(R.drawable.ic_reddit_nsfw_dark))
+                        .apply(new RequestOptions().centerInside().diskCacheStrategy(DiskCacheStrategy.ALL))
+                        .into(holder.thumbnailImageView);
+            }
+            // Youtube has its own thumbnail view
+            else if (item.getDomain() == Constants.SubmissionDomain.YOUTUBE) {
+                holder.thumbnailYouTube.setVisibility(View.VISIBLE);
+                holder.thumbnailYouTube.setTag(Utils.getYouTubeID(item.getUrl()));
+                holder.thumbnailYouTube.initialize(Constants.YOUTUBE_API_KEY,
+                        new YouTubeThumbnailView.OnInitializedListener() {
+                            @Override
+                            public void onInitializationSuccess(YouTubeThumbnailView youTubeThumbnailView,
+                                                                YouTubeThumbnailLoader youTubeThumbnailLoader) {
+                                youTubeThumbnailLoader.setVideo(Utils.getYouTubeID(item.getUrl()));
+                                youTubeThumbnailLoader.setOnThumbnailLoadedListener(new YouTubeThumbnailLoader.OnThumbnailLoadedListener() {
+                                            @Override
+                                            public void onThumbnailLoaded(YouTubeThumbnailView youTubeThumbnailView, String s) {
+                                                youTubeThumbnailLoader.release();
+                                            }
 
-                        if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
-                            mHoverPreviewTitleSmall.setText(item.getTitle());
-                            //popupWindow = new PopupWindow(customView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-                            if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-                                setupPreviewer(item);
-                                GlideApp
-                                        .load(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl())
-                                        .apply(new RequestOptions()
-                                                .diskCacheStrategy(DiskCacheStrategy.ALL))
-                                        .into(mHoverImagePreviewSmall);
-                            } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
-
+                                            @Override
+                                            public void onThumbnailError(YouTubeThumbnailView youTubeThumbnailView,
+                                                                         YouTubeThumbnailLoader.ErrorReason errorReason) {
+                                                Log.e("YOUTUBE_THUMBNAIL",
+                                                        "Could not load Youtube thumbnail for url: "
+                                                                + item.getUrl());
+                                            }
+                                        });
                             }
-                        } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
-                            mHoverPreviewTitleLarge.setText(item.getCompactTitle() != null
-                                    ? item.getCompactTitle() : item.getTitle());
-                            mHoverPreviewSubredditLarge.setText("/r/" + item.getSubreddit());
-                            setupPreviewer(item);
-                            if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-                                GlideApp.load(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl())
-                                        .listener(new ProgressBarRequestListener(mProgressBar))
-                                        /*.apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))*/
-                                        .into(mHoverImagePreviewLarge);
-                            } else if (item.getSubmissionType() == Constants.SubmissionType.GIF
-                                    || item.getSubmissionType() == Constants.SubmissionType.VIDEO) {
 
-                                // VREDDIT videos are high maintance :/
-                                if (item.getDomain() == Utils.SubmissionDomain.VREDDIT) {
-                                    String url = item.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
-
-                                    try {
-                                        new Utils.FetchVRedditGifTask(getContext(), url, FragmentHome.this).execute();
-
-                                    } catch (Exception e) {
-                                        LogUtil.e(e, "Error v.redd.it url: " + url);
-                                    }
-                                }
-                                else if(item.getDomain() == Utils.SubmissionDomain.IREDDIT){
-                                    GlideApp.asGif()
-                                            .load(item.getUrl())
-                                            .into(mHoverImagePreviewLarge);
-
-                                }
-                                else {
-                                    initializePreviewExoPlayer(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl());
-                                }
+                            @Override
+                            public void onInitializationFailure(YouTubeThumbnailView youTubeThumbnailView,
+                                                                YouTubeInitializationResult youTubeInitializationResult) {
                             }
-                        }
+                        });
+            } else {
+                GlideApp.load(thumbnail)
+                        .apply(new RequestOptions().centerCrop().diskCacheStrategy(DiskCacheStrategy.ALL))
+                        .into(holder.thumbnailImageView);
+            }
+
+
+            /* open submission viewer when image clicked*/
+            holder.thumbnailImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    holder.onClick(holder.thumbnailImageView);
+                }
+            });
+
+            /* Long press previewer */
+            holder.thumbnailImageView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View pView) {
+                    // do nothing if previewing has been disabled through settings
+                    if (!mAllowImagePreview) {
                         return true;
                     }
-                });
+                    // prevent recyclerview from handling touch events, otherwise bad things happen
+                    mRecyclerMain.setHandleTouchEvents(false);
+                    isImageViewPressed = true;
 
-                holder.thumbnailImageView.setOnTouchListener(new View.OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View pView, MotionEvent pEvent) {
-                        boolean singleTap = mGestureDetector.onTouchEvent(pEvent);
-                        // do nothing if previewing has been disabled through settings or if
-                        // the touch we're detecting is a secondary touch that no one cares about
-                        if (!mAllowImagePreview && !singleTap) {
-                            return true;
+                    if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
+                        mHoverPreviewTitleSmall.setText(item.getTitle());
+                        //popupWindow = new PopupWindow(customView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                        if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                            setupPreviewer(item);
+                            GlideApp
+                                    .load(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl())
+                                    .apply(new RequestOptions()
+                                            .diskCacheStrategy(DiskCacheStrategy.ALL))
+                                    .into(mHoverImagePreviewSmall);
+                        } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
+
                         }
-                        // save ID of the first pointer(touch) ID
-                        mActivePointerId = pEvent.getPointerId(0);
+                    } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+                        mHoverPreviewTitleLarge.setText(item.getCompactTitle() != null
+                                ? item.getCompactTitle() : item.getTitle());
+                        mHoverPreviewSubredditLarge.setText("/r/" + item.getSubreddit());
+                        setupPreviewer(item);
+                        if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                            GlideApp.load(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl())
+                                    .listener(new GlideProgressListener(mPreviewerProgressBar))
+                                    /*.apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))*/
+                                    .into(mHoverImagePreviewLarge);
+                        } else if (item.getSubmissionType() == Constants.SubmissionType.GIF
+                                || item.getSubmissionType() == Constants.SubmissionType.VIDEO) {
 
-                        // find current touch ID
-                        final int action = pEvent.getAction();
-                        int currPointerId = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+                            // VREDDIT videos are high maintance :/
+                            if (item.getDomain() == Constants.SubmissionDomain.VREDDIT) {
+                                String url = item.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
+
+                                try {
+                                    new Utils.FetchVRedditGifTask(getContext(), url, FragmentHome.this).execute();
+
+                                } catch (Exception e) {
+                                    //LogUtil.e(e, "Error v.redd.it url: " + url);
+                                }
+                            } else if (item.getDomain() == Constants.SubmissionDomain.IREDDIT) {
+                                GlideApp.asGif()
+                                        .load(item.getUrl())
+                                        .into(mHoverImagePreviewLarge);
+
+                            } else {
+                                initializePreviewExoPlayer(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl());
+                            }
+                        }
+                    }
+                    return true;
+                }
+            });
+
+            holder.thumbnailImageView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View pView, MotionEvent pEvent) {
+                    boolean singleTap = mGestureDetector.onTouchEvent(pEvent);
+                    // do nothing if previewing has been disabled through settings or if
+                    // the touch we're detecting is a secondary touch that no one cares about
+                    if (!mAllowImagePreview && !singleTap) {
+                        return true;
+                    }
+                    // save ID of the first pointer(touch) ID
+                    mActivePointerId = pEvent.getPointerId(0);
+
+                    // find current touch ID
+                    final int action = pEvent.getAction();
+                    int currPointerId = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
 
 
-                        // only care about doing stuff that relates to first finger touch
-                        if (currPointerId == mActivePointerId) {
-                            if (pEvent.getAction() == MotionEvent.ACTION_UP) {
-                                // hide hoverView on click release
-                                if (isImageViewPressed) {
-                                    // done with hover view, allow recyclerview to handle touch events
-                                    mRecyclerMain.setHandleTouchEvents(true);
-                                    isImageViewPressed = false;
-                                    if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
-                                        mHoverPreviewContainerSmall.setVisibility(View.GONE);
+                    // only care about doing stuff that relates to first finger touch
+                    if (currPointerId == mActivePointerId) {
+                        if (pEvent.getAction() == MotionEvent.ACTION_UP) {
+                            // hide hoverView on click release
+                            if (isImageViewPressed) {
+                                // done with hover view, allow recyclerview to handle touch events
+                                mRecyclerMain.setHandleTouchEvents(true);
+                                isImageViewPressed = false;
+                                if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
+                                    mHoverPreviewContainerSmall.setVisibility(View.GONE);
 
-                                    } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
-                                        mHoverPreviewContainerLarge.setVisibility(View.GONE);
-                                        clearVideoView();
-                                        mHoverImagePreviewLarge.setVisibility(View.GONE);
-                                        mExoplayerLarge.setVisibility(View.GONE);
-                                        stopExoPlayer();
-                                        // restore the toolbar
-                                        mToolbar.setAlpha(1);
-                                    }
+                                } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+                                    mHoverPreviewContainerLarge.setVisibility(View.GONE);
+                                    clearVideoView();
+                                    mHoverImagePreviewLarge.setVisibility(View.GONE);
+                                    mExoplayerLarge.setVisibility(View.GONE);
+                                    stopExoPlayer();
+                                    // restore the toolbar
+                                    mToolbar.setAlpha(1);
                                 }
                             }
                         }
-                        return false;
                     }
-                });
-            }
+                    return false;
+                }
+            });
+
         }
 
         public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
             //TextView textView;
             ImageView thumbnailImageView;
+            YouTubeThumbnailView thumbnailYouTube;
             ImageView thumbnailDomainIcon;
             ImageView thumbnailFiletypeIcon;
             ImageView thumbnailNSFWIcon;
@@ -1365,6 +1403,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
             public ItemViewHolder(View itemView) {
                 super(itemView);
                 thumbnailImageView = (ImageView) itemView.findViewById(R.id.thumbnail);
+                thumbnailYouTube = (YouTubeThumbnailView) itemView.findViewById(R.id.recycler_youtube_thumbnail);
                 thumbnailDomainIcon = (ImageView) itemView.findViewById(R.id.thumbnail_domain_icon);
                 thumbnailFiletypeIcon = (ImageView) itemView.findViewById(R.id.thumbnail_filetype_icon);
                 thumbnailNSFWIcon = (ImageView) itemView.findViewById(R.id.thumbnail_nsfw_icon);
@@ -1563,16 +1602,16 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
             switch (playbackState) {
                 case Player.STATE_IDLE:       // The player does not have any media to play yet.
-                    //progressBar.setVisibility(View.VISIBLE);
+                    //exoplayerProgressbar.setVisibility(View.VISIBLE);
                     break;
                 case Player.STATE_BUFFERING:  // The player is buffering (loading the content)
-                    //   progressBar.setVisibility(View.VISIBLE);
+                    //   exoplayerProgressbar.setVisibility(View.VISIBLE);
                     break;
                 case Player.STATE_READY:      // The player is able to immediately play
-                    // progressBar.setVisibility(View.GONE);
+                    // exoplayerProgressbar.setVisibility(View.GONE);
                     break;
                 case Player.STATE_ENDED:      // The player has finished playing the media
-                    //  progressBar.setVisibility(View.GONE);
+                    //  exoplayerProgressbar.setVisibility(View.GONE);
                     break;
             }
         }
@@ -1583,23 +1622,25 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
             player.release();
         }
     }
-    private void stopExoPlayer(){
-        if(player !=null){
+
+    private void stopExoPlayer() {
+        if (player != null) {
             player.stop();
         }
     }
 
-    private void clearVideoView(){
+    private void clearVideoView() {
         mPreviewerVideoViewLarge.stopPlayback();
         mPreviewerVideoViewLarge.setVisibility(View.GONE);
     }
+
     @Override
-    public void onTaskCompleted(Uri uriToLoad) {
+    public void onVRedditMuxTaskCompleted(Uri uriToLoad) {
         mPreviewerVideoViewLarge.setVideoURI(uriToLoad);
         mPreviewerVideoViewLarge.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
-                mProgressBar.setVisibility(View.GONE);
+                mPreviewerProgressBar.setVisibility(View.GONE);
                 mp.start();
                 mp.setLooping(true);
             }

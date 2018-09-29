@@ -67,22 +67,38 @@
                         android:layout_gravity="center"
                         android:visibility="visible" />
 
+                    <com.google.android.youtube.player.YouTubeThumbnailView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/submission_viewer_youtube_thumbnail"
+                        android:layout_gravity="center"
+                        android:adjustViewBounds="true"/>
+
                     <!-- Image-->
                     <ImageView
                         android:id="@+id/submission_media_view"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:clickable="false" />
+                        android:layout_gravity="center" />
 
-                    <!-- Play button that will overlay imageview if GIF/VIDEO-->
+                    <!-- Play button that will overlay imageview if non youtube GIF/VIDEO-->
                     <ImageView
                         android:id="@+id/submission_viewer_play_button"
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
                         android:layout_gravity="center"
-                        android:background="@drawable/ic_play_unfilled_circle"
+                        android:background="@drawable/ic_play_gray"
                         android:visibility="gone"/>
+
+                    <!-- Play button that will overlay imageview if youtube submission -->
+                    <ImageView
+                        android:id="@+id/submission_viewer_play_button_youtube"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/ic_youtube_play_red"
+                        android:alpha=".75"
+                        android:visibility="gone" />
                 </FrameLayout>
 
                 <!-- Vote, author, date (readable) info-->

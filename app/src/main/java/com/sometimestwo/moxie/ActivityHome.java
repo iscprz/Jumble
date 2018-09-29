@@ -61,8 +61,6 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        mProgressBar = findViewById(R.id.progress_bar_home);
-
         mScreenWidth = getResources().getDisplayMetrics().widthPixels;
         mScreenHeight = getResources().getDisplayMetrics().heightPixels;
 

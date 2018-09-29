@@ -2,12 +2,10 @@ package com.sometimestwo.moxie.Model;
 
 //import com.gfycat.core.gfycatapi.pojo.Gfycat;
 import com.sometimestwo.moxie.Utils.Constants;
-import com.sometimestwo.moxie.Utils.Utils;
 
 import net.dean.jraw.models.CommentSort;
 import net.dean.jraw.models.EmbeddedMedia;
 import net.dean.jraw.models.VoteDirection;
-import net.dean.jraw.references.SubmissionReference;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -29,7 +27,7 @@ public class SubmissionObj implements Serializable{
 
     private String author;
     private Date dateCreated;
-    private Utils.SubmissionDomain domain;
+    private Constants.SubmissionDomain domain;
     private String fullName;
     private short gilded;
     private boolean isHidden;
@@ -92,11 +90,11 @@ public class SubmissionObj implements Serializable{
         this.dateCreated = dateCreated;
     }
 
-    public Utils.SubmissionDomain getDomain() {
+    public Constants.SubmissionDomain getDomain() {
         return domain;
     }
 
-    public void setDomain(Utils.SubmissionDomain domain) {
+    public void setDomain(Constants.SubmissionDomain domain) {
         this.domain = domain;
     }
 

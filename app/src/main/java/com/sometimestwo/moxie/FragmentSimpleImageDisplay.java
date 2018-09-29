@@ -1,7 +1,6 @@
 package com.sometimestwo.moxie;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -19,7 +17,6 @@ import android.widget.ProgressBar;
 import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
-import com.facebook.stetho.common.LogUtil;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
@@ -222,7 +219,7 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnTaskComple
         } else {
             mZoomieImageView.setVisibility(View.GONE);
             // VREDDIT needs VideoView
-            if (mCurrSubmission.getDomain() == Utils.SubmissionDomain.VREDDIT) {
+            if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.VREDDIT) {
                 mSimpleDisplayVideoView.setVisibility(View.VISIBLE);
                 mSimpleDisplayExoplayer.setVisibility(View.GONE);
 
@@ -230,7 +227,6 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnTaskComple
                 try {
                     new Utils.FetchVRedditGifTask(getContext(), url, this).execute();
                 } catch (Exception e) {
-                    LogUtil.e(e, "Error v.redd.it url: " + url);
                 }
             }
             // Non VREDDIT GIF/VIDEO
@@ -321,7 +317,7 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnTaskComple
     }
 
     @Override
-    public void onTaskCompleted(Uri uriToLoad) {
+    public void onVRedditMuxTaskCompleted(Uri uriToLoad) {
         mSimpleDisplayVideoView.setVideoURI(uriToLoad);
         mSimpleDisplayVideoView.start();
     }

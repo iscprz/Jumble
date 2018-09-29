@@ -15,14 +15,14 @@ import com.bumptech.glide.request.target.Target;
 
     Example use:
                      GlideApp.load(url)
-                    .listener(new ProgressBarRequestListener(mProgressBar))
+                    .listener(new GlideProgressListener(mProgressBar))
                     .into(mImageView);
 
  */
-public class ProgressBarRequestListener implements RequestListener<Drawable> {
+public class GlideProgressListener implements RequestListener<Drawable> {
     private ProgressBar progressBar;
 
-    public ProgressBarRequestListener(ProgressBar progressBar){
+    public GlideProgressListener(ProgressBar progressBar){
         this.progressBar = progressBar;
     }
     @Override

@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +23,6 @@ import android.widget.TextView;
 import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
-import com.facebook.stetho.common.LogUtil;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -41,12 +41,14 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
+import com.google.android.youtube.player.YouTubeInitializationResult;
+import com.google.android.youtube.player.YouTubeThumbnailLoader;
+import com.google.android.youtube.player.YouTubeThumbnailView;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
 
 public class FragmentFullDisplay extends Fragment implements OnTaskCompletedListener {
-
     private SubmissionObj mCurrSubmission;
     private boolean mPrefsAllowNSFW;
     private boolean mAllowCloseOnClick;
@@ -83,9 +85,12 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     private int currentWindow;
     private long playbackPosition;
     private Timeline.Window window;
-    //private FrameLayout mExoplayerContainerLarge;
     private PlayerView mExoplayer;
 
+    /* Youtube */
+    private RelativeLayout mYoutubeIconsOverlay;
+    private ImageView mPlayButton;
+    private YouTubeThumbnailView mYouTubeThumbnail;
 
     public static FragmentFullDisplay newInstance() {
         return new FragmentFullDisplay();
@@ -143,6 +148,21 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                 Util.getUserAgent(getContext(), "Moxie"),
                 (TransferListener<? super DataSource>) bandwidthMeter);
         window = new Timeline.Window();
+
+        /* Youtube */
+        mYoutubeIconsOverlay = (RelativeLayout) v.findViewById(R.id.full_displayer_youtube_thumbnail_icons_overlay);
+        mYoutubeIconsOverlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent youTubeIntent = new Intent(getContext(),YouTubePlayerClass.class);
+                Bundle args = new Bundle();
+                args.putSerializable(Constants.ARGS_SUBMISSION_OBJ,mCurrSubmission);
+                youTubeIntent.putExtras(args);
+                startActivity(youTubeIntent);
+            }
+        });
+       // mPlayButton = (ImageView) v.findViewById(R.id.full_displayer_play_button);
+        mYouTubeThumbnail = (YouTubeThumbnailView) v.findViewById(R.id.full_displayer_youtube_thumbnail);
 
         setupFullViewer();
 
@@ -221,43 +241,73 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                 ? mCurrSubmission.getCleanedUrl() : mCurrSubmission.getUrl();
 
         if(mCurrSubmission.getSubmissionType() == Constants.SubmissionType.IMAGE){
-            focusView(mZoomieImageView);
+            focusView(mZoomieImageView,null);
             mProgressBar.setVisibility(View.VISIBLE);
             Glide.with(this)
                     .load(imageUrl)
-                    .listener(new ProgressBarRequestListener(mProgressBar))
+                    .listener(new GlideProgressListener(mProgressBar))
                     .into(mZoomieImageView);
             //TODO: handle invalid URL
         }else if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.GIF
                 || mCurrSubmission.getSubmissionType() == Constants.SubmissionType.VIDEO){
 
+            if(mCurrSubmission.getDomain() == Constants.SubmissionDomain.YOUTUBE){
+                //youtube has it's own progress bar
+                mProgressBar.setVisibility(View.GONE);
+                focusView(mYouTubeThumbnail,null);
+                mYouTubeThumbnail.setTag(Utils.getYouTubeID(mCurrSubmission.getUrl()));
+                mYouTubeThumbnail.initialize(Constants.YOUTUBE_API_KEY, new YouTubeThumbnailView.OnInitializedListener() {
+                    @Override
+                    public void onInitializationSuccess(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader youTubeThumbnailLoader) {
+                        youTubeThumbnailLoader.setVideo(Utils.getYouTubeID(mCurrSubmission.getUrl()));
+                        youTubeThumbnailLoader.setOnThumbnailLoadedListener(new YouTubeThumbnailLoader.OnThumbnailLoadedListener() {
+                            @Override
+                            public void onThumbnailLoaded(YouTubeThumbnailView youTubeThumbnailView, String s) {
+                                mYoutubeIconsOverlay.setVisibility(View.VISIBLE);
+                                youTubeThumbnailLoader.release();
+                            }
+
+                            @Override
+                            public void onThumbnailError(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader.ErrorReason errorReason) {
+                                Log.e("YOUTUBE_THUMBNAIL", "Could not load Youtube thumbnail for url: " + mCurrSubmission.getUrl());
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onInitializationFailure(YouTubeThumbnailView youTubeThumbnailView, YouTubeInitializationResult youTubeInitializationResult) {
+
+                    }
+                });
+            }
             // VREDDIT submissions require a video view
-            if(mCurrSubmission.getDomain() == Utils.SubmissionDomain.VREDDIT){
-                focusView(mVideoView);
+            else if(mCurrSubmission.getDomain() == Constants.SubmissionDomain.VREDDIT){
+                focusView(mVideoView,mVideoviewContainer);
                 String url = mCurrSubmission.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
                 try {
                     new Utils.FetchVRedditGifTask(getContext(),url, this).execute();
                 } catch (Exception e) {
-                    LogUtil.e(e, "Error v.redd.it url: " + url);
+                   // Log.e("V.REDD.IT FAIL at url: " , url);
+                    //LogUtil.e(e, "Error v.redd.it url: " + url);
                 }
             }
             // IREDDIT requires Imageview to play GIF
-            else if(mCurrSubmission.getDomain() == Utils.SubmissionDomain.IREDDIT){
-                focusView(mZoomieImageView);
+            else if(mCurrSubmission.getDomain() == Constants.SubmissionDomain.IREDDIT){
+                focusView(mZoomieImageView,null);
 
                 //TODO Progress bar
                 mProgressBar.setVisibility(View.GONE);
                 Glide.with(this)
                         .asGif()
                         .load(imageUrl)
-                        /*.listener(new ProgressBarRequestListener(mProgressBar))*/
+                        /*.listener(new GlideProgressListener(mProgressBar))*/
                         .into(mZoomieImageView);
             }
             // Every other domain for GIF
             else{
                 //exo player has its own progress bar
                 mProgressBar.setVisibility(View.GONE);
-                focusView(mExoplayer);
+                focusView(mExoplayer,mExoplayerContainer);
                 initializeExoPlayer(imageUrl);
             }
 
@@ -272,10 +322,17 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         });
     }
 
-    private void focusView(View focused){
-        mZoomieImageView.setVisibility(focused == mZoomieImageView ? View.VISIBLE : View.GONE);
-        mExoplayer.setVisibility(focused == mExoplayer ? View.VISIBLE : View.GONE);
-        mVideoView.setVisibility(focused == mVideoView ? View.VISIBLE : View.GONE);
+    /* Focuses up to two views. Pass null if only need 1 view focused*/
+    private void focusView(View focused1, View focused2){
+        mZoomieImageView.setVisibility(focused1 == mZoomieImageView || focused2 == mZoomieImageView ? View.VISIBLE : View.GONE);
+        mExoplayer.setVisibility(focused1 == mExoplayer || focused2 == mExoplayer ? View.VISIBLE : View.GONE);
+        mExoplayerContainer.setVisibility(focused1 == mExoplayerContainer || focused2 == mExoplayerContainer ? View.VISIBLE : View.GONE);
+        mVideoView.setVisibility(focused1 == mVideoView || focused2 == mVideoView ? View.VISIBLE : View.GONE);
+        mVideoviewContainer.setVisibility(focused1 == mVideoviewContainer || focused2 == mVideoviewContainer ? View.VISIBLE : View.GONE);
+        mYouTubeThumbnail.setVisibility(focused1 == mYouTubeThumbnail || focused2 == mYouTubeThumbnail ? View.VISIBLE : View.GONE);
+        mYoutubeIconsOverlay.setVisibility(focused1 == mYoutubeIconsOverlay || focused2 == mYoutubeIconsOverlay ? View.VISIBLE : View.GONE);
+        mFailedLoadText.setVisibility(focused1 == mFailedLoadText || focused2 == mFailedLoadText ? View.VISIBLE : View.GONE);
+        //mPlayButton.setVisibility( focused1 == mPlayButton || focused2 == mPlayButton ? View.VISIBLE : View.GONE);
     }
     private void openSubmissionViewer() {
         Intent submissionViewerIntent = new Intent(getContext(), ActivitySubmissionViewer.class);
@@ -319,8 +376,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     private class PlayerEventListener extends Player.DefaultEventListener {
         @Override
         public void onPlayerError(ExoPlaybackException error) {
-            mExoplayer.setVisibility(View.GONE);
-            mFailedLoadText.setVisibility(View.VISIBLE);
+            focusView(mFailedLoadText,null);
             super.onPlayerError(error);
         }
 
@@ -349,12 +405,13 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     }
 
     @Override
-    public void onTaskCompleted(Uri uriToLoad) {
+    public void onVRedditMuxTaskCompleted(Uri uriToLoad) {
         mVideoView.setVideoURI(uriToLoad);
         // loop
         mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                // TODO: This setVisibility might be causing breaking issues.
                 mProgressBar.setVisibility(View.GONE);
                 mp.start();
                 mp.setLooping(true);

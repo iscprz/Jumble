@@ -8,7 +8,6 @@ import android.util.Log;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
-import com.sometimestwo.moxie.Utils.Utils;
 
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.models.Listing;
@@ -244,24 +243,31 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
             // domain
             if(submission.getDomain().contains("imgur")){
-                s.setDomain(Utils.SubmissionDomain.IMGUR);
+                s.setDomain(Constants.SubmissionDomain.IMGUR);
             }
             else if(submission.getDomain().contains("v.redd.it")){
-                s.setDomain(Utils.SubmissionDomain.VREDDIT);
+                s.setDomain(Constants.SubmissionDomain.VREDDIT);
             }
             else if(submission.getDomain().contains("i.redd.it")){
-                s.setDomain(Utils.SubmissionDomain.IREDDIT);
+                s.setDomain(Constants.SubmissionDomain.IREDDIT);
             }
             else if(submission.getDomain().contains("gfycat")){
-                s.setDomain(Utils.SubmissionDomain.GFYCAT);
+                s.setDomain(Constants.SubmissionDomain.GFYCAT);
             }
-            else if(submission.getDomain().contains("youtube")){
-                s.setDomain(Utils.SubmissionDomain.YOUTUBE);
+            else if(submission.getDomain().contains("youtube")
+                    || submission.getDomain().contains("youtu.be")){
+                s.setDomain(Constants.SubmissionDomain.YOUTUBE);
             }
             else{
-                s.setDomain(Utils.SubmissionDomain.OTHER);
+                s.setDomain(Constants.SubmissionDomain.OTHER);
             }
 
+            // v.redd.it Videos/GIFS that are crossposted will not have EmbeddedMedia
+            // and instead have some sort of crosspost field that JRAW does handle.
+            // Since these aren't too common, let's skip support for them for now.
+            if(s.getDomain() == Constants.SubmissionDomain.VREDDIT && s.getEmbeddedMedia() == null){
+                continue;
+            }
             // add shortened title for displaying purposes if needed
             if(submission.getTitle().length() > Constants.MAX_TITLE_LENGTH){
                 s.setCompactTitle(submission.getTitle().substring(0,

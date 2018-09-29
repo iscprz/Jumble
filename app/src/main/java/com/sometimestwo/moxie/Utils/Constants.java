@@ -57,6 +57,7 @@ public class Constants {
 
     /* API */
     public final static String BASE_URL_GFYCAT = "https://gfycat.com/cajax/get/";
+    public final static String YOUTUBE_API_KEY = "AIzaSyASn4HW4p60zBsAuaiejx5jU_rxjqhUNbA";
 
     /* Misc*/
     public final static String[] VALID_MEDIA_EXTENSION = {"jpg", "jpeg", "png","gifv" , "gif"};
@@ -66,7 +67,7 @@ public class Constants {
     public final static String USERNAME_USERLESS = "<userless>";
     public final static String USERNAME_USERLESS_PRETTY = "Guest";
     public final static int MAX_TITLE_LENGTH = 120;
-    public final static int REFRESH_PULL_TOLERANCE = 700;
+    public final static int REFRESH_PULL_TOLERANCE = 500;
 
 
     /* Enums*/
@@ -78,5 +79,13 @@ public class Constants {
         IMAGE,
         GIF,
         VIDEO
+    }
+    public enum SubmissionDomain{
+        IMGUR,
+        GFYCAT,
+        VREDDIT,
+        IREDDIT,
+        YOUTUBE,
+        OTHER
     }
 }

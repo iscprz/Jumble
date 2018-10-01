@@ -972,7 +972,8 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
             //v.redd.it links will always be non-image. Display in video view.
             if (item.getDomain() == Constants.SubmissionDomain.VREDDIT) {
-                focusView(mPreviewerVideoViewLarge);
+                // hold off on dispalying videoview for now. Done when vreddit
+                // loading task finished (onVRedditMuxTaskCompleted)
             } else {
                 if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
                     focusView(mHoverImagePreviewLarge);
@@ -1220,6 +1221,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                                 String url = item.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
 
                                 try {
+                                    mPreviewerProgressBar.setVisibility(View.VISIBLE);
                                     new Utils.FetchVRedditGifTask(getContext(), url, FragmentHome.this).execute();
 
                                 } catch (Exception e) {
@@ -1254,7 +1256,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                     // find current touch ID
                     final int action = pEvent.getAction();
                     int currPointerId = (action & MotionEvent.ACTION_POINTER_INDEX_MASK) >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-
 
                     // only care about doing stuff that relates to first finger touch
                     if (currPointerId == mActivePointerId) {
@@ -1593,14 +1594,20 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     @Override
     public void onVRedditMuxTaskCompleted(Uri uriToLoad) {
         mPreviewerVideoViewLarge.setVideoURI(uriToLoad);
+        focusView(mPreviewerVideoViewLarge);
         mPreviewerVideoViewLarge.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
-                mPreviewerProgressBar.setVisibility(View.GONE);
                 mp.start();
                 mp.setLooping(true);
             }
-
+        });
+        mPreviewerVideoViewLarge.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.stop();
+                mp.release();
+            }
         });
     }
 

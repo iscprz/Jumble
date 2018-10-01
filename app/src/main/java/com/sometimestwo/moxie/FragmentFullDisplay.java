@@ -270,6 +270,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                             @Override
                             public void onThumbnailError(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader.ErrorReason errorReason) {
                                 Log.e("YOUTUBE_THUMBNAIL", "Could not load Youtube thumbnail for url: " + mCurrSubmission.getUrl());
+                                youTubeThumbnailLoader.release();
                             }
                         });
                     }

@@ -12,6 +12,7 @@
         <item>babywildanimals</item>
         <item>CanineCosplay</item>
         <item>babywildanimals</item>
+        <item>eyebleach</item>
     </string-array>
 
     <string-array name="explore_subreddits_nature">
@@ -33,6 +34,8 @@
         <item>lmao</item>
         <item>lol</item>
         <item>funny_gifs</item>
+        <item>funnypics</item>
+        <item>holdmybeer</item>
     </string-array>
 
     <string-array name="explore_subreddits_design">
@@ -72,11 +75,16 @@
         <item>Nonononoyes</item>
         <item>gifs</item>
         <item>Instant_regret</item>
+        <item>gfycats</item>
+        <item>holdmybeer</item>
+
     </string-array>
 
     <string-array name="explore_subreddits_food">
         <item>GifRecipes</item>
         <item>food</item>
+        <item>culinaryporn</item>
+
     </string-array>
 
     <string-array name="explore_subreddits_meme">
@@ -96,12 +104,10 @@
     <string-array name="explore_subreddits_motivational">
         <item>Progresspics</item>
     </string-array>
-    <string-array name="explore_subreddits_infographics">
-        <item>Infographics</item>
-        <item>infographic</item>
-        <item>DataIsBeautiful</item>
-        <item>visualization</item>
+    <string-array name="explore_subreddits_adventure">
+        <item>adventures</item>
     </string-array>
+
     <string-array name="explore_subreddits_art">
         <item>artporn</item>
         <item>art</item>

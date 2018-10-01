@@ -15,7 +15,7 @@ import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
 
 public class ActivitySubredditViewer extends AppCompatActivity implements HomeEventListener,
-        Fragment404.Fragment404EventListener, OnCloseClickEventListener{
+        Fragment404.Fragment404EventListener, OnCloseClickEventListener {
 
     public final String TAG = this.getClass().getCanonicalName();
     private SharedPreferences prefs_settings;
@@ -39,14 +39,13 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    /*    super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.INTENT_SETTINGS) {
-            if (resultCode == RESULT_OK) {
-                Log.e(TAG,"Returned from settings activity");
-                *//*if ((int) data.getExtras().get(Constants.NUM_GALLERIE_DIRS_CHOSEN) < 1) {
-                } *//*
-            }
-        }*/
+        // This happens when we visit subreddit after subreddit, creating many
+        // of these activities and eventually call startOver(). We need to make sure
+        // to go all the way down the acitivty stack until we've removed all the
+        // ActivitySubredditViewer activities so that we can return to ActivityHome.
+        if (resultCode == Constants.RESULT_OK_START_OVER) {
+            startOver();
+        }
     }
 
     @Override
@@ -60,11 +59,10 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
     protected void onResume() {
         // User can become unauthenticated when inactive(tabbed out of app) for a long period (1hour).
         String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
-        if(!App.getAccountHelper().isAuthenticated()){
+        if (!App.getAccountHelper().isAuthenticated()) {
             if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
                 App.getAccountHelper().switchToUser(mostRecentUser);
-            }
-            else {
+            } else {
                 App.getAccountHelper().switchToUserless();
             }
         }
@@ -93,8 +91,11 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
 
     @Override
     public void finish() {
-        // bookkeeping
-        App.getMoxieInfoObj().getmSubredditStack().pop();
+        // Bookkeeping: We keep track of the subreddits we visit since using the backstack
+        //              is not sufficient
+        if (!App.getMoxieInfoObj().getmSubredditStack().isEmpty()) {
+            App.getMoxieInfoObj().getmSubredditStack().pop();
+        }
         super.finish();
     }
 
@@ -108,8 +109,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
         // If hosting a 404 page, we want to leave activity not just pop 404 page off backstack
         else if (mIs404) {
             finish();
-        }
-        else {
+        } else {
             super.onBackPressed();
         }
     }
@@ -186,8 +186,14 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
 
     @Override
     public void onCloseClickDetected() {
-        if(mAllowCloseOnClick){
+        if (mAllowCloseOnClick) {
             getSupportFragmentManager().popBackStack();
         }
+    }
+
+    @Override
+    public void startOver() {
+        setResult(Constants.RESULT_OK_START_OVER);
+        finish();
     }
 }

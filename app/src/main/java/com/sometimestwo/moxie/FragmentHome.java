@@ -113,9 +113,6 @@ import static android.app.Activity.RESULT_OK;
 
 public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     public final static String TAG = Constants.TAG_FRAG_HOME;
-    // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
-    private final static int KEY_LOG_IN = 2;
-    public final static int KEY_INTENT_GOTO_BIG_DISPLAY = 1;
 
 
     private int mScreenWidth;
@@ -497,13 +494,17 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         super.onActivityResult(requestCode, resultCode, data);
 
         /* Returned from SubmissionViewer*/
-        if (requestCode == KEY_INTENT_GOTO_BIG_DISPLAY) {
+        if (requestCode == Constants.REQUESTCODE_GOTO_BIG_DISPLAY) {
             if (resultCode == RESULT_OK) {
                 //mToolbar.setAlpha(1);
             }
         }
-
-        if (requestCode == KEY_LOG_IN) {
+        else if(requestCode == Constants.REQUESTCODE_GOTO_SUBREDDIT_VIEWER){
+            if(resultCode == Constants.RESULT_OK_START_OVER){
+                mHomeEventListener.startOver();
+            }
+        }
+        else if (requestCode == Constants.REQUESTCODE_GOTO_LOG_IN) {
             if (resultCode == RESULT_OK) {
                 // User successfully logged in. Update the current user.
                 updateCurrentUser(App.getTokenStore().getUsernames().size() - 1);
@@ -595,7 +596,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
         /* expandable nav */
         expandableListView = v.findViewById(R.id.expandable_list_left);
-        prepareMenuData();
+        prepareLeftMenuData();
         populateExpandableList();
         // Expand usernames
         expandableListView.expandGroup(0);
@@ -704,7 +705,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                     Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
                     visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, exploreURL);
                     visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_EXPLORE_CATEGORY, category);
-                    startActivity(visitSubredditIntent);
+                    startActivityForResult(visitSubredditIntent, Constants.REQUESTCODE_GOTO_SUBREDDIT_VIEWER);
                     mDrawerLayout.closeDrawer(mNavigationViewRight);
                 }
             });
@@ -760,7 +761,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         mExploreCatagoriesMap.put("Nature", new Explore(R.drawable.explore_bg_nature, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nature))));
     }
 
-    private void prepareMenuData() {
+    private void prepareLeftMenuData() {
         List<ExpandableMenuModel> childModelsList = new ArrayList<>();
 
         ExpandableMenuModel expandableMenuModel = new ExpandableMenuModel(
@@ -770,7 +771,11 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         headerList.add(expandableMenuModel);
 
         // Always offer Guest option
-        ExpandableMenuModel childModel = new ExpandableMenuModel(Constants.USERNAME_USERLESS_PRETTY, false, false);
+        ExpandableMenuModel childModel
+                = new ExpandableMenuModel(
+                Constants.USERNAME_USERLESS_PRETTY,
+                false,
+                false);
         childModelsList.add(childModel);
 
         // Fill account names
@@ -840,7 +845,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
                                     Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
                                     visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, requestedSubreddit);
-                                    startActivity(visitSubredditIntent);
+                                    startActivityForResult(visitSubredditIntent, Constants.REQUESTCODE_GOTO_SUBREDDIT_VIEWER);
                                 }
                             });
                             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -898,7 +903,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                     else if (getResources().getString(R.string.menu_add_account).equalsIgnoreCase(clickedMenuItemName)) {
                         Intent loginIntent = new Intent(getContext(), ActivityNewUserLogin.class);
                         //unlockSessionIntent.putExtra("REQUEST_UNLOCK_SESSION", true);
-                        startActivityForResult(loginIntent, KEY_LOG_IN);
+                        startActivityForResult(loginIntent, Constants.REQUESTCODE_GOTO_LOG_IN);
                     }
                 }
                 return false;
@@ -1392,7 +1397,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         args.putSerializable(Constants.ARGS_SUBMISSION_OBJ, submissionObj);
         bigDisplayFragment.setArguments(args);
 
-        bigDisplayFragment.setTargetFragment(FragmentHome.this, KEY_INTENT_GOTO_BIG_DISPLAY);
+        bigDisplayFragment.setTargetFragment(FragmentHome.this, Constants.REQUESTCODE_GOTO_BIG_DISPLAY);
 
 
         int parentContainerId = ((ViewGroup) getView().getParent()).getId();
@@ -1459,7 +1464,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         //remove any sorting we had...null is ok :^)
         App.getMoxieInfoObj().setmSortBy(null);
         App.getMoxieInfoObj().setmTimePeriod(null);
-        refresh(true);
+        mHomeEventListener.startOver();
     }
 
     /* Updates SharedPreferences's current logged-in user.

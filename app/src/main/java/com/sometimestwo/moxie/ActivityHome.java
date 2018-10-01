@@ -244,5 +244,12 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         refreshFragment(tag, true);
     }
 
-
+    // P
+    @Override
+    public void startOver() {
+        while(getSupportFragmentManager().getBackStackEntryCount() >0 ){
+            getSupportFragmentManager().popBackStack();
+        }
+        refreshFeed(true);
+    }
 }

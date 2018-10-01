@@ -200,7 +200,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         // Notify calling fragment that we're closing the submission viewer
         // Don't need to pass anything back. Pass an empty intent for now
         Intent resultIntent = new Intent();
-        getTargetFragment().onActivityResult(FragmentHome.KEY_INTENT_GOTO_BIG_DISPLAY, Activity.RESULT_OK, resultIntent);
+        getTargetFragment().onActivityResult(Constants.REQUESTCODE_GOTO_BIG_DISPLAY, Activity.RESULT_OK, resultIntent);
         releaseExoPlayer();
         super.onDestroy();
     }

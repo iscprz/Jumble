@@ -54,8 +54,6 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     private int mScreenWidth;
     private int mScreenHeight;
 
-    private ProgressBar mProgressBar;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,14 +121,14 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     @Override
     public void onBackPressed() {
         // Back button should close nav view drawers if they're open (on either side)
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if(drawer.isDrawerOpen(GravityCompat.START) || drawer.isDrawerOpen(GravityCompat.END) ){
-            drawer.closeDrawers();
+        DrawerLayout navViewDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if(isNavViewOpen(navViewDrawer)){
+            navViewDrawer.closeDrawers();
         }
         // Back arrow should open left nav menu drawer if we're not currently in any fragments
         else if((getSupportFragmentManager().getBackStackEntryCount() == 0)
-                && !drawer.isDrawerOpen(GravityCompat.START)){
-            drawer.openDrawer(GravityCompat.START);
+                && !navViewDrawer.isDrawerOpen(GravityCompat.START)){
+            navViewDrawer.openDrawer(GravityCompat.START);
         }
         // Not at the home screen, pop back stack instead of closing activity
         else if(getSupportFragmentManager().getBackStackEntryCount() > 0){
@@ -138,23 +136,13 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         }
     }
 
-    private void exitApp() {
-        super.onBackPressed();
-    }
-
-/*    private boolean isCurrently404(){
-        Fragment404 fragment404 = (Fragment404) getSupportFragmentManager().findFragmentByTag(Constants.TAG_FRAG_404);
-        if(fragment404 != null
-                && fragment404.getTag().equalsIgnoreCase(getSupportFragmentManager().getBackStackEntryAt(0).getName())){
-            return true;
-        }
-        return false;
-    }*/
     /* Hacky workaround for differentiating between hardware back button and menu back button*/
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // Back button should close nav view drawers if they're open (on either side)
+        DrawerLayout navViewDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-            if(getSupportFragmentManager().getBackStackEntryCount() > 0){
+            if(getSupportFragmentManager().getBackStackEntryCount() > 0 || isNavViewOpen(navViewDrawer)){
                 onBackPressed();
             }
             // Confirm exit app
@@ -203,6 +191,16 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         }
     }
 
+
+    private void exitApp() {
+        super.onBackPressed();
+    }
+
+    // A Navigation View is a menu that slides from the left or right
+    private boolean isNavViewOpen(DrawerLayout drawer){
+        return drawer.isDrawerOpen(GravityCompat.START)
+                || drawer.isDrawerOpen(GravityCompat.END);
+    }
 
     /*
         Interface implementations

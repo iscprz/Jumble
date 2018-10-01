@@ -5,7 +5,7 @@
     android:id="@+id/submission_viewer_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorThemeDarkPrimaryDark">
+    android:background="@drawable/rainbow_bg_75_medium">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -30,7 +30,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <!-- main content-->
-        <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/submission_viewer_scroll_container"
             android:layout_width="match_parent"
@@ -268,15 +268,25 @@
                 </LinearLayout>
 
                 <!-- Comments -->
-                <LinearLayout
-                    android:id="@+id/media_viewer_comments_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="500dp"
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/submission_viewer_comments_recycler"
                     android:layout_below="@id/submission_viewer_vote_bar"
-                    android:orientation="vertical"></LinearLayout>
+                    android:nestedScrollingEnabled="false"
+                    android:scrollbars="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+                <!-- Comments progress-->
+                <ProgressBar
+                    android:layout_width="@dimen/progress_bar_default"
+                    android:layout_height="@dimen/progress_bar_default"
+                    android:id="@+id/comments_progress_bar"
+                    android:layout_below="@id/submission_viewer_vote_bar"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="5dp"
+                    android:visibility="visible"/>
             </RelativeLayout>
 
-        </ScrollView>
+        </android.support.v4.widget.NestedScrollView>
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
@@ -284,8 +294,7 @@
     <FrameLayout
         android:id="@+id/submission_viewer_simple_display_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="match_parent" />
 
 </android.support.design.widget.CoordinatorLayout>
 

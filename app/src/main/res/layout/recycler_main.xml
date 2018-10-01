@@ -13,12 +13,11 @@
         android:layout_width="@dimen/progress_bar_default"
         android:layout_height="@dimen/progress_bar_default"
         android:layout_gravity="center"
-        android:visibility="visible"
-        />
+        android:visibility="visible" />
 
     <!-- Recyclerview -->
     <com.sometimestwo.moxie.MultiClickRecyclerView
-        android:id="@+id/recycler_zoomie_view"
+        android:id="@+id/recycler_submissions"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

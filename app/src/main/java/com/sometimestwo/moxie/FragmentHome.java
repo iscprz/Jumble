@@ -78,9 +78,6 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
-import com.google.android.youtube.player.YouTubeInitializationResult;
-import com.google.android.youtube.player.YouTubeThumbnailLoader;
-import com.google.android.youtube.player.YouTubeThumbnailView;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.sometimestwo.moxie.API.GfycatAPI;
 import com.sometimestwo.moxie.Imgur.client.ImgurClient;
@@ -263,7 +260,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         });
 
         /* Recycler view setup*/
-        mRecyclerHome = (MultiClickRecyclerView) v.findViewById(R.id.recycler_zoomie_view);
+        mRecyclerHome = (MultiClickRecyclerView) v.findViewById(R.id.recycler_submissions);
         mRecyclerHome.setLayoutManager(new GridLayoutManager(getContext(), 3));
         mRecyclerHome.setHasFixedSize(true);
 
@@ -1195,8 +1192,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                         //popupWindow = new PopupWindow(customView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
                         if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
                             setupPreviewer(item);
-                            GlideApp
-                                    .load(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl())
+                            GlideApp.load(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl())
                                     .apply(new RequestOptions()
                                             .diskCacheStrategy(DiskCacheStrategy.ALL))
                                     .into(mHoverImagePreviewSmall);
@@ -1215,15 +1211,12 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                                     .into(mHoverImagePreviewLarge);
                         } else if (item.getSubmissionType() == Constants.SubmissionType.GIF
                                 || item.getSubmissionType() == Constants.SubmissionType.VIDEO) {
-
-                            // VREDDIT videos are high maintance :/
+                            // VREDDIT videos are high maintance
                             if (item.getDomain() == Constants.SubmissionDomain.VREDDIT) {
+                                mPreviewerProgressBar.setVisibility(View.VISIBLE);
                                 String url = item.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
-
                                 try {
-                                    mPreviewerProgressBar.setVisibility(View.VISIBLE);
                                     new Utils.FetchVRedditGifTask(getContext(), url, FragmentHome.this).execute();
-
                                 } catch (Exception e) {
                                     //LogUtil.e(e, "Error v.redd.it url: " + url);
                                 }

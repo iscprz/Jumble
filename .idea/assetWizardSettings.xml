@@ -23,7 +23,7 @@
                                           <PersistentState>
                                             <option name="values">
                                               <map>
-                                                <entry key="url" value="jar:file:/D:/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/av/ic_play_circle_outline_black_24dp.xml" />
+                                                <entry key="url" value="jar:file:/D:/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/navigation/ic_arrow_downward_black_24dp.xml" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -33,8 +33,9 @@
                                   </option>
                                   <option name="values">
                                     <map>
-                                      <entry key="outputName" value="ic_play_unfilled_circle" />
+                                      <entry key="outputName" value="ic_white_downvote" />
                                       <entry key="theme" value="HOLO_DARK" />
+                                      <entry key="themeColor" value="6aa1ff" />
                                     </map>
                                   </option>
                                 </PersistentState>

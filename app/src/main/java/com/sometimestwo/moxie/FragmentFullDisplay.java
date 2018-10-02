@@ -360,6 +360,20 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         mButtonDownvote.setBackground(mVoteDirection == VoteDirection.DOWN ? downVoteBlue : downVoteWhite);
         mButtonSave.setBackground(mIsSaved ? yellowStar : whiteStar);
 
+        // button to visit comments
+        mButtonComments.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openSubmissionViewer();
+            }
+        });
+        mCommentCountTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mButtonComments.callOnClick();
+            }
+        });
+
         mButtonUpvote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -378,6 +392,13 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                 }
             }
         });
+        mUpvoteCountTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mButtonUpvote.callOnClick();
+            }
+        });
+
         mButtonDownvote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -412,13 +433,6 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                     mButtonSave.setBackground(mIsSaved ? yellowStar : whiteStar);
                     new Utils.SaveSubmissionTask(mCurrSubmission, FragmentFullDisplay.this).execute();
                 }
-            }
-        });
-        // button to visit comments
-        mButtonComments.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openSubmissionViewer();
             }
         });
     }

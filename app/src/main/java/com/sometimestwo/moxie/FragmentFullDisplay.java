@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
@@ -48,8 +50,11 @@ import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
 
+import net.dean.jraw.models.VoteDirection;
+
 public class FragmentFullDisplay extends Fragment implements OnTaskCompletedListener {
     private SubmissionObj mCurrSubmission;
+    private boolean mIsUserless;
     private boolean mPrefsAllowNSFW;
     private boolean mAllowCloseOnClick;
 
@@ -62,8 +67,11 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     private ImageView mButtonComments;
     private ImageView mButtonUpvote;
     private ImageView mButtonDownvote;
+    private ImageView mButtonSave;
     private ImageView mButtonOverflow;
     private LinearLayout mSnackbarContainer;
+    private VoteDirection mVoteDirection;
+    private boolean mIsSaved;
 
     /* Big zoomie view*/
     //private FrameLayout mZoomieImageViewContainer;
@@ -114,20 +122,22 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_full_media_display, container, false);
 
+        mIsUserless = App.getAccountHelper().getReddit().getAuthMethod().isUserless();
 
         /* Titles */
         mTitleTextView = (TextView) v.findViewById(R.id.big_display_title);
         mSubredditTextView = (TextView) v.findViewById(R.id.big_display_subreddit);
 
         /* Snackbar */
-        mButtonComments = (ImageView) v.findViewById(R.id.big_display_snack_bar_comments);
-        mButtonUpvote = (ImageView) v.findViewById(R.id.big_display_snack_bar_upvote);
-        mButtonDownvote = (ImageView) v.findViewById(R.id.big_display_snack_bar_downvote);
-        mButtonOverflow = (ImageView) v.findViewById(R.id.big_display_snack_bar_overflow);
-        mSnackbarContainer = (LinearLayout) v.findViewById(R.id.big_display_snack_bar_container);
+        mButtonComments = (ImageView) v.findViewById(R.id.full_display_snack_bar_comments);
+        mButtonUpvote = (ImageView) v.findViewById(R.id.full_display_snack_bar_upvote);
+        mButtonDownvote = (ImageView) v.findViewById(R.id.full_display_snack_bar_downvote);
+        mButtonSave = (ImageView) v.findViewById(R.id.full_display_snack_bar_save);
+        mButtonOverflow = (ImageView) v.findViewById(R.id.full_display_snack_bar_overflow);
+        mSnackbarContainer = (LinearLayout) v.findViewById(R.id.full_display_snack_bar_container);
 
         /* Main zoomie image view*/
-       // mZoomieImageViewContainer = (FrameLayout) v.findViewById(R.id.full_displayer_big_image_container);
+        // mZoomieImageViewContainer = (FrameLayout) v.findViewById(R.id.full_displayer_big_image_container);
         mZoomieImageView = (ZoomieView) v.findViewById(R.id.full_displayer_image_zoomie_view);
 
         /* Video view*/
@@ -154,22 +164,23 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         mYoutubeIconsOverlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent youTubeIntent = new Intent(getContext(),YouTubePlayerClass.class);
+                Intent youTubeIntent = new Intent(getContext(), YouTubePlayerClass.class);
                 Bundle args = new Bundle();
-                args.putSerializable(Constants.ARGS_SUBMISSION_OBJ,mCurrSubmission);
+                args.putSerializable(Constants.ARGS_SUBMISSION_OBJ, mCurrSubmission);
                 youTubeIntent.putExtras(args);
                 startActivity(youTubeIntent);
             }
         });
-       // mPlayButton = (ImageView) v.findViewById(R.id.full_displayer_play_button);
+        // mPlayButton = (ImageView) v.findViewById(R.id.full_displayer_play_button);
         mYouTubeThumbnail = (YouTubeThumbnailView) v.findViewById(R.id.full_displayer_youtube_thumbnail);
 
-        setupFullViewer();
+        setupMedia();
+        setupSnackBar();
 
         mExoplayerContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mAllowCloseOnClick){
+                if (mAllowCloseOnClick) {
                     closeFullDisplay();
                 }
             }
@@ -177,7 +188,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         mVideoviewContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mAllowCloseOnClick){
+                if (mAllowCloseOnClick) {
                     closeFullDisplay();
                 }
             }
@@ -200,8 +211,15 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         // Notify calling fragment that we're closing the submission viewer
         // Don't need to pass anything back. Pass an empty intent for now
         Intent resultIntent = new Intent();
-        getTargetFragment().onActivityResult(Constants.REQUESTCODE_GOTO_BIG_DISPLAY, Activity.RESULT_OK, resultIntent);
+        getTargetFragment().onActivityResult(
+                Constants.REQUESTCODE_GOTO_BIG_DISPLAY,
+                Activity.RESULT_OK,
+                resultIntent);
         releaseExoPlayer();
+
+        // update any changes we made to submission
+        mCurrSubmission.setSaved(mIsSaved);
+        mCurrSubmission.setVote(mVoteDirection);
         super.onDestroy();
     }
 
@@ -226,7 +244,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     }
 
 
-    private void setupFullViewer() {
+    private void setupMedia() {
         /* title*/
         mTitleTextView.setText(mCurrSubmission.getCompactTitle() != null
                 ? mCurrSubmission.getCompactTitle() : mCurrSubmission.getTitle());
@@ -240,21 +258,21 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         String imageUrl = (mCurrSubmission.getCleanedUrl() != null)
                 ? mCurrSubmission.getCleanedUrl() : mCurrSubmission.getUrl();
 
-        if(mCurrSubmission.getSubmissionType() == Constants.SubmissionType.IMAGE){
-            focusView(mZoomieImageView,null);
+        if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+            focusView(mZoomieImageView, null);
             mProgressBar.setVisibility(View.VISIBLE);
             Glide.with(this)
                     .load(imageUrl)
                     .listener(new GlideProgressListener(mProgressBar))
                     .into(mZoomieImageView);
             //TODO: handle invalid URL
-        }else if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.GIF
-                || mCurrSubmission.getSubmissionType() == Constants.SubmissionType.VIDEO){
+        } else if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.GIF
+                || mCurrSubmission.getSubmissionType() == Constants.SubmissionType.VIDEO) {
 
-            if(mCurrSubmission.getDomain() == Constants.SubmissionDomain.YOUTUBE){
+            if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.YOUTUBE) {
                 //youtube has it's own progress bar
                 mProgressBar.setVisibility(View.GONE);
-                focusView(mYouTubeThumbnail,null);
+                focusView(mYouTubeThumbnail, null);
                 mYouTubeThumbnail.setTag(Utils.getYouTubeID(mCurrSubmission.getUrl()));
                 mYouTubeThumbnail.initialize(Constants.YOUTUBE_API_KEY, new YouTubeThumbnailView.OnInitializedListener() {
                     @Override
@@ -282,19 +300,19 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                 });
             }
             // VREDDIT submissions require a video view
-            else if(mCurrSubmission.getDomain() == Constants.SubmissionDomain.VREDDIT){
-                focusView(mVideoView,mVideoviewContainer);
+            else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.VREDDIT) {
+                focusView(mVideoView, mVideoviewContainer);
                 String url = mCurrSubmission.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
                 try {
-                    new Utils.FetchVRedditGifTask(getContext(),url, this).execute();
+                    new Utils.FetchVRedditGifTask(getContext(), url, this).execute();
                 } catch (Exception e) {
-                   // Log.e("V.REDD.IT FAIL at url: " , url);
+                    // Log.e("V.REDD.IT FAIL at url: " , url);
                     //LogUtil.e(e, "Error v.redd.it url: " + url);
                 }
             }
             // IREDDIT requires Imageview to play GIF
-            else if(mCurrSubmission.getDomain() == Constants.SubmissionDomain.IREDDIT){
-                focusView(mZoomieImageView,null);
+            else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.IREDDIT) {
+                focusView(mZoomieImageView, null);
 
                 //TODO Progress bar
                 mProgressBar.setVisibility(View.GONE);
@@ -305,15 +323,76 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                         .into(mZoomieImageView);
             }
             // Every other domain for GIF
-            else{
+            else {
                 //exo player has its own progress bar
                 mProgressBar.setVisibility(View.GONE);
-                focusView(mExoplayer,mExoplayerContainer);
+                focusView(mExoplayer, mExoplayerContainer);
                 initializeExoPlayer(imageUrl);
             }
 
         }
 
+    }
+
+    private void setupSnackBar() {
+        mVoteDirection = mCurrSubmission.getVote();
+        mIsSaved = mCurrSubmission.isSaved();
+        Drawable yellowStar = getResources().getDrawable(R.drawable.ic_yellow_star_filled);
+        Drawable whiteStar = getResources().getDrawable(R.drawable.ic_white_star_unfilled);
+        Drawable upVoteWhite = getResources().getDrawable(R.drawable.ic_white_upvote_medium);
+        Drawable downVoteWhite = getResources().getDrawable(R.drawable.ic_white_downvote_medium);
+        Drawable upVoteOrange = getResources().getDrawable(R.drawable.ic_upvote_orange);
+        Drawable downVoteBlue = getResources().getDrawable(R.drawable.ic_downvote_blue);
+
+        mButtonUpvote.setBackground(mVoteDirection == VoteDirection.UP ? upVoteOrange : upVoteWhite);
+        mButtonDownvote.setBackground(mVoteDirection == VoteDirection.DOWN ? downVoteBlue : downVoteWhite);
+        mButtonSave.setBackground(mIsSaved ? yellowStar : whiteStar);
+
+        mButtonUpvote.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mIsUserless) {
+                    Toast.makeText(getContext(),
+                            getResources().getString(R.string.toast_login_required),
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    mVoteDirection = (mVoteDirection != VoteDirection.UP) ? VoteDirection.UP : VoteDirection.NONE;
+                    mButtonUpvote.setBackground(mVoteDirection == VoteDirection.UP ? upVoteOrange : upVoteWhite);
+                    mButtonDownvote.setBackground(mVoteDirection == VoteDirection.DOWN ? downVoteBlue : downVoteWhite);
+                    new Utils.VoteSubmissionTask(mCurrSubmission, FragmentFullDisplay.this, mVoteDirection).execute();
+                }
+            }
+        });
+        mButtonDownvote.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mIsUserless) {
+                    Toast.makeText(getContext(),
+                            getResources().getString(R.string.toast_login_required),
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    mVoteDirection = (mVoteDirection != VoteDirection.DOWN) ? VoteDirection.DOWN : VoteDirection.NONE;
+                    mButtonDownvote.setBackground(mVoteDirection == VoteDirection.DOWN ? downVoteBlue : downVoteWhite);
+                    mButtonUpvote.setBackground(mVoteDirection == VoteDirection.UP ? upVoteOrange : upVoteWhite);
+                    new Utils.VoteSubmissionTask(mCurrSubmission, FragmentFullDisplay.this, mVoteDirection).execute();
+                }
+            }
+        });
+        // Save button
+        mButtonSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mIsUserless) {
+                    Toast.makeText(getContext(),
+                            getResources().getString(R.string.toast_login_required),
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    mIsSaved = !mIsSaved;
+                    mButtonSave.setBackground(mIsSaved ? yellowStar : whiteStar);
+                    new Utils.SaveSubmissionTask(mCurrSubmission, FragmentFullDisplay.this).execute();
+                }
+            }
+        });
         // button to visit comments
         mButtonComments.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -324,7 +403,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     }
 
     /* Focuses up to two views. Pass null if only need 1 view focused*/
-    private void focusView(View focused1, View focused2){
+    private void focusView(View focused1, View focused2) {
         mZoomieImageView.setVisibility(focused1 == mZoomieImageView || focused2 == mZoomieImageView ? View.VISIBLE : View.GONE);
         mExoplayer.setVisibility(focused1 == mExoplayer || focused2 == mExoplayer ? View.VISIBLE : View.GONE);
         mExoplayerContainer.setVisibility(focused1 == mExoplayerContainer || focused2 == mExoplayerContainer ? View.VISIBLE : View.GONE);
@@ -335,6 +414,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         mFailedLoadText.setVisibility(focused1 == mFailedLoadText || focused2 == mFailedLoadText ? View.VISIBLE : View.GONE);
         //mPlayButton.setVisibility( focused1 == mPlayButton || focused2 == mPlayButton ? View.VISIBLE : View.GONE);
     }
+
     private void openSubmissionViewer() {
         Intent submissionViewerIntent = new Intent(getContext(), ActivitySubmissionViewer.class);
         submissionViewerIntent.putExtra(Constants.EXTRA_SUBMISSION_OBJ, mCurrSubmission);
@@ -374,10 +454,11 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         player.prepare(mediaSource, !haveStartPosition, false);
 
     }
+
     private class PlayerEventListener extends Player.DefaultEventListener {
         @Override
         public void onPlayerError(ExoPlaybackException error) {
-            focusView(mFailedLoadText,null);
+            focusView(mFailedLoadText, null);
             super.onPlayerError(error);
         }
 
@@ -399,7 +480,8 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
             }
         }
     }
-   private void releaseExoPlayer() {
+
+    private void releaseExoPlayer() {
         if (player != null) {
             player.release();
         }

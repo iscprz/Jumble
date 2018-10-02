@@ -67,7 +67,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/big_display_snack_bar_container"
+        android:layout_above="@id/full_display_snack_bar_container"
         android:layout_below="@id/big_display_title_container"
         android:layout_centerInParent="true"
         android:clickable="true">
@@ -113,7 +113,7 @@
         android:id="@+id/full_displayer_exoplayer_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/big_display_snack_bar_container"
+        android:layout_above="@id/full_display_snack_bar_container"
         android:layout_below="@id/big_display_title_container"
         android:background="@color/transparent"
         android:clickable="true">
@@ -136,7 +136,7 @@
         android:id="@+id/full_displayer_videoview_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/big_display_snack_bar_container"
+        android:layout_above="@id/full_display_snack_bar_container"
         android:layout_below="@id/big_display_title_container"
         android:background="@color/transparent"
         android:clickable="true">
@@ -177,7 +177,7 @@
 
     <!-- Snack bar-->
     <LinearLayout
-        android:id="@+id/big_display_snack_bar_container"
+        android:id="@+id/full_display_snack_bar_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -188,10 +188,10 @@
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight=".25">
+            android:layout_weight=".20">
 
             <ImageView
-                android:id="@+id/big_display_snack_bar_comments"
+                android:id="@+id/full_display_snack_bar_comments"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
@@ -201,10 +201,10 @@
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight=".25">
+            android:layout_weight=".20">
 
             <ImageView
-                android:id="@+id/big_display_snack_bar_upvote"
+                android:id="@+id/full_display_snack_bar_upvote"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
@@ -214,27 +214,38 @@
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight=".25">
+            android:layout_weight=".20">
 
             <ImageView
-                android:id="@+id/big_display_snack_bar_downvote"
+                android:id="@+id/full_display_snack_bar_downvote"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:background="@drawable/ic_white_downvote_medium" />
         </FrameLayout>
 
-
-        <!-- overflow -->
-
-
+        <!-- Save -->
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight=".25">
+            android:layout_weight=".20">
 
             <ImageView
-                android:id="@+id/big_display_snack_bar_overflow"
+                android:id="@+id/full_display_snack_bar_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/ic_white_star_unfilled" />
+        </FrameLayout>
+
+        <!-- Overflow -->
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight=".20">
+
+            <ImageView
+                android:id="@+id/full_display_snack_bar_overflow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"

@@ -21,6 +21,7 @@
     <color name="colorDarkerGray">#1d1d1d</color>
 
     <color name="colorSoftBlue">#5e93ed</color>
+    <color name="downvote_blue">#6AA1FF</color>
 
 
     <color name="redic">#ff6dd1</color>
@@ -28,5 +29,4 @@
     <color name="test_media_viewer_scroll_container">#73ff9d00</color>
     <color name="test_404">#39fcff</color>
     <color name="test_votebar">#730084</color>
-
 </resources>

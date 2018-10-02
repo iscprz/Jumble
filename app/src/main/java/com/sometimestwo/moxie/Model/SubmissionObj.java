@@ -62,7 +62,7 @@ public class SubmissionObj implements Serializable{
     private int score;
     private EmbeddedMedia embeddedMedia;
     private String compactTitle;
-
+    private boolean isSaved;
     // Only used if item is a gfycat link
     //private Gfycat gfycatObj;
 
@@ -352,5 +352,13 @@ public class SubmissionObj implements Serializable{
 
     public void setCompactTitle(String compactTitle) {
         this.compactTitle = compactTitle;
+    }
+
+    public boolean isSaved() {
+        return isSaved;
+    }
+
+    public void setSaved(boolean saved) {
+        isSaved = saved;
     }
 }

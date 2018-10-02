@@ -8,6 +8,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Looper;
+import android.util.Log;
 import android.widget.ProgressBar;
 
 import com.coremedia.iso.boxes.Container;
@@ -15,8 +16,11 @@ import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 import com.sometimestwo.moxie.App;
+import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.OnTaskCompletedListener;
 
+
+import net.dean.jraw.models.VoteDirection;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,12 +43,13 @@ import java.util.regex.Pattern;
 public class Utils {
 
     /* Takes a string and makes it cute: CONTROVERSIAL -> Controversial */
-    public static String makeTextCute(String ugly){
-        if(ugly != null && ugly.length() > 0) {
+    public static String makeTextCute(String ugly) {
+        if (ugly != null && ugly.length() > 0) {
             return ugly.substring(0, 1).toUpperCase() + ugly.substring(1).toLowerCase();
         }
         return ugly;
     }
+
     /*
        imgur links will be given in the following format :
        https://i.imgur.com/CtyvHl6.gifv
@@ -62,33 +67,16 @@ public class Utils {
         return Arrays.toString(split);
     }
 
-    /*   public static Constants.SubmissionType getSubmissionType(String url) {
-        String extension = getFileExtensionFromUrl(url);
-        if ("gif".equalsIgnoreCase(extension)
-                || "gifv".equalsIgnoreCase(extension)) {
-            return Constants.SubmissionType.GIF;
-        } else if ("jpg".equalsIgnoreCase(extension)
-                || "jpeg".equalsIgnoreCase(extension)
-                || "png".equalsIgnoreCase(extension)) {
-            return Constants.SubmissionType.IMAGE;
-        }
-        //youtube
-        *//* else if()*//*
-
-        return null;
-    }*/
 
     public static Constants.SubmissionType getSubmissionType(String url) {
 
-        if(url != null){
+        if (url != null) {
             url = url.toLowerCase().trim();
-            if(url.contains(".gifv") || url.contains(".gif")){
+            if (url.contains(".gifv") || url.contains(".gif")) {
                 return Constants.SubmissionType.GIF;
-            }
-            else if(url.contains(".jpg") || url.contains(".jpeg") || url.contains(".png")){
+            } else if (url.contains(".jpg") || url.contains(".jpeg") || url.contains(".png")) {
                 return Constants.SubmissionType.IMAGE;
-            }
-            else if(url.contains("youtube") || url.contains("youtu.be")){
+            } else if (url.contains("youtube") || url.contains("youtu.be")) {
                 return Constants.SubmissionType.VIDEO;
             }
         }
@@ -122,21 +110,21 @@ public class Utils {
     // 2. https://i.imgur.com/4RxPsWI
     //
     // Return: 4RxPsWI
-    public static String getImgurHash(String imgurLink){
+    public static String getImgurHash(String imgurLink) {
         String split[] = imgurLink.split("/");
-        String res = split[split.length-1];
-        if(res.contains(".")){
+        String res = split[split.length - 1];
+        if (res.contains(".")) {
             res = res.split("\\.")[0];
         }
         return res;
     }
 
-    public static String getGfycatHash(String gfycatUrl){
+    public static String getGfycatHash(String gfycatUrl) {
         String hash = gfycatUrl.substring(gfycatUrl.lastIndexOf("/", gfycatUrl.length()));
-        if (hash.contains("-size_restricted")){
+        if (hash.contains("-size_restricted")) {
             hash = hash.replace("-size_restricted", "");
         }
-        if(hash.contains("?autoplay=enabled")){
+        if (hash.contains("?autoplay=enabled")) {
             hash = hash.replace("?autoplay=enabled", "");
         }
         // remove trailing slash
@@ -144,7 +132,7 @@ public class Utils {
         //return gfycatUrl.substring(gfycatUrl.lastIndexOf("/", gfycatUrl.length()));
     }
 
-    public static String getYouTubeID(String url){
+    public static String getYouTubeID(String url) {
         String pattern = "(?<=watch\\?v=|/videos/|embed\\/|youtu.be\\/|\\/v\\/|\\/e\\/|watch\\?v%3D|watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%\u200C\u200B2F|youtu.be%2F|%2Fv%2F)[^#\\&\\?\\n]*";
 
         Pattern compiledPattern = Pattern.compile(pattern);
@@ -164,7 +152,7 @@ public class Utils {
      * @param isIndeterminate True to show an indeterminate ProgressBar, false otherwise
      */
     public static void showProgressBar(final Activity activity, final ProgressBar progressBar,
-                                        final boolean isIndeterminate) {
+                                       final boolean isIndeterminate) {
         if (activity == null) return;
         if (Looper.myLooper() == Looper.getMainLooper()) {
             // Current Thread is Main Thread.
@@ -302,7 +290,7 @@ public class Utils {
         }
     }
 
-    public static boolean isNetworkAvailable(Context context){
+    public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
@@ -447,25 +435,99 @@ public class Utils {
         }
     }
 
+    public static class SaveSubmissionTask extends AsyncTask<Void, Void, Void> {
+        SubmissionObj currSubmission;
+        OnTaskCompletedListener listener;
 
+        public SaveSubmissionTask(SubmissionObj currSubmission, OnTaskCompletedListener listener) {
+            super();
+            this.currSubmission = currSubmission;
+            this.listener = listener;
+        }
 
-    /* Check for internet connection*/
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                String submissionId = currSubmission.getId();
+                boolean isSaved = App.getAccountHelper().getReddit().submission(submissionId).inspect().isSaved();
+                App.getAccountHelper().getReddit().submission(submissionId).setSaved(!isSaved);
+            } catch (Exception e) {
+                Log.e("SAVE_SUBMISSION_ERROR",
+                        "Could not save submission " + currSubmission.getId());
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+
+    public static class VoteSubmissionTask extends AsyncTask<Void, Void, Void> {
+        SubmissionObj currSubmission;
+        OnTaskCompletedListener listener;
+        VoteDirection voteDirection;
+
+        public VoteSubmissionTask(SubmissionObj currSubmission,
+                                  OnTaskCompletedListener listener,
+                                  VoteDirection voteDirection){
+            this.currSubmission = currSubmission;
+            this.listener = listener;
+            this.voteDirection = voteDirection;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            String submissionID = currSubmission.getId();
+            try{
+                App.getAccountHelper().getReddit().submission(submissionID).setVote(voteDirection);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+                Log.e("VOTE FAILURE", "Failed to set vote for submission: " + submissionID);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+
+    }
+
+        /* Check for internet connection*/
     // stolen from : https://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-times-out/27312494#27312494
-    public static class InternetCheck extends AsyncTask<Void,Void,Boolean> {
+    public static class InternetCheck extends AsyncTask<Void, Void, Boolean> {
 
         private Consumer mConsumer;
-        public  interface Consumer { void accept(Boolean internet); }
 
-        public  InternetCheck(Consumer consumer) { mConsumer = consumer; execute(); }
+        public interface Consumer {
+            void accept(Boolean internet);
+        }
 
-        @Override protected Boolean doInBackground(Void... voids) { try {
-            Socket sock = new Socket();
-            sock.connect(new InetSocketAddress("8.8.8.8", 53), 1500);
-            sock.close();
-            return true;
-        } catch (IOException e) { return false; } }
+        public InternetCheck(Consumer consumer) {
+            mConsumer = consumer;
+            execute();
+        }
 
-        @Override protected void onPostExecute(Boolean internet) { mConsumer.accept(internet); }
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            try {
+                Socket sock = new Socket();
+                sock.connect(new InetSocketAddress("8.8.8.8", 53), 1500);
+                sock.close();
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean internet) {
+            mConsumer.accept(internet);
+        }
     }
 
 

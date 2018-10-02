@@ -1762,5 +1762,4 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                 });
     }
 
-
 }

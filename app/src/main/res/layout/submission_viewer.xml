@@ -247,7 +247,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:layout_gravity="center"
-                            android:background="@drawable/ic_white_star_medium" />
+                            android:background="@drawable/ic_white_star_unfilled" />
                     </FrameLayout>
 
 

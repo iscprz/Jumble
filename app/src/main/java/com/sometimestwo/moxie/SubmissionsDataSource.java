@@ -224,6 +224,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             s.setVisited(submission.isVisited());
             s.setScore(submission.getScore());
             s.setEmbeddedMedia(submission.getEmbeddedMedia());
+            s.setSaved(submission.isSaved());
             s.setPreviewUrl(submission.getPreview() == null ?
                     null : submission.getPreview().getImages().get(0).getSource().getUrl());
 

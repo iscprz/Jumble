@@ -20,6 +20,9 @@
     <string name="toast_settings_saved_refresh">Settings saved. Refresh to update.</string>
     <string name="toast_settings_logout_success">Successfully logged out</string>
     <string name="toast_copied_to_clipboard">Link copied to clipboard</string>
+    <string name="toast_login_required">Must be logged in</string>
+
+
     <string name="error_404">There doesn\'t seem to be anything here... </string>
     <string name="error_404_expanded">- Reddit might be down\n- Ensure you\'re connected to the internet\n- Check filter settings</string>
     <!--<String name="error_404_no_submissions"></String>-->

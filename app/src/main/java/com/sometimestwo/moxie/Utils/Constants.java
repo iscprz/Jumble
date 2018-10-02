@@ -70,6 +70,8 @@ public class Constants {
     public final static String USERNAME_USERLESS_PRETTY = "Guest";
     public final static int MAX_TITLE_LENGTH = 120;
     public final static int REFRESH_PULL_TOLERANCE = 500;
+    public final static int COMMENT_LOAD_ROOT_LIMIT = 50;
+    public final static int COMMENT_LOAD_CHILD_LIMIT = 6;
     // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
 
 

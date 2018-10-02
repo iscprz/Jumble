@@ -298,10 +298,22 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
         }
 
         @Override
-        public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
-            holder.commentsTextViewAuthor.setText(comments.get(position).comment.getSubject().getAuthor()/* + "::: " + position*/);
-            holder.commentsTextViewBody.setText(comments.get(position).comment.getSubject().getBody());
+        public void onBindViewHolder(@NonNull CommentViewHolder holder, int rootPosition) {
+            CommentNode viewholderComment = comments.get(rootPosition).comment;
+            holder.commentsTextViewAuthor.setText(comments.get(rootPosition).comment.getSubject().getAuthor()/* + "::: " + position*/);
+            holder.commentsTextViewBody.setText(comments.get(rootPosition).comment.getSubject().getBody());
 
+            //children
+           /* List replies = comments.get(rootPosition).comment.getReplies();
+
+
+            CommentNode curr = viewholderComment;
+
+            for(int i = 0; i < Constants.COMMENT_LOAD_CHILD_LIMIT; i++){
+                if(curr.getReplies().size() > 0){
+                    curr.getReplies().get(0);
+                }
+            }*/
         }
 
 

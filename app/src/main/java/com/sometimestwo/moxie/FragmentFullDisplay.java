@@ -60,8 +60,9 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
 
     /* Titles */
     TextView mTitleTextView;
+    TextView mAuthorTextView;
     TextView mSubredditTextView;
-    RelativeLayout mTitleContainer;
+    LinearLayout mHeaderContainer;
 
     /* Snackbar */
     private ImageView mButtonComments;
@@ -127,8 +128,10 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
 
         mIsUserless = App.getAccountHelper().getReddit().getAuthMethod().isUserless();
 
-        /* Titles */
+        /* Header */
+        mHeaderContainer = (LinearLayout) v.findViewById(R.id.big_display_title_container);
         mTitleTextView = (TextView) v.findViewById(R.id.big_display_title);
+        mAuthorTextView = (TextView) v.findViewById(R.id.full_display_author_text);
         mSubredditTextView = (TextView) v.findViewById(R.id.big_display_subreddit);
 
         /* Snackbar */
@@ -179,6 +182,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         // mPlayButton = (ImageView) v.findViewById(R.id.full_displayer_play_button);
         mYouTubeThumbnail = (YouTubeThumbnailView) v.findViewById(R.id.full_displayer_youtube_thumbnail);
 
+        setupHeader();
         setupMedia();
         setupSnackBar();
 
@@ -249,14 +253,23 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         }
     }
 
-
-    private void setupMedia() {
-        /* title*/
+    private void setupHeader(){
+        // Title
         mTitleTextView.setText(mCurrSubmission.getCompactTitle() != null
                 ? mCurrSubmission.getCompactTitle() : mCurrSubmission.getTitle());
+        // Author
+        mAuthorTextView.setText(mCurrSubmission.getAuthor());
+        // Subreddit
         mSubredditTextView.setText("/r/" + mCurrSubmission.getSubreddit());
-
-
+        // Container
+        mHeaderContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mHeaderContainer.setAlpha(mHeaderContainer.getAlpha() == 0f ? 1f : 0f);
+            }
+        });
+    }
+    private void setupMedia() {
         /* Set up image/gif view*/
         // Prioritize using the cleaned URL. Some post URLS point to indirect images:
         // Indirect url example: imgur.com/AktjAWe

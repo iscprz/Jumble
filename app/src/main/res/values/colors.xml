@@ -22,7 +22,7 @@
 
     <color name="colorSoftBlue">#5e93ed</color>
     <color name="downvote_blue">#6AA1FF</color>
-
+    <color name="upvote_orange">#ff8500</color>
 
     <color name="redic">#ff6dd1</color>
     <color name="test_media_viewer_comments">#8949ff00</color>

@@ -65,13 +65,16 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
 
     /* Snackbar */
     private ImageView mButtonComments;
+    private TextView mCommentCountTextView;
     private ImageView mButtonUpvote;
+    private TextView mUpvoteCountTextView;
     private ImageView mButtonDownvote;
     private ImageView mButtonSave;
     private ImageView mButtonOverflow;
     private LinearLayout mSnackbarContainer;
     private VoteDirection mVoteDirection;
     private boolean mIsSaved;
+    private int mUpvoteCount;
 
     /* Big zoomie view*/
     //private FrameLayout mZoomieImageViewContainer;
@@ -130,7 +133,9 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
 
         /* Snackbar */
         mButtonComments = (ImageView) v.findViewById(R.id.full_display_snack_bar_comments);
+        mCommentCountTextView = (TextView) v.findViewById(R.id.full_display_comments_counter);
         mButtonUpvote = (ImageView) v.findViewById(R.id.full_display_snack_bar_upvote);
+        mUpvoteCountTextView = (TextView) v.findViewById(R.id.full_display_upvote_counter);
         mButtonDownvote = (ImageView) v.findViewById(R.id.full_display_snack_bar_downvote);
         mButtonSave = (ImageView) v.findViewById(R.id.full_display_snack_bar_save);
         mButtonOverflow = (ImageView) v.findViewById(R.id.full_display_snack_bar_overflow);
@@ -220,6 +225,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         // update any changes we made to submission
         mCurrSubmission.setSaved(mIsSaved);
         mCurrSubmission.setVote(mVoteDirection);
+        mCurrSubmission.setScore(mUpvoteCount);
         super.onDestroy();
     }
 
@@ -337,13 +343,19 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     private void setupSnackBar() {
         mVoteDirection = mCurrSubmission.getVote();
         mIsSaved = mCurrSubmission.isSaved();
+        mUpvoteCount = mCurrSubmission.getScore();
         Drawable yellowStar = getResources().getDrawable(R.drawable.ic_yellow_star_filled);
         Drawable whiteStar = getResources().getDrawable(R.drawable.ic_white_star_unfilled);
         Drawable upVoteWhite = getResources().getDrawable(R.drawable.ic_white_upvote_medium);
         Drawable downVoteWhite = getResources().getDrawable(R.drawable.ic_white_downvote_medium);
         Drawable upVoteOrange = getResources().getDrawable(R.drawable.ic_upvote_orange);
         Drawable downVoteBlue = getResources().getDrawable(R.drawable.ic_downvote_blue);
+        int colorUpvoteOrange = getResources().getColor(R.color.upvote_orange);
+        int colorWhite = getResources().getColor(R.color.colorWhite);
 
+        mCommentCountTextView.setText(mCurrSubmission.getCommentCount().toString());
+        mUpvoteCountTextView.setTextColor(mCurrSubmission.getVote() == VoteDirection.UP ? colorUpvoteOrange : colorWhite);
+        mUpvoteCountTextView.setText(String.valueOf(mCurrSubmission.getScore()));
         mButtonUpvote.setBackground(mVoteDirection == VoteDirection.UP ? upVoteOrange : upVoteWhite);
         mButtonDownvote.setBackground(mVoteDirection == VoteDirection.DOWN ? downVoteBlue : downVoteWhite);
         mButtonSave.setBackground(mIsSaved ? yellowStar : whiteStar);
@@ -359,6 +371,9 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                     mVoteDirection = (mVoteDirection != VoteDirection.UP) ? VoteDirection.UP : VoteDirection.NONE;
                     mButtonUpvote.setBackground(mVoteDirection == VoteDirection.UP ? upVoteOrange : upVoteWhite);
                     mButtonDownvote.setBackground(mVoteDirection == VoteDirection.DOWN ? downVoteBlue : downVoteWhite);
+
+                    mUpvoteCountTextView.setTextColor(mVoteDirection == VoteDirection.UP ? colorUpvoteOrange : colorWhite);
+                    mUpvoteCountTextView.setText(mVoteDirection == VoteDirection.UP ? String.valueOf(++mUpvoteCount) : String.valueOf(--mUpvoteCount));
                     new Utils.VoteSubmissionTask(mCurrSubmission, FragmentFullDisplay.this, mVoteDirection).execute();
                 }
             }
@@ -371,6 +386,12 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                             getResources().getString(R.string.toast_login_required),
                             Toast.LENGTH_SHORT).show();
                 } else {
+                    // vote direction was up, change the text from orange to white
+                    if(mVoteDirection == VoteDirection.UP){
+                        mUpvoteCountTextView.setTextColor(colorWhite);
+                    }
+                    mUpvoteCountTextView.setText(mVoteDirection == VoteDirection.UP
+                            ? String.valueOf(--mUpvoteCount) : String.valueOf(mUpvoteCount));
                     mVoteDirection = (mVoteDirection != VoteDirection.DOWN) ? VoteDirection.DOWN : VoteDirection.NONE;
                     mButtonDownvote.setBackground(mVoteDirection == VoteDirection.DOWN ? downVoteBlue : downVoteWhite);
                     mButtonUpvote.setBackground(mVoteDirection == VoteDirection.UP ? upVoteOrange : upVoteWhite);

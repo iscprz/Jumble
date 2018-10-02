@@ -79,30 +79,31 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:visibility="gone">
+
             <com.google.android.youtube.player.YouTubeThumbnailView
                 android:id="@+id/full_displayer_youtube_thumbnail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:adjustViewBounds="true"/>
+                android:adjustViewBounds="true" />
 
             <ImageView
                 android:id="@+id/full_displayer_youtube_thumbnail_play_button"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:layout_centerInParent="true"
-                android:background="@drawable/ic_youtube_play_red"
                 android:alpha=".75"
+                android:background="@drawable/ic_youtube_play_red"
                 android:visibility="visible" />
             <!--android:layout_gravity="center"-->
-          <!-- <ImageView
-                android:id="@+id/full_displayer_youtube_thumbnail_youtube_logo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentBottom="true"
-                android:background="@drawable/ic_youtube_logo"
-                android:visibility="visible" />-->
+            <!-- <ImageView
+                  android:id="@+id/full_displayer_youtube_thumbnail_youtube_logo"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_alignParentEnd="true"
+                  android:layout_alignParentBottom="true"
+                  android:background="@drawable/ic_youtube_logo"
+                  android:visibility="visible" />-->
         </RelativeLayout>
 
 
@@ -179,29 +180,41 @@
     <LinearLayout
         android:id="@+id/full_display_snack_bar_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:layout_alignParentBottom="true"
         android:background="@color/transparent"
-        android:orientation="horizontal"
-        android:clickable="true">
+        android:clickable="true"
+        android:orientation="horizontal">
 
-        <FrameLayout
+        <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight=".20">
+            android:layout_weight=".20"
+            android:gravity="center">
 
             <ImageView
                 android:id="@+id/full_display_snack_bar_comments"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
+                android:layout_gravity="start"
                 android:background="@drawable/ic_white_chat" />
-        </FrameLayout>
 
-        <FrameLayout
+            <TextView
+                android:id="@+id/full_display_comments_counter"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_toEndOf="@id/full_display_snack_bar_comments"
+                android:gravity="center_vertical"
+                android:textColor="@color/colorWhite"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight=".20">
+            android:layout_weight=".20"
+            android:gravity="center">
 
             <ImageView
                 android:id="@+id/full_display_snack_bar_upvote"
@@ -209,7 +222,17 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:background="@drawable/ic_white_upvote_medium" />
-        </FrameLayout>
+
+            <TextView
+                android:id="@+id/full_display_upvote_counter"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_toEndOf="@id/full_display_snack_bar_upvote"
+                android:gravity="center_vertical"
+                android:textColor="@color/colorWhite"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
 
         <FrameLayout
             android:layout_width="0dp"

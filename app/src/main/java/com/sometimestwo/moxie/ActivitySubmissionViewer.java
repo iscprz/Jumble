@@ -26,6 +26,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
@@ -240,6 +241,15 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
            /* mImageView.setVisibility(View.GONE);
             mExoplayer.setVisibility(View.VISIBLE);
             initializePlayer(imageUrl);*/
+        }
+        // SubmissionType == null (Non-media posts like submissions from /r/todayilearned)
+        else{
+            mPlayButton.setVisibility(View.GONE);
+            Glide.with(this)
+                    .load(Constants.URI_404)
+                    .apply(new RequestOptions().centerInside())
+                    .listener(new GlideProgressListener(mProgressBar))
+                    .into(mImageView);
         }
 
         //TODO move youtube and vreddit links

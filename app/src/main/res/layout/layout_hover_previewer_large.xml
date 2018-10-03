@@ -59,8 +59,7 @@
         android:id="@+id/hover_view_large_image_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/hover_view_title_info_container"
-        android:layout_above="@+id/large_previewer_bottom_placeholder">
+        android:layout_below="@id/hover_view_title_info_container">
 
         <ProgressBar
             android:id="@+id/hover_view_large_image_media_progress"
@@ -111,11 +110,6 @@
 
     </FrameLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/large_previewer_bottom_placeholder"/>
 
     <TextView
         android:id="@+id/large_previewer_failed_load_text"

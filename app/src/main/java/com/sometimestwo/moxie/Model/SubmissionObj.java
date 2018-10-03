@@ -63,8 +63,6 @@ public class SubmissionObj implements Serializable{
     private EmbeddedMedia embeddedMedia;
     private String compactTitle;
     private boolean isSaved;
-    // Only used if item is a gfycat link
-    //private Gfycat gfycatObj;
 
     public boolean isSubredditEmpty() {
         return isSubredditEmpty;

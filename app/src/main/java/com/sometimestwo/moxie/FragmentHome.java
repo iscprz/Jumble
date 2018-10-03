@@ -965,7 +965,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
             ViewGroup vg = (ViewGroup) (getActivity().getWindow().getDecorView().getRootView());
             vg.addView(mHoverPreviewContainerLarge);
 
-
             mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
             mHoverPreviewContainerSmall.setVisibility(View.GONE);
             // fade the toolbar while we're in large previewer
@@ -977,7 +976,8 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                 // hold off on dispalying videoview for now. Done when vreddit
                 // loading task finished (onVRedditMuxTaskCompleted)
             } else {
-                if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                if (item.getSubmissionType() == Constants.SubmissionType.IMAGE
+                        || item.getSubmissionType() == null) {
                     focusView(mHoverImagePreviewLarge);
                 }
                 if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
@@ -1147,7 +1147,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
             }
             // Domain not recognized - hope submission is linked to a valid media extension
             else {
-                thumbnail = "android.resource://com.sometimestwo.moxie/" + R.drawable.ic_reddit_404_thumbnail;
+                thumbnail = Constants.URI_404_thumbnail;
                 item.setThumbnail(thumbnail);
                 Log.e("DOMAIN_NOT_FOUND",
                         "Domain not recognized: "
@@ -1158,8 +1158,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
             }
 
 
-            /*************** Finally load thumbnail into recyclerview ************/
-
+            /* Load thumbnail into recyclerview */
             // Check if we need to hide thumbnail (settings option)
             if (item.isNSFW() && mHideNSFWThumbs) {
                 GlideApp.load(getResources().getDrawable(R.drawable.ic_reddit_nsfw_dark))
@@ -1233,6 +1232,13 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                             } else {
                                 initializePreviewExoPlayer(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl());
                             }
+                        }
+                        // submission is of unknown type (i.e. submission from /r/todayilearned)
+                        else{
+                            mPreviewerProgressBar.setVisibility(View.GONE);
+                            GlideApp.load(Constants.URI_404)
+                                    .listener(new GlideProgressListener(mPreviewerProgressBar))
+                                    .into(mHoverImagePreviewLarge);
                         }
                     }
                     return true;

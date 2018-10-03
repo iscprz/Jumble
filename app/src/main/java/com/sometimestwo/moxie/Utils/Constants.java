@@ -1,5 +1,7 @@
 package com.sometimestwo.moxie.Utils;
 
+import com.sometimestwo.moxie.R;
+
 public class Constants {
 
     /* Test vals*/
@@ -62,6 +64,10 @@ public class Constants {
     public final static String YOUTUBE_API_KEY = "AIzaSyASn4HW4p60zBsAuaiejx5jU_rxjqhUNbA";
 
     /* Misc*/
+    public final static String URI_404 = "android.resource://com.sometimestwo.moxie/"
+            + R.drawable.reddit_404_transparent;
+    public final static String URI_404_thumbnail = "android.resource://com.sometimestwo.moxie/"
+            + R.drawable.reddit_404_thumb_black;
     public final static String[] VALID_MEDIA_EXTENSION = {"jpg", "jpeg", "png","gifv" , "gif"};
     public final static String[] VALID_IMAGE_EXTENSION = {"jpg", "jpeg", "png"};
     public final static String[] VALID_GIF_EXTENSION = {"gifv", "gif"};

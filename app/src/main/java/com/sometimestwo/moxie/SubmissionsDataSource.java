@@ -236,6 +236,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                     || "image".equalsIgnoreCase(submission.getThumbnail())
                     || "nsfw".equalsIgnoreCase(submission.getThumbnail())
                     || "spoiler".equalsIgnoreCase(submission.getThumbnail())
+                    || "default".equalsIgnoreCase(submission.getThumbnail())
                     || submission.getThumbnail().length() < 1) {
                 s.setThumbnail(submission.getUrl());
             } else {

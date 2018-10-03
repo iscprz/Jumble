@@ -350,7 +350,15 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
             }
 
         }
-
+        // Submission is of unknown type (i.e. /r/todayilearned submissions)
+        else{
+            focusView(mZoomieImageView, null);
+            mProgressBar.setVisibility(View.VISIBLE);
+            Glide.with(this)
+                    .load(Constants.URI_404)
+                    .listener(new GlideProgressListener(mProgressBar))
+                    .into(mZoomieImageView);
+        }
     }
 
     private void setupSnackBar() {

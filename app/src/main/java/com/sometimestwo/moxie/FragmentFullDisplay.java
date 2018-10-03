@@ -11,8 +11,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.view.ContextThemeWrapper;
+import android.support.v7.widget.PopupMenu;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -205,6 +210,14 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         return v;
     }
 
+    // This was added here when we added the ability to navigate to subreddits from the Full
+    // Display. We would be listening for the RESULT_OK_START_OVER in case the user wanted to
+    // Log In as a different user. We've disabled the functionality to log in from here so
+    // there's no need to handle that scenario for now.
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -454,6 +467,41 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                     mButtonSave.setBackground(mIsSaved ? yellowStar : whiteStar);
                     new Utils.SaveSubmissionTask(mCurrSubmission, FragmentFullDisplay.this).execute();
                 }
+            }
+        });
+
+        // Overflow button
+        mButtonOverflow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Context wrapper = new ContextThemeWrapper(getContext(), R.style.PopupTheme);
+                PopupMenu overflowPopup = new PopupMenu(wrapper, view);
+                Menu m = overflowPopup.getMenu();
+                MenuInflater inflater = overflowPopup.getMenuInflater();
+                inflater.inflate(R.menu.menu_full_display_overflow, overflowPopup.getMenu());
+                m.findItem(R.id.menu_full_display_overflow_goto_subreddit)
+                        .setTitle("Go to /r/" + mCurrSubmission.getSubreddit());
+
+
+                overflowPopup.show();
+                overflowPopup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        switch (menuItem.getItemId()){
+                            case R.id.menu_full_display_overflow_goto_subreddit:
+                                App.getMoxieInfoObj().getmSubredditStack().push(mCurrSubmission.getSubreddit());
+                                Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
+                                visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, mCurrSubmission.getSubreddit());
+                                startActivityForResult(visitSubredditIntent, Constants.REQUESTCODE_GOTO_SUBREDDIT_VIEWER);
+                                return true;
+                            case R.id.menu_full_display_overflow_share:
+                                return true;
+                            case R.id.menu_full_display_overflow_download:
+                                return true;
+                        }
+                        return false;
+                    }
+                });
             }
         });
     }

@@ -215,9 +215,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
-        //mPopupView = inflater.inflate(R.layout.layout_popup_preview_small,null);
-        //mParentView = v.findViewById(R.id.main_content);
-
         /* Set screen dimensions for resizing dialogs */
         mScreenWidth = getResources().getDisplayMetrics().widthPixels;
         mScreenHeight = getResources().getDisplayMetrics().heightPixels;
@@ -571,6 +568,14 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
     /* Drawerlayout config to handle navigation views */
     private void setupDrawerLayout(View v) {
         mDrawerLayout = v.findViewById(R.id.drawer_layout);
+        // Lock the left nav drawer unless we're home. This is to prevent unexpected behavior
+        // such as what would happen if we logged in as a new user in the middle of some transaction.
+        // FYI: We already have a "startOver()" method that starts us over from home in case we ever
+        // want to handle that condition. Let's just avoid it for now.
+        if(!(getActivity() instanceof ActivityHome)
+                || getActivity().getSupportFragmentManager().getBackStackEntryCount() > 0){
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED,GravityCompat.START);
+        }
         mDrawerToggle = new ActionBarDrawerToggle(
                 getActivity(),                  /* host Activity */
                 mDrawerLayout,         /* DrawerLayout object */

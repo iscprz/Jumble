@@ -1,21 +1,27 @@
 package com.sometimestwo.moxie.Model;
 
 //import com.gfycat.core.gfycatapi.pojo.Gfycat;
+
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Utils;
 
 import net.dean.jraw.models.CommentSort;
 import net.dean.jraw.models.EmbeddedMedia;
 import net.dean.jraw.models.VoteDirection;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 
+import retrofit2.Call;
+
 /*
-*  This class is a customized version of the Model class provided by JRAW.
-*  See net.dean.jraw.models.Submission for field details
-*/
-public class SubmissionObj implements Serializable{
-    public SubmissionObj(){}
+ *  This class is a customized version of the Model class provided by JRAW.
+ *  See net.dean.jraw.models.Submission for field details
+ */
+public class SubmissionObj implements Serializable {
+    public SubmissionObj() {
+    }
 
     // For quick instantiation of submission list when we encounter empty subreddit
     public SubmissionObj(Boolean isSubredditEmpty) {
@@ -44,7 +50,9 @@ public class SubmissionObj implements Serializable{
     private boolean isSpoiler;
     private String subreddit;
     private String subredditFullName;
-    /** The suggested way to sort comments, if any */
+    /**
+     * The suggested way to sort comments, if any
+     */
     private CommentSort suggestedSort;
     private String thumbnail;
     private boolean hasThumbnail;
@@ -63,6 +71,16 @@ public class SubmissionObj implements Serializable{
     private EmbeddedMedia embeddedMedia;
     private String compactTitle;
     private boolean isSaved;
+    private boolean isDownloadableMedia = false;
+    // added specifically for Gfycat mp4 urls. lazy solution
+    private String mp4Url;
+    // null if file is not downloadable
+    private String fileExtension;
+    // What we will name the file if user downloads it (if media is downloadable)
+    private String filenameIfDownloaded;
+    // Stores a reference to a gfycat async call in case we need to cancel it
+    private Call<GfycatWrapper> gfycatAsyncCall;
+
 
     public boolean isSubredditEmpty() {
         return isSubredditEmpty;
@@ -359,4 +377,60 @@ public class SubmissionObj implements Serializable{
     public void setSaved(boolean saved) {
         isSaved = saved;
     }
+
+    public boolean isDownloadableMedia() {
+        return this.getFileExtension() != null
+                || this.getDomain() == Constants.SubmissionDomain.VREDDIT;
+    }
+
+    public void setIsDownloadableMedia(boolean downloadable) {
+        isDownloadableMedia = downloadable;
+    }
+
+    public String getMp4Url() {
+        return mp4Url;
+    }
+
+    public void setMp4Url(String mp4Url) {
+        this.mp4Url = mp4Url;
+    }
+
+    public String getFileExtension() {
+        String extension = null;
+        if (this.getMp4Url() != null || this.getDomain() == Constants.SubmissionDomain.VREDDIT)
+            extension = "mp4";
+        else if (this.getCleanedUrl() != null)
+            extension = Utils.getFileExtensionFromUrl(this.getCleanedUrl());
+        else
+            extension = Utils.getFileExtensionFromUrl(this.getUrl());
+        if (Arrays.asList(Constants.VALID_MEDIA_EXTENSION).contains(extension.toLowerCase())) {
+            return extension;
+        }
+        return null;
+    }
+
+    public void setExtension(String fileExtension) {
+        this.fileExtension = fileExtension;
+    }
+
+    public String getPrettyFilename() {
+        if (this.isDownloadableMedia()
+                || this.getDomain() == Constants.SubmissionDomain.VREDDIT) {
+            return this.getId() + "." + this.getFileExtension();
+        }
+        return "unsupported_media_type";
+    }
+
+    public void setFilenameIfDownloaded(String filenameIfDownloaded) {
+        this.filenameIfDownloaded = filenameIfDownloaded;
+    }
+
+    public Call<GfycatWrapper> getGfycatAsyncCall() {
+        return gfycatAsyncCall;
+    }
+
+    public void setGfycatAsyncCall(Call<GfycatWrapper> gfycatAsyncCall) {
+        this.gfycatAsyncCall = gfycatAsyncCall;
+    }
+
 }

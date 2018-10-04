@@ -1,13 +1,22 @@
 package com.sometimestwo.moxie.Utils;
 
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.media.MediaScannerConnection;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Looper;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.widget.ProgressBar;
 
@@ -17,6 +26,7 @@ import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
 import com.sometimestwo.moxie.App;
 import com.sometimestwo.moxie.Model.SubmissionObj;
+import com.sometimestwo.moxie.OnRedditUserReadyListener;
 import com.sometimestwo.moxie.OnTaskCompletedListener;
 
 
@@ -59,15 +69,6 @@ public class Utils {
         return split.length > 0 ? split[split.length - 1] : "";
     }
 
-    public static String formatGifUrl(String badGifUrl) {
-        String split[] = badGifUrl.split("\\.");
-        if ("gifv".equalsIgnoreCase(split[split.length - 1])) {
-            split[split.length - 1] = "gif";
-        }
-        return Arrays.toString(split);
-    }
-
-
     public static Constants.SubmissionType getSubmissionType(String url) {
 
         if (url != null) {
@@ -82,28 +83,6 @@ public class Utils {
         }
         return null;
     }
-
-    // takes a URL and ensures it takes us directly to an image URL (.jpg, .jpeg, .png)
-    public static String ensureImageUrl(String url) {
-        //  url = url.toLowerCase();
-        if (Arrays.asList(Constants.VALID_IMAGE_EXTENSION).contains(getFileExtensionFromUrl(url))) {
-            // already directly points to image, no change needed
-            return url;
-        }
-
-        StringBuilder sb = new StringBuilder(url);
-
-        // imgur
-        if ("imgur".contains(url)) {
-            // url is formatted like: https://imgur.com/V51pWpk
-            // url needs to be formatted to https://imgur.com/V51pWpk.jpg
-            sb.append(".jpg");
-            return sb.toString();
-        }
-
-        return "";
-    }
-
 
     // Assuming we get an Imgur link in one of the following formats:
     // 1. https://i.imgur.com/4RxPsWI.gifv
@@ -213,6 +192,7 @@ public class Utils {
             byteBufferByteChannel.close();
             fos.close();
         } catch (IOException e) {
+            Log.e("Utils.mux()", "Error! Missed close()!");
             e.printStackTrace();
             return false;
         }
@@ -237,6 +217,16 @@ public class Utils {
         } finally {
             in.close();
         }
+    }
+
+    public static String getCleanVRedditDownloadUrl(String url){
+        if (!url.contains("DASH")) {
+            if (url.endsWith("/")) {
+                url = url.substring(url.length() - 2);
+            }
+            url = url + "/DASH_9_6_M";
+        }
+        return url;
     }
 
     private static class BufferedWritableFileByteChannel implements WritableByteChannel {
@@ -317,12 +307,7 @@ public class Utils {
         @Override
         protected String doInBackground(String... strings) {
 
-            if (!url.contains("DASH")) {
-                if (url.endsWith("/")) {
-                    url = url.substring(url.length() - 2);
-                }
-                url = url + "/DASH_9_6_M";
-            }
+            url = getCleanVRedditDownloadUrl(url);
 
             File videoFile = App.getProxy(context).getCacheFile(url);
 
@@ -413,6 +398,7 @@ public class Utils {
                         //setMuteVisibility(false);
                     }
                 } catch (Exception e) {
+                    Log.e("FetchVRedditGifTask", "Error! Missed close()!");
                     e.printStackTrace();
                 }
 
@@ -471,7 +457,7 @@ public class Utils {
 
         public VoteSubmissionTask(SubmissionObj currSubmission,
                                   OnTaskCompletedListener listener,
-                                  VoteDirection voteDirection){
+                                  VoteDirection voteDirection) {
             this.currSubmission = currSubmission;
             this.listener = listener;
             this.voteDirection = voteDirection;
@@ -480,10 +466,9 @@ public class Utils {
         @Override
         protected Void doInBackground(Void... voids) {
             String submissionID = currSubmission.getId();
-            try{
+            try {
                 App.getAccountHelper().getReddit().submission(submissionID).setVote(voteDirection);
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
                 Log.e("VOTE FAILURE", "Failed to set vote for submission: " + submissionID);
             }
@@ -497,7 +482,51 @@ public class Utils {
 
     }
 
-        /* Check for internet connection*/
+    public static class FetchAuthenticatedUserTask extends AsyncTask<Void, Void, Void> {
+        String mostRecentUser;
+        OnRedditUserReadyListener listener;
+
+        public FetchAuthenticatedUserTask(String mostRecentuser, OnRedditUserReadyListener listener) {
+            this.mostRecentUser = mostRecentuser;
+            this.listener = listener;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            Log.e("FETCH_AUTH_USER", "Attempting to reauthenticate: " + mostRecentUser);
+            //if (!App.getAccountHelper().isAuthenticated()) {
+            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
+                App.getAccountHelper().switchToUser(mostRecentUser);
+            } else {
+                App.getAccountHelper().switchToUserless();
+            }
+            //  }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            Log.e("FETCH_AUTH_USER", "Authenticated success! ");
+            listener.redditUserAuthenticated();
+        }
+    }
+
+    public static void validateRedditIntegrity(Context context) {
+        if (!App.getAccountHelper().isAuthenticated()) {
+            SharedPreferences prefs_settings =
+                    context.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+            String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
+
+            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
+                App.getAccountHelper().switchToUser(mostRecentUser);
+            } else {
+                App.getAccountHelper().switchToUserless();
+            }
+        }
+    }
+
+    /* Check for internet connection*/
     // stolen from : https://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-times-out/27312494#27312494
     public static class InternetCheck extends AsyncTask<Void, Void, Boolean> {
 
@@ -530,5 +559,35 @@ public class Utils {
         }
     }
 
+    public static boolean hasDownloadPermissions(Fragment fragment) {
+        String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        // Here, thisActivity is the current activity
+        fragment.requestPermissions(permissions, Constants.PERMISSIONS_DOWNLOAD_MEDIA);
+        return true;
+    }
 
+    public static boolean hasDownloadPermissions(Activity activity) {
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted
+            // Should we show an explanation?
+/*            if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+            } else {}*/
+            // No explanation needed; request the permission
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    Constants.PERMISSIONS_DOWNLOAD_MEDIA);
+
+        } else {
+            // Permission has already been granted
+            return true;
+        }
+        return false;
+    }
 }

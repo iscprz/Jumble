@@ -1,9 +1,18 @@
 package com.sometimestwo.moxie.Utils;
 
+import android.os.Environment;
+
 import com.sometimestwo.moxie.R;
+
+import java.io.File;
 
 public class Constants {
 
+    public final static String APP_NAME = "Moxie";
+    public final static String APP_DOWNLOAD_PATH =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                    + File.separator
+                    + APP_NAME;
     /* Test vals*/
     public final static String TEST_SUBREDDIT_EARTHPORN = "earthporn";
     public final static String TEST_SUBREDDIT_PICS = "pics";
@@ -37,6 +46,7 @@ public class Constants {
     /* Default values*/
     public final static String DEFAULT_SUBREDDIT = "pics";
     public final static int DEFAULT_NUM_DISPLAY_COLS = 3;
+    public final static String DEFAULT_DOWNLOAD_FILENAME = APP_NAME + "." + "download";
 
     /* Query values */
     //the size of a page that we want
@@ -68,7 +78,8 @@ public class Constants {
             + R.drawable.reddit_404_transparent;
     public final static String URI_404_thumbnail = "android.resource://com.sometimestwo.moxie/"
             + R.drawable.reddit_404_thumb_black;
-    public final static String[] VALID_MEDIA_EXTENSION = {"jpg", "jpeg", "png","gifv" , "gif"};
+    public final static String[] VALID_MEDIA_EXTENSION
+            = {"jpg", "jpeg", "png",/*maybe remove */"gifv", "gif", "mp4"};
     public final static String[] VALID_IMAGE_EXTENSION = {"jpg", "jpeg", "png"};
     public final static String[] VALID_GIF_EXTENSION = {"gifv", "gif"};
     public final static String THUMBNAIL_NOT_FOUND = "THUMBNAIL_NOT_FOUND";
@@ -78,21 +89,24 @@ public class Constants {
     public final static int REFRESH_PULL_TOLERANCE = 500;
     public final static int COMMENT_LOAD_ROOT_LIMIT = 50;
     public final static int COMMENT_LOAD_CHILD_LIMIT = 6;
+    public final static int PERMISSIONS_DOWNLOAD_MEDIA = 900;
+
     // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
 
 
-
     /* Enums*/
-    public enum HoverPreviewSize{
+    public enum HoverPreviewSize {
         SMALL,
         LARGE
     }
-    public enum SubmissionType{
+
+    public enum SubmissionType {
         IMAGE,
         GIF,
         VIDEO
     }
-    public enum SubmissionDomain{
+
+    public enum SubmissionDomain {
         IMGUR,
         GFYCAT,
         VREDDIT,

@@ -321,7 +321,6 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnTaskComple
         mSimpleDisplayVideoView.setVideoURI(uriToLoad);
         mSimpleDisplayVideoView.start();
     }
-
 }
 
 

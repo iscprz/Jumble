@@ -111,7 +111,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.app.Activity.RESULT_OK;
 
-public class FragmentHome extends Fragment implements OnTaskCompletedListener {
+public class FragmentHome extends Fragment implements OnTaskCompletedListener, OnRedditUserReadyListener {
     public final static String TAG = Constants.TAG_FRAG_HOME;
 
 
@@ -335,10 +335,29 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         super.onStart();
     }
 
+    // onResume needs to check if we are currently authenticated to make reddit calls
+    // before doing anything. Add any onResume() functionality to resume() instead of onResume()
     @Override
     public void onResume() {
         super.onResume();
+        if(!App.getAccountHelper().isAuthenticated()){
+            String mostRecentUser =
+                    prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
+            new Utils.FetchAuthenticatedUserTask(mostRecentUser,this).execute();
+        }
+        else{
+            resume();
+        }
 
+    }
+
+    // gets called from Utils.FetchAuthenticatedUserTask upon completion
+    @Override
+    public void redditUserAuthenticated() {
+        resume();
+    }
+
+    private void resume(){
         try {
             // Check if user settings have been altered.
             // i.e. User went to settings, opted in to NSFW posts then navigated back.
@@ -534,7 +553,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
             else {
                 mToolbar.setTitle(getResources().getString(R.string.frontpage));
                 mToolbar.setTitleTextAppearance(getContext(), R.style.toolbar_title_text_default);
-
             }
 
             // Subtitle - if sort by is null, getter will default to HOT
@@ -1008,7 +1026,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
     private void validatePreferences() throws Exception {
         if (prefs_settings != null) {
-
             mHideNSFW = prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW, true);
             mAllowImagePreview = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true);
             mAllowBigDisplayClickClose = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
@@ -1022,7 +1039,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
             App.getMoxieInfoObj().setHideNSFW(mHideNSFW);
             //App.getMoxieInfoObj().setSubreddit("pics");
-
         } else {
             throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
                     + "Could not find prefs_settings KEY_GET_PREFS_SETTINGS.");
@@ -1105,7 +1121,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                 // imgur image handled by default (this may change later)
 
                 // Else if imgur gif
-                if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
+                else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
                     // Assume we're given .gifv link. Need to fetch .mp4 link from Imgur API
                     String imgurHash = Utils.getImgurHash(item.getUrl());
                     getMp4LinkImgur(item, imgurHash);
@@ -1124,7 +1140,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
                 thumbnail = item.getThumbnail();
                 holder.thumbnailIconDomain.setBackground(getResources().getDrawable(R.drawable.ic_reddit_blue_circle));
-
             }
             // i.redd.it
             else if (item.getDomain() == Constants.SubmissionDomain.IREDDIT) {
@@ -1150,8 +1165,11 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                 thumbnail = item.getThumbnail();
                 holder.thumbnailIconDomain.setBackground(getResources().getDrawable(R.drawable.ic_youtube_red));
             }
-            // Domain not recognized - hope submission is linked to a valid media extension
-            else {
+
+            // Check if domain not recognized or if link the thumbnail was something unrecognized
+            // such as "nsfw" or "spoiler". Replace with 404 thumb if so.
+            if(!Arrays.asList(Constants.VALID_MEDIA_EXTENSION)
+                    .contains(Utils.getFileExtensionFromUrl(thumbnail))){
                 thumbnail = Constants.URI_404_thumbnail;
                 item.setThumbnail(thumbnail);
                 Log.e("DOMAIN_NOT_FOUND",
@@ -1161,7 +1179,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                                 + holder.getAdapterPosition());
                 holder.thumbnailIconDomain.setBackground(null);
             }
-
 
             /* Load thumbnail into recyclerview */
             // Check if we need to hide thumbnail (settings option)
@@ -1315,6 +1332,19 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                 configureRecyclerThumbOverlay(item, holder);
                 return false;
             }
+        }
+
+        // Release any resources that may be lingering after view has been recycled
+        @Override
+        public void onViewRecycled(@NonNull ItemViewHolder holder) {
+            SubmissionObj recycled = getItem(holder.getAdapterPosition());
+            if(recycled.getGfycatAsyncCall() != null
+                    && !recycled.getGfycatAsyncCall().isCanceled()){
+                recycled.getGfycatAsyncCall().cancel();
+                Log.e("onViewRecycled", "Cancelled Gfycat call for item: " + holder.getLayoutPosition());
+            }
+
+            super.onViewRecycled(holder);
         }
 
         public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -1638,8 +1668,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
 
 
     /***********[GFYCAT SPECIFIC FUNCTIONS] ***************/
-    /****************************************************/
-    /****************************************************/
 
     private void getGfycat(String gfycatHash, SubmissionObj item) {
         Retrofit retrofit = new Retrofit.Builder()
@@ -1650,17 +1678,14 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
         GfycatAPI gfycatAPI = retrofit.create(GfycatAPI.class);
         gfycatAPI.getGfycat(gfycatHash);
         Call<GfycatWrapper> call = gfycatAPI.getGfycat(gfycatHash);
+        // set a reference to this async call so we can cancel if needed
+        item.setGfycatAsyncCall(call);
         call.enqueue(new Callback<GfycatWrapper>() {
             @Override
             public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {
                 //Log.d(TAG, "onResponse: feed: " + response.body().toString());
                 Log.d(TAG, "onResponse: Server Response: " + response.toString());
 
-                /*GfyItem gfyItem = new GfyItem();
-                GfycatWrapper body = response.body();
-                if(body != null){
-                    gfyItem  = body.getGfyItem();
-                }*/
                 GfyItem gfyItem = new GfyItem();
                 try {
                     gfyItem = response.body().getGfyItem();
@@ -1669,20 +1694,20 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                             "Failed in attempt to retrieve gfycat object for hash "
                                     + gfycatHash + ". "
                                     + e.getMessage());
-                }
-
-                if (gfyItem == null) {
-                    int a = 2;
+                    call.cancel();
                 }
                 item.setCleanedUrl(gfyItem.getMobileUrl() != null ? gfyItem.getMobileUrl() : gfyItem.getMp4Url());
+                item.setMp4Url(gfyItem.getMp4Url());
             }
 
             @Override
             public void onFailure(Call<GfycatWrapper> call, Throwable t) {
+                call.cancel();
                 Log.e(TAG, "onFailure: Unable to retrieve RSS: " + t.getMessage());
                 //Toast.makeText(MainActivity.this, "An Error Occured", Toast.LENGTH_SHORT).show();
 
             }
+
         });
     }
 
@@ -1772,5 +1797,4 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener {
                     }
                 });
     }
-
 }

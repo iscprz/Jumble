@@ -1,13 +1,18 @@
 package com.sometimestwo.moxie;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -53,15 +58,19 @@ import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.DownloadBinder;
+import com.sometimestwo.moxie.Utils.DownloadService;
 import com.sometimestwo.moxie.Utils.Utils;
-
 import net.dean.jraw.models.VoteDirection;
+
+import static android.content.Context.BIND_AUTO_CREATE;
 
 public class FragmentFullDisplay extends Fragment implements OnTaskCompletedListener {
     private SubmissionObj mCurrSubmission;
     private boolean mIsUserless;
     private boolean mPrefsAllowNSFW;
     private boolean mAllowCloseOnClick;
+    private BroadcastReceiver mDLCompleteReceiver;
 
     /* Titles */
     TextView mTitleTextView;
@@ -108,6 +117,9 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     private RelativeLayout mYoutubeIconsOverlay;
     private ImageView mPlayButton;
     private YouTubeThumbnailView mYouTubeThumbnail;
+
+    /* Download utils*/
+    private DownloadBinder downloadBinder = null;
 
     public static FragmentFullDisplay newInstance() {
         return new FragmentFullDisplay();
@@ -190,6 +202,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         setupHeader();
         setupMedia();
         setupSnackBar();
+        startAndBindDownloadService();
 
         mExoplayerContainer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -218,6 +231,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
     }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -230,6 +244,8 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
+
         // Notify calling fragment that we're closing the submission viewer
         // Don't need to pass anything back. Pass an empty intent for now
         Intent resultIntent = new Intent();
@@ -243,15 +259,19 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         mCurrSubmission.setSaved(mIsSaved);
         mCurrSubmission.setVote(mVoteDirection);
         mCurrSubmission.setScore(mUpvoteCount);
-        super.onDestroy();
+
+        if (mDLCompleteReceiver != null) {
+            getContext().unregisterReceiver(mDLCompleteReceiver);
+        }
+
     }
 
     private void unpackArgs() {
         try {
             // Submission to be viewed
             mCurrSubmission = (SubmissionObj) this.getArguments().get(Constants.ARGS_SUBMISSION_OBJ);
-
         } catch (Exception e) {
+            Log.e("FRAG_FULL_DISPLAY", "Error unpacking args: ");
             e.printStackTrace();
         }
     }
@@ -266,7 +286,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
         }
     }
 
-    private void setupHeader(){
+    private void setupHeader() {
         // Title
         mTitleTextView.setText(mCurrSubmission.getCompactTitle() != null
                 ? mCurrSubmission.getCompactTitle() : mCurrSubmission.getTitle());
@@ -282,6 +302,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
             }
         });
     }
+
     private void setupMedia() {
         /* Set up image/gif view*/
         // Prioritize using the cleaned URL. Some post URLS point to indirect images:
@@ -364,7 +385,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
 
         }
         // Submission is of unknown type (i.e. /r/todayilearned submissions)
-        else{
+        else {
             focusView(mZoomieImageView, null);
             mProgressBar.setVisibility(View.VISIBLE);
             Glide.with(this)
@@ -442,7 +463,7 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                             Toast.LENGTH_SHORT).show();
                 } else {
                     // vote direction was up, change the text from orange to white
-                    if(mVoteDirection == VoteDirection.UP){
+                    if (mVoteDirection == VoteDirection.UP) {
                         mUpvoteCountTextView.setTextColor(colorWhite);
                     }
                     mUpvoteCountTextView.setText(mVoteDirection == VoteDirection.UP
@@ -481,22 +502,28 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                 inflater.inflate(R.menu.menu_full_display_overflow, overflowPopup.getMenu());
                 m.findItem(R.id.menu_full_display_overflow_goto_subreddit)
                         .setTitle("Go to /r/" + mCurrSubmission.getSubreddit());
+                // only display Download option if submission has downloadable media
+                m.findItem(R.id.menu_full_display_overflow_download)
+                        .setVisible(mCurrSubmission.isDownloadableMedia());
 
 
                 overflowPopup.show();
                 overflowPopup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem menuItem) {
-                        switch (menuItem.getItemId()){
+                        switch (menuItem.getItemId()) {
                             case R.id.menu_full_display_overflow_goto_subreddit:
                                 App.getMoxieInfoObj().getmSubredditStack().push(mCurrSubmission.getSubreddit());
                                 Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
                                 visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, mCurrSubmission.getSubreddit());
                                 startActivityForResult(visitSubredditIntent, Constants.REQUESTCODE_GOTO_SUBREDDIT_VIEWER);
                                 return true;
-                            case R.id.menu_full_display_overflow_share:
-                                return true;
                             case R.id.menu_full_display_overflow_download:
+                                // the callback from permissions request will call the
+                                // actual download method (see onRequestPermissionsResult)
+                                Utils.hasDownloadPermissions(FragmentFullDisplay.this);
+                                return true;
+                            case R.id.menu_full_display_overflow_share:
                                 return true;
                         }
                         return false;
@@ -505,6 +532,67 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
             }
         });
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case Constants.PERMISSIONS_DOWNLOAD_MEDIA:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    downloadMedia();
+                } else {
+                    Toast.makeText(getContext(),
+                            getResources().getString(R.string.toast_download_permissions_required),
+                            Toast.LENGTH_LONG).show();
+                    //Utils.hasDownloadPermissions(this);
+                }
+        }
+    }
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            downloadBinder = (DownloadBinder)service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
+
+    private void startAndBindDownloadService()
+    {
+        Intent downloadIntent = new Intent(getActivity(), DownloadService.class);
+        getActivity().startService(downloadIntent);
+        getActivity().getApplicationContext().bindService(downloadIntent, serviceConnection, BIND_AUTO_CREATE);
+    }
+
+    // we've deemed the media downloadable at this point (Download button
+    //  is only available if submissionObj has isDownloadableMedia == true)
+    private void downloadMedia(){
+        String mediaUrl;
+
+        //Vreddit submissions might be(should be) cached already
+        if(mCurrSubmission.getDomain() == Constants.SubmissionDomain.VREDDIT){
+            mediaUrl = mCurrSubmission.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
+            downloadBinder.startDownloadVreddit(mediaUrl, mCurrSubmission.getPrettyFilename());
+        }
+        else {
+            if (mCurrSubmission.getMp4Url() != null)
+                mediaUrl = mCurrSubmission.getMp4Url();
+            else if (mCurrSubmission.getCleanedUrl() != null)
+                mediaUrl = mCurrSubmission.getCleanedUrl();
+            else
+                mediaUrl = mCurrSubmission.getUrl();
+
+            Toast.makeText(getContext(), getResources()
+                    .getString(R.string.toast_download_pre), Toast.LENGTH_SHORT).show();
+            downloadBinder.startDownload(mediaUrl,
+                    mCurrSubmission.getPrettyFilename(),
+                    0);
+        }
+    }
+
 
     /* Focuses up to two views. Pass null if only need 1 view focused*/
     private void focusView(View focused1, View focused2) {

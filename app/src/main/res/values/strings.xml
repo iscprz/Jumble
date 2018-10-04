@@ -21,10 +21,17 @@
     <string name="toast_settings_logout_success">Successfully logged out</string>
     <string name="toast_copied_to_clipboard">Link copied to clipboard</string>
     <string name="toast_login_required">Must be logged in</string>
-
-
+    <string name="toast_download_pre">Downloading...</string>
+    <string name="toast_download_success"> Media downloaded</string>
+    <string name="toast_download_fail">Media failed to download</string>
+    <string name="toast_download_permissions_required">Download permissions required.</string>
+    <!--Error -->
     <string name="error_404">There doesn\'t seem to be anything here... </string>
-    <string name="error_404_expanded">- Reddit might be down\n- Ensure you\'re connected to the internet\n- Check filter settings</string>
+    <string name="error_404_expanded">
+        - Reddit might be down\n
+        - Ensure you\'re connected to the internet\n
+        - Check filter settings\n
+    </string>
     <!--<String name="error_404_no_submissions"></String>-->
     <string name="error_404_retry"><u>Retry</u></string>
 

@@ -23,7 +23,6 @@ public final class App extends Application {
     private static AccountHelper accountHelper;
     private static SharedPreferencesTokenStore tokenStore;
     private static MoxieInfoObj currSubredditObj;
-
     public static HttpProxyCacheServer proxy;
 
     @Override

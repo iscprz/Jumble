@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     android:background="@color/colorBgBlackTintDarker"
     android:paddingTop="40dp"
-    android:visibility="gone">
+    android:visibility="gone"
+    android:clickable="true">
 
     <!-- Submission title/subreddit info -->
 

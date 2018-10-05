@@ -980,6 +980,7 @@ public class FragmentHome extends Fragment {
                 // loading task finished (onVRedditMuxTaskCompleted)
             } else {
                 if (item.getSubmissionType() == Constants.SubmissionType.IMAGE
+                        || item.getSubmissionType() == Constants.SubmissionType.ALBUM
                         || item.getSubmissionType() == null) {
                     focusView(mHoverImagePreviewLarge);
                 }
@@ -1091,6 +1092,9 @@ public class FragmentHome extends Fragment {
             // Imgur
             //TODO: imgur albums. Example URL https://imgur.com/a/K8bJ9pV (nsfw)
             if (item.getDomain() == Constants.SubmissionDomain.IMGUR) {
+                if(Utils.isImgurAlbum(item.getUrl())){
+                   item.setSubmissionType(Constants.SubmissionType.ALBUM);
+                }
                 // Check if submission type is null. This will happen if the item's URL is
                 // to a non-direct IMAGE(not gif/video) link such as https://imgur.com/qTadRtq
                 if (item.getSubmissionType() == null) {
@@ -1204,6 +1208,7 @@ public class FragmentHome extends Fragment {
                                 ? item.getCompactTitle() : item.getTitle());
                         mHoverPreviewSubredditLarge.setText("/r/" + item.getSubreddit());
                         setupPreviewer(item);
+
                         if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
                             // Imgur Urls might be pointing to indirect image URLs
                             if (item.getDomain() == Constants.SubmissionDomain.IMGUR
@@ -1227,7 +1232,6 @@ public class FragmentHome extends Fragment {
                                                 });
 
                                             }
-
                                             @Override
                                             public void downloadFailure() {
                                                 super.downloadFailure();

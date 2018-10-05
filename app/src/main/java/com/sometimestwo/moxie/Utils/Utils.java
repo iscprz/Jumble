@@ -109,6 +109,10 @@ public class Utils {
         return res;
     }
 
+    // TODO Verify this is the only qualification...
+    public static boolean isImgurAlbum(String url){
+        return url.contains("/a/");
+    }
 
     /*
        Takes indirect Imgur url such as https://imgur.com/7Ogk88I, fetches direct link from

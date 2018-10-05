@@ -103,7 +103,8 @@ public class Constants {
     public enum SubmissionType {
         IMAGE,
         GIF,
-        VIDEO
+        VIDEO,
+        ALBUM
     }
 
     public enum SubmissionDomain {

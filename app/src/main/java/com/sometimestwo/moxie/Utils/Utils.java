@@ -243,8 +243,10 @@ public class Utils {
                                     + e.getMessage());
                     call.cancel();
                 }
-                item.setCleanedUrl(gfyItem.getMobileUrl() != null ? gfyItem.getMobileUrl() : gfyItem.getMp4Url());
-                item.setMp4Url(gfyItem.getMp4Url());
+                if(gfyItem!=null) {
+                    item.setCleanedUrl(gfyItem.getMobileUrl() != null ? gfyItem.getMobileUrl() : gfyItem.getMp4Url());
+                    item.setMp4Url(gfyItem.getMp4Url());
+                }
             }
 
             @Override

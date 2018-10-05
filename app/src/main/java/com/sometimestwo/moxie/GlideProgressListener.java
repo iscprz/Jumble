@@ -24,6 +24,7 @@ public class GlideProgressListener implements RequestListener<Drawable> {
 
     public GlideProgressListener(ProgressBar progressBar){
         this.progressBar = progressBar;
+        progressBar.setVisibility(View.VISIBLE);
     }
     @Override
     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {

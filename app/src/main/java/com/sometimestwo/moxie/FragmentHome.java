@@ -1085,7 +1085,8 @@ public class FragmentHome extends Fragment {
                 display404();
                 return;
             }
-            String thumbnail = Constants.THUMBNAIL_NOT_FOUND;
+            // assume reddit has not provided a thumbnail to be safe
+            String thumbnail = Constants.URI_404_thumbnail;
             item.setSubmissionType(Utils.getSubmissionType(item.getUrl()));
 
             is404 = false;
@@ -1141,11 +1142,15 @@ public class FragmentHome extends Fragment {
                 holder.thumbnailIconDomain.setBackground(getResources().getDrawable(R.drawable.ic_youtube_red));
             }
 
-            // Check if domain not recognized or if link the thumbnail was something unrecognized
-            // such as "nsfw" or "spoiler". Replace with 404 thumb if so.
-            if (!Arrays.asList(Constants.VALID_MEDIA_EXTENSION)
+            // Double check Reddit assigned a valid image (jpg,png,etc) as the thumbnail.
+            if (!Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
                     .contains(Utils.getFileExtensionFromUrl(thumbnail))) {
-                thumbnail = Constants.URI_404_thumbnail;
+                // If not, check if submission URL is valid image to use as thumbnail.
+                if(Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
+                        .contains(Utils.getFileExtensionFromUrl(item.getUrl()))){
+                    thumbnail = item.getUrl();
+                }
+                // will assign 404 thumbnail if not given a thumbnail at this point
                 item.setThumbnail(thumbnail);
                 Log.e("DOMAIN_NOT_FOUND",
                         "Domain not recognized: "

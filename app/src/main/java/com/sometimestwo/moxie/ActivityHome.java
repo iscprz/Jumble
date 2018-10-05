@@ -105,23 +105,23 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
 
     @Override
     protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onStart() {
         // Need to make sure user is authenticated
         if(!App.getAccountHelper().isAuthenticated()){
             new Utils.FetchAuthenticatedUserTask( new OnRedditUserReadyListener() {
                 @Override
                 public void redditUserAuthenticated() {
-                    ActivityHome.super.onResume();
+                    ActivityHome.super.onStart();
                 }
             }).execute();
         }
         else{
-            super.onResume();
+            super.onStart();
         }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
     }
 
     @Override

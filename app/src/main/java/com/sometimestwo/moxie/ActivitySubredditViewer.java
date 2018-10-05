@@ -13,6 +13,7 @@ import android.view.Menu;
 
 import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Utils;
 
 public class ActivitySubredditViewer extends AppCompatActivity implements HomeEventListener,
         Fragment404.Fragment404EventListener, OnCloseClickEventListener {
@@ -57,21 +58,23 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
 
     @Override
     protected void onResume() {
-        // User can become unauthenticated when inactive(tabbed out of app) for a long period (1hour).
-        String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
-        if (!App.getAccountHelper().isAuthenticated()) {
-            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
-                App.getAccountHelper().switchToUser(mostRecentUser);
-            } else {
-                App.getAccountHelper().switchToUserless();
-            }
-        }
         super.onResume();
     }
 
     @Override
     protected void onStart() {
-        super.onStart();
+        // Need to make sure user is authenticated
+        if(!App.getAccountHelper().isAuthenticated()){
+            new Utils.FetchAuthenticatedUserTask(new OnRedditUserReadyListener() {
+                @Override
+                public void redditUserAuthenticated() {
+                    ActivitySubredditViewer.super.onStart();
+                }
+            }).execute();
+        }
+        else{
+            super.onStart();
+        }
     }
 
     @Override

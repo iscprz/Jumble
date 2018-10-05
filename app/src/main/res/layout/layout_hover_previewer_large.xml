@@ -3,14 +3,14 @@
     android:id="@+id/hover_view_container_large"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center"
     android:background="@color/colorBgBlackTintDarker"
-    android:paddingTop="40dp"
     android:visibility="gone"
     android:clickable="true">
 
     <!-- Submission title/subreddit info -->
 
-    <LinearLayout
+<!--    <LinearLayout
         android:id="@+id/hover_view_title_info_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,13 +28,14 @@
             android:textSize="18sp"
             android:visibility="visible" />
 
-        <!--subreddit name-->
+        &lt;!&ndash;subreddit name&ndash;&gt;
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:layout_weight=".25"
             android:orientation="horizontal"
-            android:paddingEnd="10dp">
+            android:paddingEnd="10dp"
+            android:layout_marginBottom="10dp">
 
             <View
                 android:layout_width="0dp"
@@ -53,14 +54,16 @@
                 android:textStyle="bold"
                 android:visibility="visible" />
         </LinearLayout>
-    </LinearLayout>
+    </LinearLayout>-->
 
     <!-- Large hover view media container-->
     <FrameLayout
         android:id="@+id/hover_view_large_image_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/hover_view_title_info_container">
+        android:layout_centerInParent="true"
+        >
+        <!--android:layout_below="@id/hover_view_title_info_container"-->
 
         <ProgressBar
             android:id="@+id/hover_view_large_image_media_progress"
@@ -79,7 +82,7 @@
                 android:id="@+id/large_previewer_imageview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="top"
+                android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:visibility="gone" />
 
@@ -92,7 +95,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"
-            android:layout_gravity="top"
+            android:layout_gravity="center"
 
             app:controller_layout_id="@layout/exo_playback_control_view_preview"
             app:player_layout_id="@layout/exo_player_view_previewer_large"
@@ -105,7 +108,7 @@
             android:id="@+id/large_previewer_video_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="top"
+            android:layout_gravity="center"
             android:background="@color/transparent"
             android:visibility="gone" />
 

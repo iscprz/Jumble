@@ -298,8 +298,8 @@ public class FragmentHome extends Fragment {
         /* hover view large*/
         mHoverPreviewContainerLarge = (RelativeLayout) v.findViewById(R.id.hover_view_container_large);
         mHoverPreviewMediaContainerLarge = (FrameLayout) v.findViewById(R.id.hover_view_large_image_container);
-        mHoverPreviewTitleLarge = (TextView) v.findViewById(R.id.hover_view_title_large);
-        mHoverPreviewSubredditLarge = (TextView) v.findViewById(R.id.hover_view_textview_subreddit);
+        //mHoverPreviewTitleLarge = (TextView) v.findViewById(R.id.hover_view_title_large);
+        //mHoverPreviewSubredditLarge = (TextView) v.findViewById(R.id.hover_view_textview_subreddit);
         mHoverImagePreviewLarge = (ImageView) v.findViewById(R.id.large_previewer_imageview);
 
         /* Exo player */
@@ -1204,9 +1204,9 @@ public class FragmentHome extends Fragment {
                     } else*/
 
                     if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
-                        mHoverPreviewTitleLarge.setText(item.getCompactTitle() != null
+                     /*   mHoverPreviewTitleLarge.setText(item.getCompactTitle() != null
                                 ? item.getCompactTitle() : item.getTitle());
-                        mHoverPreviewSubredditLarge.setText("/r/" + item.getSubreddit());
+                        mHoverPreviewSubredditLarge.setText("/r/" + item.getSubreddit());*/
                         setupPreviewer(item);
 
                         if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {

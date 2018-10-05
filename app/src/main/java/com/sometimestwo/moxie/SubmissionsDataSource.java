@@ -30,6 +30,8 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     MoxieInfoObj mMoxieInfoObj;
     private boolean mIs404 = false;
     private boolean mEndOfSubreddit = false;
+    //TODO figure this out
+    String defaultSubreddit = "gifs";
 
     public SubmissionsDataSource(MoxieInfoObj moxieInfoObj) {
         this.mMoxieInfoObj = moxieInfoObj;
@@ -37,50 +39,52 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
     @Override
     public void loadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {
-        RedditClient redditClient = App.getAccountHelper().getReddit();
-        DefaultPaginator.Builder<Submission, SubredditSort> submissionSubredditSortBuilder;
-        String subredditRequested = null;
-        SubredditSort sortBy = App.getMoxieInfoObj().getmSortBy();
-        TimePeriod timePeriod = App.getMoxieInfoObj().getmTimePeriod();
-
-        //TODO figure this out
-        String defaultSubreddit = "gifs";
-
-        // Get the requested subreddit(s), if any
-        if(!mMoxieInfoObj.getmSubredditStack().isEmpty()){
-            subredditRequested = mMoxieInfoObj.getmSubredditStack().peek();
-        }
-
-        // We have a subreddit request - does not matter if logged in or not
-        if (subredditRequested != null) {
-            submissionSubredditSortBuilder = redditClient.subreddit(subredditRequested).posts();
-        }
-        // Logged in with no request - display user's front page
-        else if (!redditClient.getAuthMethod().isUserless()) {
-            submissionSubredditSortBuilder = redditClient.frontPage();
-        }
-        // USERLESS and no subreddit request - display default
-        else {
-            submissionSubredditSortBuilder = redditClient.subreddit(defaultSubreddit).posts();
-        }
-
-        mPaginator = submissionSubredditSortBuilder
-                        .limit(Constants.QUERY_PAGE_SIZE)
-                        .sorting(sortBy == null ? SubredditSort.HOT : sortBy)
-                        .timePeriod(timePeriod == null ? TimePeriod.DAY : timePeriod)
-                        .build();
-
         // gotta make sure we're authenticated before making calls to reddit api
-        if(!App.getAccountHelper().isAuthenticated()){
+        if (!App.getAccountHelper().isAuthenticated()) {
             new Utils.FetchAuthenticatedUserTask(new OnRedditUserReadyListener() {
                 @Override
                 public void redditUserAuthenticated() {
-                    new FetchInitialSubmissionsTask(callback).execute();
+                    doLoadInitial(params, callback);
                 }
             }).execute();
+        } else {
+            doLoadInitial(params, callback);
         }
-        else{
-            new FetchInitialSubmissionsTask(callback).execute();
+    }
+
+    private void doLoadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {
+        SubredditSort sortBy = App.getMoxieInfoObj().getmSortBy();
+        TimePeriod timePeriod = App.getMoxieInfoObj().getmTimePeriod();
+
+        mPaginator = getSubredditSortBuilder()
+                .limit(Constants.QUERY_PAGE_SIZE)
+                .sorting(sortBy == null ? SubredditSort.HOT : sortBy)
+                .timePeriod(timePeriod == null ? TimePeriod.DAY : timePeriod)
+                .build();
+
+        new FetchInitialSubmissionsTask(callback).execute();
+
+    }
+
+    private DefaultPaginator.Builder<Submission, SubredditSort> getSubredditSortBuilder() {
+        RedditClient redditClient = App.getAccountHelper().getReddit();
+        String subredditRequested = null;
+
+        // Get the requested subreddit(s), if any
+        if (!mMoxieInfoObj.getmSubredditStack().isEmpty()) {
+            subredditRequested = mMoxieInfoObj.getmSubredditStack().peek();
+        }
+        // We have a subreddit request - does not matter if logged in or not
+        if (subredditRequested != null) {
+            return redditClient.subreddit(subredditRequested).posts();
+        }
+        // Logged in with no subreddit request - display user's front page
+        else if (!redditClient.getAuthMethod().isUserless()) {
+            return redditClient.frontPage();
+        }
+        // USERLESS and no subreddit request - display default
+        else {
+            return redditClient.subreddit(defaultSubreddit).posts();
         }
     }
 
@@ -94,15 +98,23 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     public void loadAfter(@NonNull final LoadParams<String> params, @NonNull final LoadCallback<SubmissionObj> callback) {
         if (!mIs404 && !mEndOfSubreddit) {
             // make sure we're authenticated
-            if(!App.getAccountHelper().isAuthenticated()){
+            if (!App.getAccountHelper().isAuthenticated()) {
                 new Utils.FetchAuthenticatedUserTask(new OnRedditUserReadyListener() {
                     @Override
                     public void redditUserAuthenticated() {
-                        new FetchSubmissionsTask(callback).execute();
+                        SubredditSort sortBy = App.getMoxieInfoObj().getmSortBy();
+                        TimePeriod timePeriod = App.getMoxieInfoObj().getmTimePeriod();
+
+                       // Listing<Submission> current = mPaginator.getCurrent();
+                        mPaginator = getSubredditSortBuilder()
+                                .limit(Constants.QUERY_PAGE_SIZE)
+                                .sorting(sortBy == null ? SubredditSort.HOT : sortBy)
+                                .timePeriod(timePeriod == null ? TimePeriod.DAY : timePeriod)
+                                .build();
+                                new FetchSubmissionsTask(callback).execute();
                     }
                 }).execute();
-            }
-            else{
+            } else {
                 new FetchSubmissionsTask(callback).execute();
             }
         }
@@ -131,21 +143,22 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             List<SubmissionObj> submissionObjs = null;
 
             try {
+
                 submissions = mPaginator.next();
                 /* If we've retrieved an amount of pages less than our page size limit,
-                *  it's because the subreddit(s) in question are out of submissions to return.
-                *
-                *  There exists a condition that will break this: subreddit has exactly
-                *  Constants.QUERY_PAGE_SIZE amount of submissions, mEndOfSubreddit never gets
-                *  set to true, we try loading next page and we find nothing. Ignore this for now.
-                * */
-                if(submissions.size() < Constants.QUERY_PAGE_SIZE){
+                 *  it's because the subreddit(s) in question are out of submissions to return.
+                 *
+                 *  There exists a condition that will break this: subreddit has exactly
+                 *  Constants.QUERY_PAGE_SIZE amount of submissions, mEndOfSubreddit never gets
+                 *  set to true, we try loading next page and we find nothing. Ignore this for now.
+                 * */
+                if (submissions.size() < Constants.QUERY_PAGE_SIZE) {
                     mEndOfSubreddit = true;
                 }
                 submissionObjs = mapSubmissions(submissions);
             } catch (Exception e) {
                 // network issue
-                if(e instanceof UnknownHostException){
+                if (e instanceof UnknownHostException) {
                     mIs404 = true;
                     submissionObjs = new ArrayList<SubmissionObj>();
                     submissionObjs.add(new SubmissionObj(true));
@@ -266,34 +279,29 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             }
 
             // domain
-            if(submission.getDomain().contains("imgur")){
+            if (submission.getDomain().contains("imgur")) {
                 s.setDomain(Constants.SubmissionDomain.IMGUR);
-            }
-            else if(submission.getDomain().contains("v.redd.it")){
+            } else if (submission.getDomain().contains("v.redd.it")) {
                 s.setDomain(Constants.SubmissionDomain.VREDDIT);
-            }
-            else if(submission.getDomain().contains("i.redd.it")){
+            } else if (submission.getDomain().contains("i.redd.it")) {
                 s.setDomain(Constants.SubmissionDomain.IREDDIT);
-            }
-            else if(submission.getDomain().contains("gfycat")){
+            } else if (submission.getDomain().contains("gfycat")) {
                 s.setDomain(Constants.SubmissionDomain.GFYCAT);
-            }
-            else if(submission.getDomain().contains("youtube")
-                    || submission.getDomain().contains("youtu.be")){
+            } else if (submission.getDomain().contains("youtube")
+                    || submission.getDomain().contains("youtu.be")) {
                 s.setDomain(Constants.SubmissionDomain.YOUTUBE);
-            }
-            else{
+            } else {
                 s.setDomain(Constants.SubmissionDomain.OTHER);
             }
 
             // v.redd.it Videos/GIFS that are crossposted will not have EmbeddedMedia
             // and instead have some sort of crosspost field that JRAW does handle.
             // Since these aren't too common, let's skip support for them for now.
-            if(s.getDomain() == Constants.SubmissionDomain.VREDDIT && s.getEmbeddedMedia() == null){
+            if (s.getDomain() == Constants.SubmissionDomain.VREDDIT && s.getEmbeddedMedia() == null) {
                 continue;
             }
             // add shortened title for displaying purposes if needed
-            if(submission.getTitle().length() > Constants.MAX_TITLE_LENGTH){
+            if (submission.getTitle().length() > Constants.MAX_TITLE_LENGTH) {
                 s.setCompactTitle(submission.getTitle().substring(0,
                         Constants.MAX_TITLE_LENGTH) + "...");
             }

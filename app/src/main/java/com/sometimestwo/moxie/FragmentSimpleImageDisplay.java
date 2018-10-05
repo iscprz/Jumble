@@ -38,7 +38,7 @@ import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
 
-public class FragmentSimpleImageDisplay extends Fragment implements OnTaskCompletedListener {
+public class FragmentSimpleImageDisplay extends Fragment implements OnVRedditTaskCompletedListener {
 
     private SubmissionObj mCurrSubmission;
     private boolean mPrefsAllowNSFW;

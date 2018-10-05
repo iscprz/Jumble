@@ -11,13 +11,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.sometimestwo.moxie.App;
-import com.sometimestwo.moxie.OnTaskCompletedListener;
+import com.sometimestwo.moxie.OnVRedditTaskCompletedListener;
 import com.sometimestwo.moxie.R;
 
 import java.io.File;
 import java.net.MalformedURLException;
 
-public class DownloadService extends Service implements OnTaskCompletedListener {
+public class DownloadService extends Service implements OnVRedditTaskCompletedListener {
     public static final String ACTION_PAUSE_DOWNLOAD = "ACTION_PAUSE_DOWNLOAD";
     public static final String ACTION_CONTINUE_DOWNLOAD = "ACTION_CONTINUE_DOWNLOAD";
     public static final String ACTION_CANCEL_DOWNLOAD = "ACTION_CANCEL_DOWNLOAD";

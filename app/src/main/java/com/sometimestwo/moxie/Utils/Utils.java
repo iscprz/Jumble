@@ -4,10 +4,8 @@ package com.sometimestwo.moxie.Utils;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.media.MediaScannerConnection;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -16,7 +14,6 @@ import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.widget.ProgressBar;
 
@@ -24,10 +21,17 @@ import com.coremedia.iso.boxes.Container;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
+import com.sometimestwo.moxie.API.GfycatAPI;
 import com.sometimestwo.moxie.App;
+import com.sometimestwo.moxie.Imgur.client.ImgurClient;
+import com.sometimestwo.moxie.Imgur.response.images.ImgurSubmission;
+import com.sometimestwo.moxie.Imgur.response.images.SubmissionRoot;
+import com.sometimestwo.moxie.Model.GfyItem;
+import com.sometimestwo.moxie.Model.GfycatWrapper;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.OnRedditUserReadyListener;
 import com.sometimestwo.moxie.OnTaskCompletedListener;
+import com.sometimestwo.moxie.OnVRedditTaskCompletedListener;
 
 
 import net.dean.jraw.models.VoteDirection;
@@ -46,9 +50,16 @@ import java.net.URL;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class Utils {
 
@@ -98,6 +109,97 @@ public class Utils {
         return res;
     }
 
+
+    /*
+       Takes indirect Imgur url such as https://imgur.com/7Ogk88I, fetches direct link from
+       Imgur API, and sets item's URL to direct link.
+       We also are setting the item's submission type here. Might need to do this elsewhere.
+    */
+    public static void fixIndirectImgurUrl(SubmissionObj item,
+                                    String imgurHash,
+                                    OnTaskCompletedListener listener) {
+        ImgurClient imgurClient = new ImgurClient();
+
+        imgurClient.getImageService()
+                .getImageByHash(imgurHash)
+                .subscribeOn(Schedulers.io())
+                .subscribe(new io.reactivex.Observer<SubmissionRoot>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(SubmissionRoot submissionRoot) {
+                        ImgurSubmission imgurSubmissionData = submissionRoot.getImgurSubmissionData();
+                        // ImgurSubmission can be one of two things:
+                        // 1. Image. Will not contain any mp4 data
+                        // 2. Gif. Will contain mp4 link
+
+                        // image
+                        if (imgurSubmissionData.getMp4() == null) {
+                            item.setCleanedUrl(imgurSubmissionData.getLink());
+                        }
+                        // gif
+                        //TODO: THIS SHOULD NEVER HAPPEN! We assumed that only indirect imgur URLs
+                        //      are calling this function. We also assumed that indirect imgur URLs
+                        //      imply IMAGE (not gif/video)
+                        else {
+                            item.setCleanedUrl(imgurSubmissionData.getMp4());
+                            Log.e("IMGUR_GIF_WTF",
+                                    "Found a gif/mp4 file when fetching an indirect url fix!");
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        listener.downloadSuccess();
+                        //item.setLoadingData(false);
+                    }
+                });
+    }
+
+    /*
+
+        Given a imgur link ending with .gif/gifv such as https://i.imgur.com/4RxPsWI.gifv,
+        retrieve corresponding .mp4 link: https://i.imgur.com/4RxPsWI.mp4 and set item's
+        URL to new .mp4 link.
+     */
+    public static void getMp4LinkImgur(SubmissionObj item, String imgurHash, OnTaskCompletedListener listener) {
+        ImgurClient imgurClient = new ImgurClient();
+        //UjpwIRe is a 404 gifv hash
+        imgurClient.getImageService()
+                .getImageByHash(imgurHash)
+                .subscribeOn(Schedulers.io())
+                .subscribe(new io.reactivex.Observer<SubmissionRoot>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(SubmissionRoot submissionRoot) {
+                        ImgurSubmission imgurSubmissionData = submissionRoot.getImgurSubmissionData();
+                        // item.setUrl(imgurSubmissionData.getMp4());
+                        item.setCleanedUrl(imgurSubmissionData.getMp4());
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e("ERROR_IMGUR_FETCH", "Failed to retrieve imgur hash: " + imgurHash);
+                        e.printStackTrace();
+                        listener.downloadFailure();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        listener.downloadSuccess();
+                    }
+                });
+    }
     public static String getGfycatHash(String gfycatUrl) {
         String hash = gfycatUrl.substring(gfycatUrl.lastIndexOf("/", gfycatUrl.length()));
         if (hash.contains("-size_restricted")) {
@@ -111,6 +213,47 @@ public class Utils {
         //return gfycatUrl.substring(gfycatUrl.lastIndexOf("/", gfycatUrl.length()));
     }
 
+    public static void getGfycat(String gfycatHash, SubmissionObj item) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(Constants.BASE_URL_GFYCAT)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        GfycatAPI gfycatAPI = retrofit.create(GfycatAPI.class);
+        gfycatAPI.getGfycat(gfycatHash);
+        Call<GfycatWrapper> call = gfycatAPI.getGfycat(gfycatHash);
+        // set a reference to this async call so we can cancel if needed
+        item.setGfycatAsyncCall(call);
+        call.enqueue(new Callback<GfycatWrapper>() {
+            @Override
+            public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {
+                //Log.d(TAG, "onResponse: feed: " + response.body().toString());
+                Log.d("GFYCAT_RESPONSE",
+                        "getGfycat onResponse: Server Response: " + response.toString());
+
+                GfyItem gfyItem = new GfyItem();
+                try {
+                    gfyItem = response.body().getGfyItem();
+                } catch (Exception e) {
+                    Log.e("GFYCAT_RESPONSE_ERROR",
+                            "Failed in attempt to retrieve gfycat object for hash "
+                                    + gfycatHash + ". "
+                                    + e.getMessage());
+                    call.cancel();
+                }
+                item.setCleanedUrl(gfyItem.getMobileUrl() != null ? gfyItem.getMobileUrl() : gfyItem.getMp4Url());
+                item.setMp4Url(gfyItem.getMp4Url());
+            }
+
+            @Override
+            public void onFailure(Call<GfycatWrapper> call, Throwable t) {
+                call.cancel();
+                Log.e("GETGFYCAT_ERROR",
+                        "getGfycat onFailure: Unable to retrieve Gfycat: " + t.getMessage());
+            }
+
+        });
+    }
     public static String getYouTubeID(String url) {
         String pattern = "(?<=watch\\?v=|/videos/|embed\\/|youtu.be\\/|\\/v\\/|\\/e\\/|watch\\?v%3D|watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%\u200C\u200B2F|youtu.be%2F|%2Fv%2F)[^#\\&\\?\\n]*";
 
@@ -291,9 +434,9 @@ public class Utils {
     public static class FetchVRedditGifTask extends AsyncTask<String, Void, String> {
         private Context context;
         String url;
-        private OnTaskCompletedListener listener;
+        private OnVRedditTaskCompletedListener listener;
 
-        public FetchVRedditGifTask(Context context, String dirtyUrl, OnTaskCompletedListener listener) {
+        public FetchVRedditGifTask(Context context, String dirtyUrl, OnVRedditTaskCompletedListener listener) {
             this.listener = listener;
             this.url = dirtyUrl;
             this.context = context;
@@ -423,9 +566,9 @@ public class Utils {
 
     public static class SaveSubmissionTask extends AsyncTask<Void, Void, Void> {
         SubmissionObj currSubmission;
-        OnTaskCompletedListener listener;
+        OnVRedditTaskCompletedListener listener;
 
-        public SaveSubmissionTask(SubmissionObj currSubmission, OnTaskCompletedListener listener) {
+        public SaveSubmissionTask(SubmissionObj currSubmission, OnVRedditTaskCompletedListener listener) {
             super();
             this.currSubmission = currSubmission;
             this.listener = listener;
@@ -452,11 +595,11 @@ public class Utils {
 
     public static class VoteSubmissionTask extends AsyncTask<Void, Void, Void> {
         SubmissionObj currSubmission;
-        OnTaskCompletedListener listener;
+        OnVRedditTaskCompletedListener listener;
         VoteDirection voteDirection;
 
         public VoteSubmissionTask(SubmissionObj currSubmission,
-                                  OnTaskCompletedListener listener,
+                                  OnVRedditTaskCompletedListener listener,
                                   VoteDirection voteDirection) {
             this.currSubmission = currSubmission;
             this.listener = listener;

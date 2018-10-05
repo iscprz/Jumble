@@ -1,9 +1,6 @@
 package com.sometimestwo.moxie;
 
-import android.net.Uri;
-
-public interface OnTaskCompletedListener {
-    void onVRedditMuxTaskCompleted(Uri uriToLoad);
-/*  void fileDownloadSuccess();
-    void fileDownloadFailed();  */
+public class OnTaskCompletedListener {
+    public void downloadSuccess(){ }
+    public void downloadFailure(){}
 }

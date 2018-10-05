@@ -63,9 +63,11 @@ import com.sometimestwo.moxie.Utils.DownloadService;
 import com.sometimestwo.moxie.Utils.Utils;
 import net.dean.jraw.models.VoteDirection;
 
+import java.util.Arrays;
+
 import static android.content.Context.BIND_AUTO_CREATE;
 
-public class FragmentFullDisplay extends Fragment implements OnTaskCompletedListener {
+public class FragmentFullDisplay extends Fragment implements OnVRedditTaskCompletedListener {
     private SubmissionObj mCurrSubmission;
     private boolean mIsUserless;
     private boolean mPrefsAllowNSFW;
@@ -312,17 +314,78 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                 ? mCurrSubmission.getCleanedUrl() : mCurrSubmission.getUrl();
 
         if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-            focusView(mZoomieImageView, null);
-            mProgressBar.setVisibility(View.VISIBLE);
-            Glide.with(this)
-                    .load(imageUrl)
-                    .listener(new GlideProgressListener(mProgressBar))
-                    .into(mZoomieImageView);
+            // imgur links need to be checked for indirect links such as imgur.com/AktjAWe
+            if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.IMGUR
+                    && !Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
+                    .contains(Utils.getFileExtensionFromUrl(mCurrSubmission.getUrl()))) {
+                mProgressBar.setVisibility(View.VISIBLE);
+                // fixes indirect imgur url and uses Glide to load image on success
+                Utils.fixIndirectImgurUrl(mCurrSubmission, Utils.getImgurHash(mCurrSubmission.getUrl()),
+                        new OnTaskCompletedListener() {
+                            @Override
+                            public void downloadSuccess() {
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        focusView(mZoomieImageView, null);
+                                        mProgressBar.setVisibility(View.GONE);
+                                        Glide.with(FragmentFullDisplay.this)
+                                                .load(mCurrSubmission.getCleanedUrl())
+                                                /*.listener(new GlideProgressListener(mProgressBar))*/
+                                                .into(mZoomieImageView);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void downloadFailure() {
+                                super.downloadFailure();
+                            }
+                        });
+            }
+            else {
+                focusView(mZoomieImageView, null);
+                mProgressBar.setVisibility(View.GONE);
+                Glide.with(FragmentFullDisplay.this)
+                        .load(imageUrl)
+                        .listener(new GlideProgressListener(mProgressBar))
+                        .into(mZoomieImageView);
+            }
+
             //TODO: handle invalid URL
         } else if (mCurrSubmission.getSubmissionType() == Constants.SubmissionType.GIF
                 || mCurrSubmission.getSubmissionType() == Constants.SubmissionType.VIDEO) {
+            mProgressBar.setVisibility(View.VISIBLE);
 
-            if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.YOUTUBE) {
+            // gif might have a .gifv (imgur) extension
+            // ...need to fetch corresponding .mp4
+            if(mCurrSubmission.getDomain() == Constants.SubmissionDomain.IMGUR
+                    && Utils.getFileExtensionFromUrl(mCurrSubmission.getUrl())
+                    .equalsIgnoreCase("gifv")) {
+                Utils.getMp4LinkImgur(mCurrSubmission,
+                        Utils.getImgurHash(mCurrSubmission.getUrl()),
+                        new OnTaskCompletedListener() {
+                    @Override
+                    public void downloadSuccess() {
+                        super.downloadSuccess();
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //exo player has its own progress bar
+                                mProgressBar.setVisibility(View.GONE);
+                                focusView(mExoplayer, mExoplayerContainer);
+                                initializeExoPlayer(mCurrSubmission.getCleanedUrl());
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void downloadFailure() {
+                        super.downloadFailure();
+                    }
+                });
+            }
+            else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.YOUTUBE) {
                 //youtube has it's own progress bar
                 mProgressBar.setVisibility(View.GONE);
                 focusView(mYouTubeThumbnail, null);
@@ -363,8 +426,10 @@ public class FragmentFullDisplay extends Fragment implements OnTaskCompletedList
                     //LogUtil.e(e, "Error v.redd.it url: " + url);
                 }
             }
-            // IREDDIT requires Imageview to play GIF
-            else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.IREDDIT) {
+            // IREDDIT requires Imageview to play GIF (not gifv)file.
+            // Also play anything else that may be a .gif file here
+            else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.IREDDIT
+                    || Utils.getFileExtensionFromUrl(imageUrl).equalsIgnoreCase("gif")) {
                 focusView(mZoomieImageView, null);
 
                 //TODO Progress bar

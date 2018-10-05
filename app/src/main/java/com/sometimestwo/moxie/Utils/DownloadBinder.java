@@ -4,8 +4,6 @@ import android.app.Notification;
 import android.os.Binder;
 import android.text.TextUtils;
 
-import com.sometimestwo.moxie.OnTaskCompletedListener;
-
 
 public class DownloadBinder extends Binder {
 

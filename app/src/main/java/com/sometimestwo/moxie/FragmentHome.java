@@ -111,7 +111,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.app.Activity.RESULT_OK;
 
-public class FragmentHome extends Fragment implements OnTaskCompletedListener, OnRedditUserReadyListener {
+public class FragmentHome extends Fragment implements  OnRedditUserReadyListener {
     public final static String TAG = Constants.TAG_FRAG_HOME;
 
 
@@ -184,6 +184,8 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener, O
     //exo player stuff
     private BandwidthMeter bandwidthMeter;
     private DefaultTrackSelector trackSelector;
+    // Exoplayer is used to play streaming(as opposed to downloaded) .mp4 files.
+    // .gifv links will be converted to .mp4 links and played with exoplayer.
     private SimpleExoPlayer player;
     private ProgressBar exoplayerProgressbar;
     private DataSource.Factory mediaDataSourceFactory;
@@ -192,11 +194,11 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener, O
     private Timeline.Window window;
     //private FrameLayout mExoplayerContainerLarge;
     private PlayerView mExoplayerLarge;
+    // Videoview is used to play downloaded(as opposed to streaming) .mp4 files.
+    // VReddit links will be downloaded and played using VideoView.
     private VideoView mPreviewerVideoViewLarge;
-
     // event listeners
     private HomeEventListener mHomeEventListener;
-    private OnTaskCompletedListener mVRedditConversionListener;
 
 
     public static FragmentHome newInstance() {
@@ -318,7 +320,6 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener, O
         super.onAttach(context);
         try {
             mHomeEventListener = (HomeEventListener) context;
-            //mVRedditConversionListener = (OnTaskCompletedListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
                     + " must implement listener inferfaces!");
@@ -969,7 +970,8 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener, O
         the ones we need according to which viewer has been selected in settings.
      */
     private void setupPreviewer(SubmissionObj item) {
-        if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
+        /* Small previewer on hold for now*/
+        /*if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
             mHoverPreviewContainerSmall.setVisibility(View.VISIBLE);
             mHoverPreviewContainerLarge.setVisibility(View.GONE);
             //popupWindow = new PopupWindow(customView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -980,7 +982,8 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener, O
             if (item.getSubmissionType() == Constants.SubmissionType.GIF) { // and video?
 
             }
-        } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+        } else */
+        if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
             if (mHoverPreviewContainerLarge.getParent() != null) {
                 ((ViewGroup) mHoverPreviewContainerLarge.getParent()).removeView(mHoverPreviewContainerLarge);
             }
@@ -1112,19 +1115,10 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener, O
             //TODO: imgur albums. Example URL https://imgur.com/a/K8bJ9pV (nsfw)
             if (item.getDomain() == Constants.SubmissionDomain.IMGUR) {
                 // Check if submission type is null. This will happen if the item's URL is
-                // to a non-direct image/gif link such as https://imgur.com/qTadRtq
+                // to a non-direct IMAGE(not gif/video) link such as https://imgur.com/qTadRtq
                 if (item.getSubmissionType() == null) {
-                    String imgurHash = Utils.getImgurHash(item.getUrl());
-                    // Async call to Imgur API
-                    fixIndirectImgurUrl(item, imgurHash);
-                }
-                // imgur image handled by default (this may change later)
-
-                // Else if imgur gif
-                else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
-                    // Assume we're given .gifv link. Need to fetch .mp4 link from Imgur API
-                    String imgurHash = Utils.getImgurHash(item.getUrl());
-                    getMp4LinkImgur(item, imgurHash);
+                    // Here we assume indirect imgur links refer to images only
+                    item.setSubmissionType(Constants.SubmissionType.IMAGE);
                 }
                 // We assume item will always have a thumbnail in an image format
                 thumbnail = item.getThumbnail();
@@ -1152,7 +1146,7 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener, O
                 // extract gfycat ID (looks like:SpitefulGoldenAracari)
                 String gfycatHash = Utils.getGfycatHash(item.getUrl());
                 // get Gfycat .mp4 "clean url"
-                getGfycat(gfycatHash, item);
+                Utils.getGfycat(gfycatHash, item);
                 // Assume all Gfycat links are of submission type GIF
                 item.setSubmissionType(Constants.SubmissionType.GIF);
                 thumbnail = item.getThumbnail();
@@ -1212,7 +1206,8 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener, O
                     // prevent recyclerview from handling touch events, otherwise bad things happen
                     mRecyclerHome.setHandleTouchEvents(false);
                     isImageViewPressed = true;
-
+                   /* Small previewer on hold for now. */
+                    /*
                     if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
                         mHoverPreviewTitleSmall.setText(item.getTitle());
                         //popupWindow = new PopupWindow(customView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -1225,32 +1220,115 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener, O
                         } else if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
 
                         }
-                    } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+                    } else*/
+
+                    if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
                         mHoverPreviewTitleLarge.setText(item.getCompactTitle() != null
                                 ? item.getCompactTitle() : item.getTitle());
                         mHoverPreviewSubredditLarge.setText("/r/" + item.getSubreddit());
                         setupPreviewer(item);
                         if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
-                            GlideApp.load(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl())
-                                    .listener(new GlideProgressListener(mPreviewerProgressBar))
-                                    /*.apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))*/
-                                    .into(mHoverImagePreviewLarge);
+                            // Imgur Urls might be pointing to indirect image URLs
+                            if(item.getDomain() == Constants.SubmissionDomain.IMGUR
+                                    && !Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
+                                    .contains(Utils.getFileExtensionFromUrl(item.getUrl()))){
+                                mPreviewerProgressBar.setVisibility(View.VISIBLE);
+                                // fixes indirect imgur url and uses Glide to load image on success
+                                Utils.fixIndirectImgurUrl(item, Utils.getImgurHash(item.getUrl()),
+                                        new OnTaskCompletedListener(){
+                                    @Override
+                                    public void downloadSuccess() {
+                                        getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                mPreviewerProgressBar.setVisibility(View.GONE);
+                                                GlideApp.load(item.getCleanedUrl())
+                                                        .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
+                                                        /* .listener(new GlideProgressListener(mPreviewerProgressBar))*/
+                                                        .into(mHoverImagePreviewLarge);
+                                            }
+                                        });
+
+                                    }
+
+                                    @Override
+                                    public void downloadFailure() {
+                                        super.downloadFailure();
+                                    }
+                                });
+                            }
+                            // image should be ready to be displayed here
+                            else{
+                                GlideApp.load(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl())
+                                        .listener(new GlideProgressListener(mPreviewerProgressBar))
+                                        .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
+                                        .into(mHoverImagePreviewLarge);
+                            }
                         } else if (item.getSubmissionType() == Constants.SubmissionType.GIF
                                 || item.getSubmissionType() == Constants.SubmissionType.VIDEO) {
+                            // gif might have a .gifv (imgur) extension
+                            // ...need to fetch corresponding .mp4
+                            if(item.getDomain() == Constants.SubmissionDomain.IMGUR
+                                    && Utils.getFileExtensionFromUrl(item.getUrl())
+                                    .equalsIgnoreCase("gifv")){
+                                Utils.getMp4LinkImgur(item, Utils.getImgurHash(item.getUrl()), new OnTaskCompletedListener(){
+                                    @Override
+                                    public void downloadSuccess() {
+                                        super.downloadSuccess();
+                                        getActivity().runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                // cleaned url should contain .mp4 link
+                                                initializePreviewExoPlayer(item.getCleanedUrl());
+                                            }
+                                        });
+                                    }
+
+                                    @Override
+                                    public void downloadFailure() {
+                                        super.downloadFailure();
+                                    }
+                                });
+                            }
                             // VREDDIT videos are high maintance
-                            if (item.getDomain() == Constants.SubmissionDomain.VREDDIT) {
+                            else if (item.getDomain() == Constants.SubmissionDomain.VREDDIT) {
                                 mPreviewerProgressBar.setVisibility(View.VISIBLE);
                                 String url = item.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
                                 try {
-                                    new Utils.FetchVRedditGifTask(getContext(), url, FragmentHome.this).execute();
+                                    new Utils.FetchVRedditGifTask(getContext(), url, new OnVRedditTaskCompletedListener() {
+                                        @Override
+                                        public void onVRedditMuxTaskCompleted(Uri uriToLoad) {
+                                            mPreviewerVideoViewLarge.setVideoURI(uriToLoad);
+                                            focusView(mPreviewerVideoViewLarge);
+                                            mPreviewerVideoViewLarge.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                                @Override
+                                                public void onPrepared(MediaPlayer mp) {
+                                                    mp.start();
+                                                    mp.setLooping(true);
+                                                }
+                                            });
+                                            mPreviewerVideoViewLarge.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                                @Override
+                                                public void onCompletion(MediaPlayer mp) {
+                                                    mp.stop();
+                                                    mp.release();
+                                                }
+                                            });
+                                        }
+                                    }).execute();
                                 } catch (Exception e) {
                                     //LogUtil.e(e, "Error v.redd.it url: " + url);
                                 }
-                            } else if (item.getDomain() == Constants.SubmissionDomain.IREDDIT) {
-                                GlideApp.asGif()
+                            }
+                            // IREDDIT submissions will always be .gif (not .gifv)
+                            // Also check for anything else that may be .gif here
+                            else if (item.getDomain() == Constants.SubmissionDomain.IREDDIT
+                                    || Utils.getFileExtensionFromUrl(item.getUrl()).equalsIgnoreCase("gif")) {
+                                mPreviewerProgressBar.setVisibility(View.VISIBLE);
+                                GlideApp
+                                        .asGif()
                                         .load(item.getUrl())
                                         .into(mHoverImagePreviewLarge);
-
                             } else {
                                 initializePreviewExoPlayer(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl());
                             }
@@ -1291,11 +1369,13 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener, O
                                 // done with hover view, allow recyclerview to handle touch events
                                 mRecyclerHome.setHandleTouchEvents(true);
                                 isImageViewPressed = false;
-                                if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
+                              /*  if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
                                     mHoverPreviewContainerSmall.setVisibility(View.GONE);
 
-                                } else if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
-                                    mHoverPreviewContainerLarge.setVisibility(View.GONE);
+                                } else*/
+                              if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+                                  mPreviewerProgressBar.setVisibility(View.GONE);
+                                  mHoverPreviewContainerLarge.setVisibility(View.GONE);
                                     clearVideoView();
                                     mHoverImagePreviewLarge.setVisibility(View.GONE);
                                     mExoplayerLarge.setVisibility(View.GONE);
@@ -1630,29 +1710,9 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener, O
         mPreviewerVideoViewLarge.setVisibility(View.GONE);
     }
 
-    @Override
-    public void onVRedditMuxTaskCompleted(Uri uriToLoad) {
-        mPreviewerVideoViewLarge.setVideoURI(uriToLoad);
-        focusView(mPreviewerVideoViewLarge);
-        mPreviewerVideoViewLarge.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mp.start();
-                mp.setLooping(true);
-            }
-        });
-        mPreviewerVideoViewLarge.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                mp.stop();
-                mp.release();
-            }
-        });
-    }
 
-    /*************************Async network tasks *******************************************/
 
-    //* Set's our reddit client to userless and refreshes Home on completion*//*
+    //* Sets our reddit client to userless and refreshes Home on completion*//*
     private class FetchUserlessAccountTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
@@ -1664,137 +1724,5 @@ public class FragmentHome extends Fragment implements OnTaskCompletedListener, O
         protected void onPostExecute(Void aVoid) {
             switchOrLogoutCleanup(Constants.USERNAME_USERLESS);
         }
-    }
-
-
-    /***********[GFYCAT SPECIFIC FUNCTIONS] ***************/
-
-    private void getGfycat(String gfycatHash, SubmissionObj item) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(Constants.BASE_URL_GFYCAT)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        GfycatAPI gfycatAPI = retrofit.create(GfycatAPI.class);
-        gfycatAPI.getGfycat(gfycatHash);
-        Call<GfycatWrapper> call = gfycatAPI.getGfycat(gfycatHash);
-        // set a reference to this async call so we can cancel if needed
-        item.setGfycatAsyncCall(call);
-        call.enqueue(new Callback<GfycatWrapper>() {
-            @Override
-            public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {
-                //Log.d(TAG, "onResponse: feed: " + response.body().toString());
-                Log.d(TAG, "onResponse: Server Response: " + response.toString());
-
-                GfyItem gfyItem = new GfyItem();
-                try {
-                    gfyItem = response.body().getGfyItem();
-                } catch (Exception e) {
-                    Log.e("GFYCAT_RESPONSE_ERROR",
-                            "Failed in attempt to retrieve gfycat object for hash "
-                                    + gfycatHash + ". "
-                                    + e.getMessage());
-                    call.cancel();
-                }
-                item.setCleanedUrl(gfyItem.getMobileUrl() != null ? gfyItem.getMobileUrl() : gfyItem.getMp4Url());
-                item.setMp4Url(gfyItem.getMp4Url());
-            }
-
-            @Override
-            public void onFailure(Call<GfycatWrapper> call, Throwable t) {
-                call.cancel();
-                Log.e(TAG, "onFailure: Unable to retrieve RSS: " + t.getMessage());
-                //Toast.makeText(MainActivity.this, "An Error Occured", Toast.LENGTH_SHORT).show();
-
-            }
-
-        });
-    }
-
-
-    /***********[IMGUR SPECIFIC FUNCTIONS] ***************/
-    /****************************************************/
-    /****************************************************/
-
-    /*
-       Takes indirect Imgur url such as https://imgur.com/7Ogk88I, fetches direct link from
-       Imgur API, and sets item's URL to direct link.
-       We also are setting the item's submission type here. Might need to do this elsewhere.
-    */
-    public void fixIndirectImgurUrl(SubmissionObj item, String imgurHash) {
-        ImgurClient imgurClient = new ImgurClient();
-
-        imgurClient.getImageService()
-                .getImageByHash(imgurHash)
-                .subscribeOn(Schedulers.io())
-                .subscribe(new io.reactivex.Observer<SubmissionRoot>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-
-                    @Override
-                    public void onNext(SubmissionRoot submissionRoot) {
-                        ImgurSubmission imgurSubmissionData = submissionRoot.getImgurSubmissionData();
-                        // ImgurSubmission can be one of two things:
-                        // 1. Image. Will not contain any mp4 data
-                        // 2. Gif. Will contain mp4 link
-
-                        // image
-                        if (imgurSubmissionData.getMp4() == null) {
-                            item.setCleanedUrl(imgurSubmissionData.getLink());
-                            item.setSubmissionType(Constants.SubmissionType.IMAGE);
-                        }
-                        // gif
-                        else {
-                            item.setCleanedUrl(imgurSubmissionData.getMp4());
-                            item.setSubmissionType(Constants.SubmissionType.GIF);
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        //item.setLoadingData(false);
-                    }
-                });
-    }
-
-    /*
-
-        Given a imgur link ending with .gif/gifv such as https://i.imgur.com/4RxPsWI.gifv,
-        retrieve corresponding .mp4 link: https://i.imgur.com/4RxPsWI.mp4 and set item's
-        URL to new .mp4 link.
-     */
-    private void getMp4LinkImgur(SubmissionObj item, String imgurHash) {
-        ImgurClient imgurClient = new ImgurClient();
-        //UjpwIRe is a 404 gifv hash
-        imgurClient.getImageService()
-                .getImageByHash(imgurHash)
-                .subscribeOn(Schedulers.io())
-                .subscribe(new io.reactivex.Observer<SubmissionRoot>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-
-                    @Override
-                    public void onNext(SubmissionRoot submissionRoot) {
-                        ImgurSubmission imgurSubmissionData = submissionRoot.getImgurSubmissionData();
-                        item.setUrl(imgurSubmissionData.getMp4());
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("ERROR_IMGUR_FETCH", "Failed to retrieve imgur hash: " + imgurHash);
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onComplete() {
-                    }
-                });
     }
 }

@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Utils;
 
 
 /*
@@ -104,8 +105,23 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
 
     @Override
     protected void onResume() {
-        // TODO User can become unauthenticated when inactive(tabbed out of app) for a long period (1hour).
-        super.onResume();
+        // Need to make sure user is authenticated
+        if(!App.getAccountHelper().isAuthenticated()){
+            new Utils.FetchAuthenticatedUserTask( new OnRedditUserReadyListener() {
+                @Override
+                public void redditUserAuthenticated() {
+                    ActivityHome.super.onResume();
+                }
+            }).execute();
+        }
+        else{
+            super.onResume();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 
     @Override
@@ -199,8 +215,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
 
     // A Navigation View is a menu that slides from the left or right
     private boolean isNavViewOpen(DrawerLayout drawer){
-        return drawer.isDrawerOpen(GravityCompat.START)
-                || drawer.isDrawerOpen(GravityCompat.END);
+        return drawer.isDrawerOpen(GravityCompat.START) || drawer.isDrawerOpen(GravityCompat.END);
     }
 
     /*

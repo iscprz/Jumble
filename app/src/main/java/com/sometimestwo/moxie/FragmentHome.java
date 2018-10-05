@@ -111,7 +111,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.app.Activity.RESULT_OK;
 
-public class FragmentHome extends Fragment implements  OnRedditUserReadyListener {
+public class FragmentHome extends Fragment {
     public final static String TAG = Constants.TAG_FRAG_HOME;
 
 
@@ -215,6 +215,7 @@ public class FragmentHome extends Fragment implements  OnRedditUserReadyListener
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Ensure Reddit Client is authenticated before proceeding
         View v = inflater.inflate(R.layout.fragment_home, container, false);
 
         /* Set screen dimensions for resizing dialogs */
@@ -336,35 +337,13 @@ public class FragmentHome extends Fragment implements  OnRedditUserReadyListener
         super.onStart();
     }
 
-    // onResume needs to check if we are currently authenticated to make reddit calls
-    // before doing anything. Add any onResume() functionality to resume() instead of onResume()
     @Override
     public void onResume() {
         super.onResume();
-        if(!App.getAccountHelper().isAuthenticated()){
-            String mostRecentUser =
-                    prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
-            new Utils.FetchAuthenticatedUserTask(mostRecentUser,this).execute();
-        }
-        else{
-            resume();
-        }
-
-    }
-
-    // gets called from Utils.FetchAuthenticatedUserTask upon completion
-    @Override
-    public void redditUserAuthenticated() {
-        resume();
-    }
-
-    private void resume(){
         try {
             // Check if user settings have been altered.
             // i.e. User went to settings, opted in to NSFW posts then navigated back.
             validatePreferences();
-            // Make sure we're referencing the right user
-            //validateCurrUser();
             setupToolbar();
         } catch (Exception e) {
             e.printStackTrace();
@@ -515,13 +494,11 @@ public class FragmentHome extends Fragment implements  OnRedditUserReadyListener
             if (resultCode == RESULT_OK) {
                 //mToolbar.setAlpha(1);
             }
-        }
-        else if(requestCode == Constants.REQUESTCODE_GOTO_SUBREDDIT_VIEWER){
-            if(resultCode == Constants.RESULT_OK_START_OVER){
+        } else if (requestCode == Constants.REQUESTCODE_GOTO_SUBREDDIT_VIEWER) {
+            if (resultCode == Constants.RESULT_OK_START_OVER) {
                 mHomeEventListener.startOver();
             }
-        }
-        else if (requestCode == Constants.REQUESTCODE_GOTO_LOG_IN) {
+        } else if (requestCode == Constants.REQUESTCODE_GOTO_LOG_IN) {
             if (resultCode == RESULT_OK) {
                 // User successfully logged in. Update the current user.
                 updateCurrentUser(App.getTokenStore().getUsernames().size() - 1);
@@ -591,9 +568,9 @@ public class FragmentHome extends Fragment implements  OnRedditUserReadyListener
         // such as what would happen if we logged in as a new user in the middle of some transaction.
         // FYI: We already have a "startOver()" method that starts us over from home in case we ever
         // want to handle that condition. Let's just avoid it for now.
-        if(!(getActivity() instanceof ActivityHome)
-                || getActivity().getSupportFragmentManager().getBackStackEntryCount() > 0){
-            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED,GravityCompat.START);
+        if (!(getActivity() instanceof ActivityHome)
+                || getActivity().getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.START);
         }
         mDrawerToggle = new ActionBarDrawerToggle(
                 getActivity(),                  /* host Activity */
@@ -1162,8 +1139,8 @@ public class FragmentHome extends Fragment implements  OnRedditUserReadyListener
 
             // Check if domain not recognized or if link the thumbnail was something unrecognized
             // such as "nsfw" or "spoiler". Replace with 404 thumb if so.
-            if(!Arrays.asList(Constants.VALID_MEDIA_EXTENSION)
-                    .contains(Utils.getFileExtensionFromUrl(thumbnail))){
+            if (!Arrays.asList(Constants.VALID_MEDIA_EXTENSION)
+                    .contains(Utils.getFileExtensionFromUrl(thumbnail))) {
                 thumbnail = Constants.URI_404_thumbnail;
                 item.setThumbnail(thumbnail);
                 Log.e("DOMAIN_NOT_FOUND",
@@ -1206,7 +1183,7 @@ public class FragmentHome extends Fragment implements  OnRedditUserReadyListener
                     // prevent recyclerview from handling touch events, otherwise bad things happen
                     mRecyclerHome.setHandleTouchEvents(false);
                     isImageViewPressed = true;
-                   /* Small previewer on hold for now. */
+                    /* Small previewer on hold for now. */
                     /*
                     if (mPreviewSize == Constants.HoverPreviewSize.SMALL) {
                         mHoverPreviewTitleSmall.setText(item.getTitle());
@@ -1229,36 +1206,36 @@ public class FragmentHome extends Fragment implements  OnRedditUserReadyListener
                         setupPreviewer(item);
                         if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
                             // Imgur Urls might be pointing to indirect image URLs
-                            if(item.getDomain() == Constants.SubmissionDomain.IMGUR
+                            if (item.getDomain() == Constants.SubmissionDomain.IMGUR
                                     && !Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
-                                    .contains(Utils.getFileExtensionFromUrl(item.getUrl()))){
+                                    .contains(Utils.getFileExtensionFromUrl(item.getUrl()))) {
                                 mPreviewerProgressBar.setVisibility(View.VISIBLE);
                                 // fixes indirect imgur url and uses Glide to load image on success
                                 Utils.fixIndirectImgurUrl(item, Utils.getImgurHash(item.getUrl()),
-                                        new OnTaskCompletedListener(){
-                                    @Override
-                                    public void downloadSuccess() {
-                                        getActivity().runOnUiThread(new Runnable() {
+                                        new OnTaskCompletedListener() {
                                             @Override
-                                            public void run() {
-                                                mPreviewerProgressBar.setVisibility(View.GONE);
-                                                GlideApp.load(item.getCleanedUrl())
-                                                        .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
-                                                        /* .listener(new GlideProgressListener(mPreviewerProgressBar))*/
-                                                        .into(mHoverImagePreviewLarge);
+                                            public void downloadSuccess() {
+                                                getActivity().runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        mPreviewerProgressBar.setVisibility(View.GONE);
+                                                        GlideApp.load(item.getCleanedUrl())
+                                                                .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
+                                                                /* .listener(new GlideProgressListener(mPreviewerProgressBar))*/
+                                                                .into(mHoverImagePreviewLarge);
+                                                    }
+                                                });
+
+                                            }
+
+                                            @Override
+                                            public void downloadFailure() {
+                                                super.downloadFailure();
                                             }
                                         });
-
-                                    }
-
-                                    @Override
-                                    public void downloadFailure() {
-                                        super.downloadFailure();
-                                    }
-                                });
                             }
                             // image should be ready to be displayed here
-                            else{
+                            else {
                                 GlideApp.load(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl())
                                         .listener(new GlideProgressListener(mPreviewerProgressBar))
                                         .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
@@ -1268,10 +1245,10 @@ public class FragmentHome extends Fragment implements  OnRedditUserReadyListener
                                 || item.getSubmissionType() == Constants.SubmissionType.VIDEO) {
                             // gif might have a .gifv (imgur) extension
                             // ...need to fetch corresponding .mp4
-                            if(item.getDomain() == Constants.SubmissionDomain.IMGUR
+                            if (item.getDomain() == Constants.SubmissionDomain.IMGUR
                                     && Utils.getFileExtensionFromUrl(item.getUrl())
-                                    .equalsIgnoreCase("gifv")){
-                                Utils.getMp4LinkImgur(item, Utils.getImgurHash(item.getUrl()), new OnTaskCompletedListener(){
+                                    .equalsIgnoreCase("gifv")) {
+                                Utils.getMp4LinkImgur(item, Utils.getImgurHash(item.getUrl()), new OnTaskCompletedListener() {
                                     @Override
                                     public void downloadSuccess() {
                                         super.downloadSuccess();
@@ -1334,7 +1311,7 @@ public class FragmentHome extends Fragment implements  OnRedditUserReadyListener
                             }
                         }
                         // submission is of unknown type (i.e. submission from /r/todayilearned)
-                        else{
+                        else {
                             mPreviewerProgressBar.setVisibility(View.GONE);
                             GlideApp.load(Constants.URI_404)
                                     .listener(new GlideProgressListener(mPreviewerProgressBar))
@@ -1373,9 +1350,9 @@ public class FragmentHome extends Fragment implements  OnRedditUserReadyListener
                                     mHoverPreviewContainerSmall.setVisibility(View.GONE);
 
                                 } else*/
-                              if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
-                                  mPreviewerProgressBar.setVisibility(View.GONE);
-                                  mHoverPreviewContainerLarge.setVisibility(View.GONE);
+                                if (mPreviewSize == Constants.HoverPreviewSize.LARGE) {
+                                    mPreviewerProgressBar.setVisibility(View.GONE);
+                                    mHoverPreviewContainerLarge.setVisibility(View.GONE);
                                     clearVideoView();
                                     mHoverImagePreviewLarge.setVisibility(View.GONE);
                                     mExoplayerLarge.setVisibility(View.GONE);
@@ -1417,13 +1394,6 @@ public class FragmentHome extends Fragment implements  OnRedditUserReadyListener
         // Release any resources that may be lingering after view has been recycled
         @Override
         public void onViewRecycled(@NonNull ItemViewHolder holder) {
-            SubmissionObj recycled = getItem(holder.getAdapterPosition());
-            if(recycled.getGfycatAsyncCall() != null
-                    && !recycled.getGfycatAsyncCall().isCanceled()){
-                recycled.getGfycatAsyncCall().cancel();
-                Log.e("onViewRecycled", "Cancelled Gfycat call for item: " + holder.getLayoutPosition());
-            }
-
             super.onViewRecycled(holder);
         }
 
@@ -1709,7 +1679,6 @@ public class FragmentHome extends Fragment implements  OnRedditUserReadyListener
         mPreviewerVideoViewLarge.stopPlayback();
         mPreviewerVideoViewLarge.setVisibility(View.GONE);
     }
-
 
 
     //* Sets our reddit client to userless and refreshes Home on completion*//*

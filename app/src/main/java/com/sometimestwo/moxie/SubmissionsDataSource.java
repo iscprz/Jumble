@@ -8,6 +8,7 @@ import android.util.Log;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Utils;
 
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.models.Listing;
@@ -63,14 +64,24 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             submissionSubredditSortBuilder = redditClient.subreddit(defaultSubreddit).posts();
         }
 
-        mPaginator =
-                submissionSubredditSortBuilder
+        mPaginator = submissionSubredditSortBuilder
                         .limit(Constants.QUERY_PAGE_SIZE)
                         .sorting(sortBy == null ? SubredditSort.HOT : sortBy)
                         .timePeriod(timePeriod == null ? TimePeriod.DAY : timePeriod)
                         .build();
 
-        new FetchInitialSubmissionsTask(callback).execute();
+        // gotta make sure we're authenticated before making calls to reddit api
+        if(!App.getAccountHelper().isAuthenticated()){
+            new Utils.FetchAuthenticatedUserTask(new OnRedditUserReadyListener() {
+                @Override
+                public void redditUserAuthenticated() {
+                    new FetchInitialSubmissionsTask(callback).execute();
+                }
+            }).execute();
+        }
+        else{
+            new FetchInitialSubmissionsTask(callback).execute();
+        }
     }
 
     // Shouldnt be needing this for now since we only ever append to our feed
@@ -82,7 +93,18 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     @Override
     public void loadAfter(@NonNull final LoadParams<String> params, @NonNull final LoadCallback<SubmissionObj> callback) {
         if (!mIs404 && !mEndOfSubreddit) {
-            new FetchSubmissionsTask(callback).execute();
+            // make sure we're authenticated
+            if(!App.getAccountHelper().isAuthenticated()){
+                new Utils.FetchAuthenticatedUserTask(new OnRedditUserReadyListener() {
+                    @Override
+                    public void redditUserAuthenticated() {
+                        new FetchSubmissionsTask(callback).execute();
+                    }
+                }).execute();
+            }
+            else{
+                new FetchSubmissionsTask(callback).execute();
+            }
         }
     }
 

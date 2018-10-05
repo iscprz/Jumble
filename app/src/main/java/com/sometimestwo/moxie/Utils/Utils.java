@@ -222,8 +222,6 @@ public class Utils {
         GfycatAPI gfycatAPI = retrofit.create(GfycatAPI.class);
         gfycatAPI.getGfycat(gfycatHash);
         Call<GfycatWrapper> call = gfycatAPI.getGfycat(gfycatHash);
-        // set a reference to this async call so we can cancel if needed
-        item.setGfycatAsyncCall(call);
         call.enqueue(new Callback<GfycatWrapper>() {
             @Override
             public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {
@@ -629,8 +627,9 @@ public class Utils {
         String mostRecentUser;
         OnRedditUserReadyListener listener;
 
-        public FetchAuthenticatedUserTask(String mostRecentuser, OnRedditUserReadyListener listener) {
-            this.mostRecentUser = mostRecentuser;
+        public FetchAuthenticatedUserTask(OnRedditUserReadyListener listener) {
+            this.mostRecentUser = App.getSharedPrefs()
+                    .getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
             this.listener = listener;
         }
 

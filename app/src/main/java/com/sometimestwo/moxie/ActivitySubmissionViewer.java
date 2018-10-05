@@ -243,7 +243,7 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
             initializePlayer(imageUrl);*/
         }
         // SubmissionType == null (Non-media posts like submissions from /r/todayilearned)
-        else{
+        else {
             mPlayButton.setVisibility(View.GONE);
             Glide.with(this)
                     .load(Constants.URI_404)
@@ -273,7 +273,8 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
         mCommentsRecyclerView.setLayoutManager(mCommentsRecyclerLayoutManager);
         new FetchCommentsTask().execute();
     }
-    private void setupCommentsAdapter(){
+
+    private void setupCommentsAdapter() {
         CommentsAdapter adapter = new CommentsAdapter();
         mCommentsRecyclerView.setAdapter(adapter);
 
@@ -297,7 +298,7 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
 
 
     private class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
-        public CommentsAdapter( ) {
+        public CommentsAdapter() {
         }
 
         @NonNull
@@ -333,9 +334,19 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
         }
     }
 
-        @Override
+    @Override
     protected void onResume() {
-        super.onResume();
+        // Need to make sure user is authenticated
+        if (!App.getAccountHelper().isAuthenticated()) {
+            new Utils.FetchAuthenticatedUserTask(new OnRedditUserReadyListener() {
+                @Override
+                public void redditUserAuthenticated() {
+                    ActivitySubmissionViewer.super.onResume();
+                }
+            }).execute();
+        } else {
+            super.onResume();
+        }
     }
 
     @Override
@@ -411,15 +422,14 @@ public class ActivitySubmissionViewer extends AppCompatActivity implements OnClo
             List<CommentNode<Comment>> rootComments =
                     baseComments.walkTree().iterator().next().getReplies();
 
-            for(CommentNode<Comment> root : rootComments){
+            for (CommentNode<Comment> root : rootComments) {
                 // maps comment ID to author
                 commentOPs.put(root.getSubject().getId(), root.getSubject().getAuthor());
                 CommentObj commentObj = new CommentItem(root);
                 comments.add(commentObj);
 
 
-
-                if(root.hasMoreChildren()){
+                if (root.hasMoreChildren()) {
                     waiting.put(root.getDepth(), new MoreChildItem(root, root.getMoreChildren()));
                 }
             }

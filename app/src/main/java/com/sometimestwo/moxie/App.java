@@ -3,9 +3,11 @@ package com.sometimestwo.moxie;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.sometimestwo.moxie.Model.MoxieInfoObj;
+import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.VideoCacher.HttpProxyCacheServer;
 
 import net.dean.jraw.android.AndroidHelper;
@@ -23,6 +25,7 @@ public final class App extends Application {
     private static AccountHelper accountHelper;
     private static SharedPreferencesTokenStore tokenStore;
     private static MoxieInfoObj currSubredditObj;
+    private static SharedPreferences shared_prefs;
     public static HttpProxyCacheServer proxy;
 
     @Override
@@ -63,6 +66,7 @@ public final class App extends Application {
             // If you want to disable logging, use a NoopHttpLogger instead:
             // redditClient.setLogger(new NoopHttpLogger());
 
+            shared_prefs = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
             return null;
         });
 
@@ -75,6 +79,7 @@ public final class App extends Application {
     public static AccountHelper getAccountHelper() { return accountHelper; }
     public static SharedPreferencesTokenStore getTokenStore() { return tokenStore; }
     public static MoxieInfoObj getMoxieInfoObj() {return currSubredditObj;}
+    public static SharedPreferences getSharedPrefs(){return shared_prefs;};
 
 
     // Video cache

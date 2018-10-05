@@ -79,7 +79,6 @@ public class SubmissionObj implements Serializable {
     // What we will name the file if user downloads it (if media is downloadable)
     private String filenameIfDownloaded;
     // Stores a reference to a gfycat async call in case we need to cancel it
-    private Call<GfycatWrapper> gfycatAsyncCall;
 
 
     public boolean isSubredditEmpty() {
@@ -423,14 +422,6 @@ public class SubmissionObj implements Serializable {
 
     public void setFilenameIfDownloaded(String filenameIfDownloaded) {
         this.filenameIfDownloaded = filenameIfDownloaded;
-    }
-
-    public Call<GfycatWrapper> getGfycatAsyncCall() {
-        return gfycatAsyncCall;
-    }
-
-    public void setGfycatAsyncCall(Call<GfycatWrapper> gfycatAsyncCall) {
-        this.gfycatAsyncCall = gfycatAsyncCall;
     }
 
 }

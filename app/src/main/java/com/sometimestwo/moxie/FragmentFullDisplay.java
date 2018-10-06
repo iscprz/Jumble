@@ -11,13 +11,16 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.view.ContextThemeWrapper;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,6 +28,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -56,23 +60,38 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
+import com.sometimestwo.moxie.Model.CommentItem;
+import com.sometimestwo.moxie.Model.CommentObj;
+import com.sometimestwo.moxie.Model.MoreChildItem;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.DownloadBinder;
 import com.sometimestwo.moxie.Utils.DownloadService;
 import com.sometimestwo.moxie.Utils.Utils;
-import net.dean.jraw.models.VoteDirection;
 
+import net.dean.jraw.RedditClient;
+import net.dean.jraw.models.Comment;
+import net.dean.jraw.models.VoteDirection;
+import net.dean.jraw.tree.CommentNode;
+import net.dean.jraw.tree.RootCommentNode;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 
 public class FragmentFullDisplay extends Fragment implements OnVRedditTaskCompletedListener {
+    public static String TAG = FragmentFullDisplay.class.getSimpleName();
+
     private SubmissionObj mCurrSubmission;
     private boolean mIsUserless;
     private boolean mPrefsAllowNSFW;
     private boolean mAllowCloseOnClick;
     private BroadcastReceiver mDLCompleteReceiver;
+    private OnCommentsEventListener mCommentsEventListener;
 
     /* Titles */
     TextView mTitleTextView;
@@ -92,6 +111,16 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     private VoteDirection mVoteDirection;
     private boolean mIsSaved;
     private int mUpvoteCount;
+
+    // Comments
+    boolean mCommentsOpen = false;
+    LinearLayout mCommentsContainer;
+    ProgressBar mCommentsProgressBar;
+    ImageView mCommentsButtonClose;
+    RecyclerView mCommentsRecyclerView;
+    LinearLayoutManager mCommentsRecyclerLayoutManager;
+    public ArrayList<CommentObj> comments;
+    public HashMap<String, String> commentOPs = new HashMap<>();
 
     /* Big zoomie view*/
     //private FrameLayout mZoomieImageViewContainer;
@@ -123,6 +152,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     /* Download utils*/
     private DownloadBinder downloadBinder = null;
 
+    public interface OnCommentsEventListener{
+        public void isCommentsOpen(boolean commentsOpen);
+    }
     public static FragmentFullDisplay newInstance() {
         return new FragmentFullDisplay();
     }
@@ -163,6 +195,12 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mButtonOverflow = (ImageView) v.findViewById(R.id.full_display_snack_bar_overflow);
         mSnackbarContainer = (LinearLayout) v.findViewById(R.id.full_display_snack_bar_container);
 
+        /* Comments */
+        mCommentsContainer = (LinearLayout) v.findViewById(R.id.full_displayer_comments_container);
+        mCommentsRecyclerView = (RecyclerView) v.findViewById(R.id.full_displayer_comments_recycler);
+        mCommentsProgressBar = (ProgressBar) v.findViewById(R.id.full_displayer_comments_progress_bar);
+        mCommentsButtonClose = (ImageView) v.findViewById(R.id.comments_button_close);
+
         /* Main zoomie image view*/
         // mZoomieImageViewContainer = (FrameLayout) v.findViewById(R.id.full_displayer_big_image_container);
         mZoomieImageView = (ZoomieView) v.findViewById(R.id.full_displayer_image_zoomie_view);
@@ -191,11 +229,15 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mYoutubeIconsOverlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent youTubeIntent = new Intent(getContext(), YouTubePlayerClass.class);
-                Bundle args = new Bundle();
-                args.putSerializable(Constants.ARGS_SUBMISSION_OBJ, mCurrSubmission);
-                youTubeIntent.putExtras(args);
-                startActivity(youTubeIntent);
+                if (!mCommentsOpen) {
+                    Intent youTubeIntent = new Intent(getContext(), YouTubePlayerClass.class);
+                    Bundle args = new Bundle();
+                    args.putSerializable(Constants.ARGS_SUBMISSION_OBJ, mCurrSubmission);
+                    youTubeIntent.putExtras(args);
+                    startActivity(youTubeIntent);
+                } else {
+                    closeComments();
+                }
             }
         });
         // mPlayButton = (ImageView) v.findViewById(R.id.full_displayer_play_button);
@@ -209,26 +251,46 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mExoplayerContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mAllowCloseOnClick) {
-                    closeFullDisplay();
+                if (!mCommentsOpen) {
+                    if (mAllowCloseOnClick) {
+                        closeFullDisplay();
+                    }
+                } else {
+                    closeComments();
                 }
             }
         });
         mVideoviewContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mAllowCloseOnClick) {
-                    closeFullDisplay();
+                if (!mCommentsOpen) {
+                    if (mAllowCloseOnClick) {
+                        closeFullDisplay();
+                    }
+                } else {
+                    closeComments();
+                }
+            }
+        });
+
+        // Each time we enter the full display we need to make sure
+        // our hosting activity knows comments section isnt opened yet.
+        // This is for handling back button press when comments are open
+        mCommentsEventListener.isCommentsOpen(false);
+
+        // Button that minimizes comments section
+        mCommentsButtonClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //redundant check
+                if(mCommentsOpen){
+                    closeComments();
                 }
             }
         });
         return v;
     }
 
-    // This was added here when we added the ability to navigate to subreddits from the Full
-    // Display. We would be listening for the RESULT_OK_START_OVER in case the user wanted to
-    // Log In as a different user. We've disabled the functionality to log in from here so
-    // there's no need to handle that scenario for now.
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -237,6 +299,12 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        try {
+            mCommentsEventListener = (OnCommentsEventListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement listener inferfaces!");
+        }
     }
 
     @Override
@@ -248,7 +316,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     public void onDestroy() {
         super.onDestroy();
 
-        // Notify calling fragment that we're closing the submission viewer
+        // Notify calling fragment that we're closing the full display viewer
         // Don't need to pass anything back. Pass an empty intent for now
         Intent resultIntent = new Intent();
         getTargetFragment().onActivityResult(
@@ -278,16 +346,6 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         }
     }
 
-    // Pop this fragment off the stack, effectively closing the submission viewer.
-    private void closeFullDisplay() {
-        //releaseExoPlayer();
-        try {
-            getActivity().getSupportFragmentManager().popBackStack();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private void setupHeader() {
         // Title
         mTitleTextView.setText(mCurrSubmission.getCompactTitle() != null
@@ -300,7 +358,12 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mHeaderContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mHeaderContainer.setAlpha(mHeaderContainer.getAlpha() == 0f ? 1f : 0f);
+                if(!mCommentsOpen){
+                    mHeaderContainer.setAlpha(mHeaderContainer.getAlpha() == 0f ? 1f : 0f);
+                }
+                else{
+                    closeComments();
+                }
             }
         });
     }
@@ -342,8 +405,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                                 super.downloadFailure();
                             }
                         });
-            }
-            else {
+            } else {
                 focusView(mZoomieImageView, null);
                 mProgressBar.setVisibility(View.GONE);
                 Glide.with(FragmentFullDisplay.this)
@@ -359,33 +421,32 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
             // gif might have a .gifv (imgur) extension
             // ...need to fetch corresponding .mp4
-            if(mCurrSubmission.getDomain() == Constants.SubmissionDomain.IMGUR
+            if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.IMGUR
                     && Utils.getFileExtensionFromUrl(mCurrSubmission.getUrl())
                     .equalsIgnoreCase("gifv")) {
                 Utils.getMp4LinkImgur(mCurrSubmission,
                         Utils.getImgurHash(mCurrSubmission.getUrl()),
                         new OnTaskCompletedListener() {
-                    @Override
-                    public void downloadSuccess() {
-                        super.downloadSuccess();
-                        getActivity().runOnUiThread(new Runnable() {
                             @Override
-                            public void run() {
-                                //exo player has its own progress bar
-                                mProgressBar.setVisibility(View.GONE);
-                                focusView(mExoplayer, mExoplayerContainer);
-                                initializeExoPlayer(mCurrSubmission.getCleanedUrl());
+                            public void downloadSuccess() {
+                                super.downloadSuccess();
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //exo player has its own progress bar
+                                        mProgressBar.setVisibility(View.GONE);
+                                        focusView(mExoplayer, mExoplayerContainer);
+                                        initializeExoPlayer(mCurrSubmission.getCleanedUrl());
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void downloadFailure() {
+                                super.downloadFailure();
                             }
                         });
-                    }
-
-                    @Override
-                    public void downloadFailure() {
-                        super.downloadFailure();
-                    }
-                });
-            }
-            else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.YOUTUBE) {
+            } else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.YOUTUBE) {
                 //youtube has it's own progress bar
                 mProgressBar.setVisibility(View.GONE);
                 focusView(mYouTubeThumbnail, null);
@@ -484,7 +545,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mButtonComments.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                openSubmissionViewer();
+                openComments();
+                initComments();
             }
         });
         mCommentCountTextView.setOnClickListener(new View.OnClickListener() {
@@ -571,7 +633,6 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                 m.findItem(R.id.menu_full_display_overflow_download)
                         .setVisible(mCurrSubmission.isDownloadableMedia());
 
-
                 overflowPopup.show();
                 overflowPopup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -598,6 +659,36 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         });
     }
 
+
+    public void openComments() {
+        mCommentsContainer.setVisibility(View.VISIBLE);
+        TranslateAnimation animate = new TranslateAnimation(
+                0,
+                0,
+                mCommentsContainer.getHeight(),
+                0);
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        mCommentsContainer.startAnimation(animate);
+        mCommentsOpen = true;
+        mCommentsEventListener.isCommentsOpen(true);
+    }
+
+    public void closeComments() {
+        TranslateAnimation animate = new TranslateAnimation(
+                0,
+                0,
+                0,
+                mCommentsContainer.getHeight());
+        animate.setDuration(500);
+        //animate.setFillAfter(true);
+        mCommentsContainer.startAnimation(animate);
+        mCommentsContainer.setVisibility(View.GONE);
+        mCommentsOpen = false;
+        mCommentsEventListener.isCommentsOpen(false);
+        //mCommentsButtonClose.setVisibility(View.GONE);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -613,10 +704,77 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                 }
         }
     }
+
+    private void initComments() {
+        mCommentsRecyclerLayoutManager = new LinearLayoutManager(getContext());
+        mCommentsRecyclerView.setLayoutManager(mCommentsRecyclerLayoutManager);
+        new FetchCommentsTask().execute();
+    }
+
+
+    // Comments stuff
+    private void setupCommentsAdapter() {
+        CommentsAdapter adapter = new CommentsAdapter();
+        mCommentsRecyclerView.setAdapter(adapter);
+    }
+
+    private class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
+        public CommentsAdapter() {
+        }
+
+        @NonNull
+        @Override
+        public CommentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = getLayoutInflater().inflate(R.layout.recycler_item_comment, parent, false);
+            return new CommentViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull CommentViewHolder holder, int rootPosition) {
+            CommentNode viewholderComment = comments.get(rootPosition).comment;
+            holder.commentsTextViewAuthor.setText(comments.get(rootPosition).comment.getSubject().getAuthor()/* + "::: " + position*/);
+            holder.commentsTextViewBody.setText(comments.get(rootPosition).comment.getSubject().getBody());
+
+            //children
+           /* List replies = comments.get(rootPosition).comment.getReplies();
+
+
+            CommentNode curr = viewholderComment;
+
+            for(int i = 0; i < Constants.COMMENT_LOAD_CHILD_LIMIT; i++){
+                if(curr.getReplies().size() > 0){
+                    curr.getReplies().get(0);
+                }
+            }*/
+        }
+
+
+        @Override
+        public int getItemCount() {
+            return comments.size();
+        }
+    }
+
+
+    public class CommentViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        TextView commentsTextViewAuthor;
+        TextView commentsTextViewBody;
+
+        public CommentViewHolder(View itemView) {
+            super(itemView);
+            commentsTextViewAuthor = (TextView) itemView.findViewById(R.id.comment_item_author);
+            commentsTextViewBody = (TextView) itemView.findViewById(R.id.comment_item_body);
+        }
+
+        @Override
+        public void onClick(View view) {
+        }
+    }
+
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            downloadBinder = (DownloadBinder)service;
+            downloadBinder = (DownloadBinder) service;
         }
 
         @Override
@@ -625,8 +783,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         }
     };
 
-    private void startAndBindDownloadService()
-    {
+    private void startAndBindDownloadService() {
         Intent downloadIntent = new Intent(getActivity(), DownloadService.class);
         getActivity().startService(downloadIntent);
         getActivity().getApplicationContext().bindService(downloadIntent, serviceConnection, BIND_AUTO_CREATE);
@@ -634,15 +791,14 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
     // we've deemed the media downloadable at this point (Download button
     //  is only available if submissionObj has isDownloadableMedia == true)
-    private void downloadMedia(){
+    private void downloadMedia() {
         String mediaUrl;
 
         //Vreddit submissions might be(should be) cached already
-        if(mCurrSubmission.getDomain() == Constants.SubmissionDomain.VREDDIT){
+        if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.VREDDIT) {
             mediaUrl = mCurrSubmission.getEmbeddedMedia().getRedditVideo().getFallbackUrl();
             downloadBinder.startDownloadVreddit(mediaUrl, mCurrSubmission.getPrettyFilename());
-        }
-        else {
+        } else {
             if (mCurrSubmission.getMp4Url() != null)
                 mediaUrl = mCurrSubmission.getMp4Url();
             else if (mCurrSubmission.getCleanedUrl() != null)
@@ -679,6 +835,15 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         closeFullDisplay();
     }
 
+    // Pop this fragment off the stack, effectively closing the submission viewer.
+    private void closeFullDisplay() {
+        //releaseExoPlayer();
+        try {
+            getActivity().getSupportFragmentManager().popBackStack();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private void initializeExoPlayer(String url) {
 
@@ -757,5 +922,45 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                 mp.setLooping(true);
             }
         });
+    }
+
+    private class FetchCommentsTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            RedditClient redditClient = App.getAccountHelper().getReddit();
+            String id = mCurrSubmission.getId();
+            RootCommentNode baseComments = redditClient.submission(id).comments();
+
+
+            comments = new ArrayList<>();
+            Map<Integer, MoreChildItem> waiting = new HashMap<>();
+            commentOPs = new HashMap<>();
+            String currentOP = "";
+
+
+            List<CommentNode<Comment>> rootComments =
+                    baseComments.walkTree().iterator().next().getReplies();
+
+            for (CommentNode<Comment> root : rootComments) {
+                // maps comment ID to author
+                commentOPs.put(root.getSubject().getId(), root.getSubject().getAuthor());
+                CommentObj commentObj = new CommentItem(root);
+                comments.add(commentObj);
+
+
+                if (root.hasMoreChildren()) {
+                    waiting.put(root.getDepth(), new MoreChildItem(root, root.getMoreChildren()));
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            setupCommentsAdapter();
+            Log.e("NUM_ROOT_COMMENTS: ", String.valueOf(comments.size()));
+            mCommentsProgressBar.setVisibility(View.GONE);
+            //mCommentsButtonClose.setVisibility(View.VISIBLE);
+        }
     }
 }

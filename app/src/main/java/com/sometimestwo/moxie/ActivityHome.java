@@ -43,7 +43,8 @@ import com.sometimestwo.moxie.Utils.Utils;
  */
 public class ActivityHome extends AppCompatActivity implements HomeEventListener,
         OnCloseClickEventListener,
-        Fragment404.Fragment404EventListener{
+        Fragment404.Fragment404EventListener,
+        FragmentFullDisplay.OnCommentsEventListener{
 
     private final String TAG = ActivityHome.class.getSimpleName();
     private SharedPreferences prefs_settings;
@@ -55,6 +56,9 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     private DisplayMetrics mDisplayMetrics;
     private int mScreenWidth;
     private int mScreenHeight;
+    //For handling back button press. Need to close comments view (not fragment)
+    // which resides inside the FullDisplayer fragment.
+    private boolean mCommentsOpen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,6 +145,14 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         DrawerLayout navViewDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if(isNavViewOpen(navViewDrawer)){
             navViewDrawer.closeDrawers();
+        }
+        else if(mCommentsOpen){
+            Fragment fragment = getSupportFragmentManager()
+                    .findFragmentByTag(Constants.TAG_FRAG_FULL_DISPLAYER);
+            // should never be null since comments cannot be open
+            if(fragment != null){
+                ((FragmentFullDisplay) fragment).closeComments();
+            }
         }
         // Back arrow should open left nav menu drawer if we're not currently in any fragments
         else if((getSupportFragmentManager().getBackStackEntryCount() == 0)
@@ -267,5 +279,10 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
             getSupportFragmentManager().popBackStack();
         }
         refreshFeed(true);
+    }
+
+    @Override
+    public void isCommentsOpen(boolean commentsOpen ) {
+        mCommentsOpen = commentsOpen;
     }
 }

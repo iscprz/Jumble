@@ -5,7 +5,6 @@
     android:orientation="vertical">
 
 
-
     <!-- Failed to load text-->
     <TextView
         android:id="@+id/full_displayer_failed_load_text"
@@ -137,9 +136,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:paddingTop="20dp"
-        android:orientation="vertical"
         android:background="@color/colorBgBlackTint"
+        android:orientation="vertical"
+        android:paddingTop="20dp"
         android:visibility="visible">
 
         <!--Title-->
@@ -157,34 +156,35 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="30dp"
+            android:layout_marginBottom="5dp"
             android:layout_weight=".25"
             android:orientation="horizontal"
-            android:paddingTop="10dp"
-            android:layout_marginBottom="5dp"
+            android:paddingEnd="10dp"
             android:paddingStart="10dp"
-            android:paddingEnd="10dp">
+            android:paddingTop="10dp">
 
             <!-- Author-->
             <RelativeLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight=".5"
-                android:layout_gravity="bottom">
+                android:layout_gravity="bottom"
+                android:layout_weight=".5">
+
                 <ImageView
+                    android:id="@+id/full_display_header_author_icon"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:id="@+id/full_display_header_author_icon"
                     android:background="@drawable/ic_white_person_filled" />
 
                 <TextView
+                    android:id="@+id/full_display_author_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_toEndOf="@id/full_display_header_author_icon"
-                    android:id="@+id/full_display_author_text"
+                    android:paddingStart="5dp"
                     android:textColor="@color/colorWhite"
                     android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:paddingStart="5dp" />
+                    android:textStyle="bold" />
             </RelativeLayout>
 
 
@@ -303,5 +303,7 @@
 
     </LinearLayout>
 
+    <!-- Comments secion that slides up -->
+    <include layout="@layout/layout_comments"/>
 
 </RelativeLayout>

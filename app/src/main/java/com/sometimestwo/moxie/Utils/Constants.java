@@ -25,7 +25,7 @@ public class Constants {
     public final static String TAG_FRAG_HOME = "TAG_FRAG_HOME";
     public final static String TAG_FRAG_SUBREDDIT_VIEWER = "TAG_FRAG_SUBREDDIT_VIEWER";
     public final static String TAG_FRAG_404 = "TAG_FRAG_404";
-    public final static String TAG_FRAG_MEDIA_DISPLAY = "TAG_FRAG_MEDIA_DISPLAY";
+    public final static String TAG_FRAG_FULL_DISPLAYER = "TAG_FRAG_FULL_DISPLAYER";
     public final static String TAG_FRAG_SIMPLE_DISPLAYER = "TAG_FRAG_SIMPLE_DISPLAYER";
 
     /* Arguments, Extras and Result codes*/

@@ -79,22 +79,11 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
 import com.makeramen.roundedimageview.RoundedImageView;
-import com.sometimestwo.moxie.API.GfycatAPI;
-import com.sometimestwo.moxie.Imgur.client.ImgurClient;
-import com.sometimestwo.moxie.Imgur.response.images.ImgurSubmission;
-import com.sometimestwo.moxie.Imgur.response.images.SubmissionRoot;
 import com.sometimestwo.moxie.Model.ExpandableMenuModel;
 import com.sometimestwo.moxie.Model.Explore;
-import com.sometimestwo.moxie.Model.GfyItem;
-import com.sometimestwo.moxie.Model.GfycatWrapper;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 import net.dean.jraw.models.SubredditSort;
 import net.dean.jraw.models.TimePeriod;
@@ -104,10 +93,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -1093,8 +1078,8 @@ public class FragmentHome extends Fragment {
             // Imgur
             //TODO: imgur albums. Example URL https://imgur.com/a/K8bJ9pV (nsfw)
             if (item.getDomain() == Constants.SubmissionDomain.IMGUR) {
-                if(Utils.isImgurAlbum(item.getUrl())){
-                   item.setSubmissionType(Constants.SubmissionType.ALBUM);
+                if (Utils.isImgurAlbum(item.getUrl())) {
+                    item.setSubmissionType(Constants.SubmissionType.ALBUM);
                 }
                 // Check if submission type is null. This will happen if the item's URL is
                 // to a non-direct IMAGE(not gif/video) link such as https://imgur.com/qTadRtq
@@ -1143,21 +1128,18 @@ public class FragmentHome extends Fragment {
             }
 
             // Double check Reddit assigned a valid image (jpg,png,etc) as the thumbnail.
-            if (!Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
-                    .contains(Utils.getFileExtensionFromUrl(thumbnail))) {
-                // If not, check if submission URL is valid image to use as thumbnail.
-                if(Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
-                        .contains(Utils.getFileExtensionFromUrl(item.getUrl()))){
-                    thumbnail = item.getUrl();
-                }
+            if (Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
+                    .contains(Utils.getFileExtensionFromUrl(item.getThumbnail()))) {
+                thumbnail = item.getThumbnail();
+            }
+            // If not, check if submission URL is valid image to use as thumbnail.
+            else if (Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
+                    .contains(Utils.getFileExtensionFromUrl(item.getUrl()))) {
+                thumbnail = item.getUrl();
+            } else {
                 // will assign 404 thumbnail if not given a thumbnail at this point
                 item.setThumbnail(thumbnail);
-                Log.e("DOMAIN_NOT_FOUND",
-                        "Domain not recognized: "
-                                + item.getDomain()
-                                + ". Position: "
-                                + holder.getAdapterPosition());
-                holder.thumbnailIconDomain.setBackground(null);
+                //holder.thumbnailIconDomain.setBackground(null);
             }
 
             /* Load thumbnail into recyclerview */
@@ -1426,7 +1408,7 @@ public class FragmentHome extends Fragment {
             @Override
             public void onClick(View view) {
                 SubmissionObj submission = getItem(getLayoutPosition());
-                openFullMediaDisplayer(submission);
+                openFullDisplayer(submission);
             }
         }
     }
@@ -1489,7 +1471,7 @@ public class FragmentHome extends Fragment {
         }
     }
 
-    private void openFullMediaDisplayer(SubmissionObj submissionObj) {
+    private void openFullDisplayer(SubmissionObj submissionObj) {
         FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
 
         Fragment bigDisplayFragment = FragmentFullDisplay.newInstance();
@@ -1501,7 +1483,7 @@ public class FragmentHome extends Fragment {
 
 
         int parentContainerId = ((ViewGroup) getView().getParent()).getId();
-        ft.add(parentContainerId, bigDisplayFragment/*, Constants.TAG*/);
+        ft.add(parentContainerId, bigDisplayFragment,Constants.TAG_FRAG_FULL_DISPLAYER);
         ft.addToBackStack(null);
         ft.commit();
     }

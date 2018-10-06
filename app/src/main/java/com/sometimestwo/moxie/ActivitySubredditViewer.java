@@ -16,7 +16,8 @@ import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
 
 public class ActivitySubredditViewer extends AppCompatActivity implements HomeEventListener,
-        Fragment404.Fragment404EventListener, OnCloseClickEventListener {
+        Fragment404.Fragment404EventListener,
+        OnCloseClickEventListener, FragmentFullDisplay.OnCommentsEventListener{
 
     public final String TAG = this.getClass().getCanonicalName();
     private SharedPreferences prefs_settings;
@@ -27,6 +28,9 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
 
     // Permissions we'll need to make use of
     private boolean mAllowCloseOnClick;
+    //For handling back button press. Need to close comments view (not fragment)
+    // which resides inside the FullDisplayer fragment.
+    private boolean mCommentsOpen = false;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,6 +112,14 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START) || drawer.isDrawerOpen(GravityCompat.END)) {
             drawer.closeDrawers();
+        }
+        else if(mCommentsOpen){
+            Fragment fragment = getSupportFragmentManager()
+                    .findFragmentByTag(Constants.TAG_FRAG_FULL_DISPLAYER);
+            // should never be null since comments cannot be open
+            if(fragment != null){
+                ((FragmentFullDisplay) fragment).closeComments();
+            }
         }
         // If hosting a 404 page, we want to leave activity not just pop 404 page off backstack
         else if (mIs404) {
@@ -198,5 +210,9 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
     public void startOver() {
         setResult(Constants.RESULT_OK_START_OVER);
         finish();
+    }
+    @Override
+    public void isCommentsOpen(boolean commentsOpen ) {
+        mCommentsOpen = commentsOpen;
     }
 }

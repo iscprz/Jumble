@@ -90,6 +90,9 @@ public class Constants {
     public final static int COMMENT_LOAD_ROOT_LIMIT = 50;
     public final static int COMMENT_LOAD_CHILD_LIMIT = 6;
     public final static int PERMISSIONS_DOWNLOAD_MEDIA = 900;
+    public final static int COMMENTS_CLOSE_SWIPE_DURATION = 200;
+    public final static int COMMENTS_OPEN_SWIPE_DURATION = 500;
+
 
     // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
 

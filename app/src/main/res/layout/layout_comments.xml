@@ -2,38 +2,57 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/full_displayer_comments_container"
     android:layout_width="match_parent"
-    android:layout_height="500dp"
+    android:layout_height="match_parent"
     android:layout_alignParentBottom="true"
-    android:background="@color/colorBgBlackTint"
+    android:background="@color/transparent"
     android:orientation="vertical"
-    android:visibility="invisible">
-    <!-- Comments progress-->
-    <ProgressBar
-        android:id="@+id/full_displayer_comments_progress_bar"
-        android:layout_width="@dimen/progress_bar_default"
-        android:layout_height="@dimen/progress_bar_default"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/comments_collapse_bar"
-        android:visibility="visible" />
+    android:visibility="invisible"
+    android:clickable="true">
 
-    <ScrollView
-        android:id="@+id/full_displayer_scrollview"
+    <RelativeLayout
+        android:id="@+id/full_displayer_comments_dummy_top"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="0dp"
+        android:layout_weight=".325"
+        android:visibility="visible">
 
-        <LinearLayout
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent"
+            android:visibility="invisible" />
 
-            <ImageView
-                android:id="@+id/comments_button_close"
-                android:layout_width="@dimen/comments_collapse_bar"
-                android:layout_height="@dimen/comments_collapse_bar"
-                android:layout_gravity="center"
-                android:background="@drawable/ic_white_collapse_down"
-                android:scaleType="fitXY"
-                android:visibility="visible" />
+        <ImageView
+            android:id="@+id/comments_button_close"
+            android:layout_width="@dimen/comments_collapse_bar"
+            android:layout_height="15dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center"
+            android:background="@drawable/ic_white_collapse_down"
+            android:scaleType="fitXY"
+            android:visibility="visible" />
+    </RelativeLayout>
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".675"
+        android:background="@color/colorBgBlackTint">
+
+        <!-- Comments progress-->
+        <ProgressBar
+            android:id="@+id/full_displayer_comments_progress_bar"
+            android:layout_width="@dimen/progress_bar_default"
+            android:layout_height="@dimen/progress_bar_default"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/comments_collapse_bar"
+            android:visibility="visible" />
+
+        <ScrollView
+            android:id="@+id/full_displayer_scrollview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
             <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/full_displayer_comments_recycler"
@@ -41,7 +60,8 @@
                 android:layout_height="wrap_content"
                 android:scrollbars="vertical" />
             <!--android:nestedScrollingEnabled="false"-->
-        </LinearLayout>
 
-    </ScrollView>
+        </ScrollView>
+    </FrameLayout>
+
 </LinearLayout>

@@ -22,10 +22,12 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.TranslateAnimation;
@@ -117,6 +119,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     LinearLayout mCommentsContainer;
     ProgressBar mCommentsProgressBar;
     ImageView mCommentsButtonClose;
+    RelativeLayout mCommentsDummyTopView;
     RecyclerView mCommentsRecyclerView;
     LinearLayoutManager mCommentsRecyclerLayoutManager;
     public ArrayList<CommentObj> comments;
@@ -152,9 +155,10 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     /* Download utils*/
     private DownloadBinder downloadBinder = null;
 
-    public interface OnCommentsEventListener{
+    public interface OnCommentsEventListener {
         public void isCommentsOpen(boolean commentsOpen);
     }
+
     public static FragmentFullDisplay newInstance() {
         return new FragmentFullDisplay();
     }
@@ -175,7 +179,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_full_media_display, container, false);
+        View v = inflater.inflate(R.layout.fragment_full_displayer, container, false);
 
         mIsUserless = App.getAccountHelper().getReddit().getAuthMethod().isUserless();
 
@@ -197,6 +201,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
         /* Comments */
         mCommentsContainer = (LinearLayout) v.findViewById(R.id.full_displayer_comments_container);
+        mCommentsDummyTopView = (RelativeLayout) v.findViewById(R.id.full_displayer_comments_dummy_top);
         mCommentsRecyclerView = (RecyclerView) v.findViewById(R.id.full_displayer_comments_recycler);
         mCommentsProgressBar = (ProgressBar) v.findViewById(R.id.full_displayer_comments_progress_bar);
         mCommentsButtonClose = (ImageView) v.findViewById(R.id.comments_button_close);
@@ -283,11 +288,33 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             @Override
             public void onClick(View view) {
                 //redundant check
-                if(mCommentsOpen){
+                if (mCommentsOpen) {
                     closeComments();
                 }
             }
         });
+        mCommentsDummyTopView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //redundant check
+                if (mCommentsOpen) {
+                    closeComments();
+                }
+            }
+        });
+
+        // detects swipes when our comment section is active
+        final CommentsGestureDetector gestureListener = new CommentsGestureDetector();
+        final GestureDetector commentsGestureDetector
+                = new GestureDetector(getActivity(), gestureListener);
+
+        mCommentsDummyTopView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return commentsGestureDetector.onTouchEvent(motionEvent);
+            }
+        });
+
         return v;
     }
 
@@ -354,14 +381,14 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mAuthorTextView.setText(mCurrSubmission.getAuthor());
         // Subreddit
         mSubredditTextView.setText("/r/" + mCurrSubmission.getSubreddit());
+
         // Container
         mHeaderContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!mCommentsOpen){
+                if (!mCommentsOpen) {
                     mHeaderContainer.setAlpha(mHeaderContainer.getAlpha() == 0f ? 1f : 0f);
-                }
-                else{
+                } else {
                     closeComments();
                 }
             }
@@ -667,7 +694,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                 0,
                 mCommentsContainer.getHeight(),
                 0);
-        animate.setDuration(500);
+        animate.setDuration(Constants.COMMENTS_OPEN_SWIPE_DURATION);
         animate.setFillAfter(true);
         mCommentsContainer.startAnimation(animate);
         mCommentsOpen = true;
@@ -680,7 +707,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                 0,
                 0,
                 mCommentsContainer.getHeight());
-        animate.setDuration(500);
+        animate.setDuration(Constants.COMMENTS_CLOSE_SWIPE_DURATION);
         //animate.setFillAfter(true);
         mCommentsContainer.startAnimation(animate);
         mCommentsContainer.setVisibility(View.GONE);
@@ -755,7 +782,6 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         }
     }
 
-
     public class CommentViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView commentsTextViewAuthor;
         TextView commentsTextViewBody;
@@ -814,7 +840,6 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         }
     }
 
-
     /* Focuses up to two views. Pass null if only need 1 view focused*/
     private void focusView(View focused1, View focused2) {
         mZoomieImageView.setVisibility(focused1 == mZoomieImageView || focused2 == mZoomieImageView ? View.VISIBLE : View.GONE);
@@ -828,12 +853,12 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         //mPlayButton.setVisibility( focused1 == mPlayButton || focused2 == mPlayButton ? View.VISIBLE : View.GONE);
     }
 
-    private void openSubmissionViewer() {
+/*    private void openSubmissionViewer() {
         Intent submissionViewerIntent = new Intent(getContext(), ActivitySubmissionViewer.class);
         submissionViewerIntent.putExtra(Constants.EXTRA_SUBMISSION_OBJ, mCurrSubmission);
         startActivity(submissionViewerIntent);
         closeFullDisplay();
-    }
+    }*/
 
     // Pop this fragment off the stack, effectively closing the submission viewer.
     private void closeFullDisplay() {
@@ -963,4 +988,50 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             //mCommentsButtonClose.setVisibility(View.VISIBLE);
         }
     }
+
+    private class CommentsGestureDetector extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return false;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1,
+                               MotionEvent e2,
+                               float velocityX,
+                               float velocityY) {
+            // Minimal x and y axis swipe distance.
+            int MIN_SWIPE_DISTANCE_X = 100;
+            int MIN_SWIPE_DISTANCE_Y = 100;
+
+            // Maximal x and y axis swipe distance.
+            int MAX_SWIPE_DISTANCE_X = 1000;
+            int MAX_SWIPE_DISTANCE_Y = 1000;
+            try {
+                // Get swipe delta value in x axis.
+                float deltaX = e1.getX() - e2.getX();
+
+                // Get swipe delta value in y axis.
+                float deltaY = e1.getY() - e2.getY();
+
+                // Get absolute value.
+                float deltaXAbs = Math.abs(deltaX);
+                float deltaYAbs = Math.abs(deltaY);
+
+                if ((deltaYAbs >= MIN_SWIPE_DISTANCE_Y) && (deltaYAbs <= MAX_SWIPE_DISTANCE_Y)) {
+                    if (deltaY > 0) {
+                        //Log.e("SWIPE_TEST", "SWIPED UP!");
+                    } else {
+                        if(mCommentsOpen){
+                            closeComments();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // nothing
+            }
+            return super.onFling(e1, e2, velocityX, velocityY);
+        }
+    }
+
 }

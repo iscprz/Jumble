@@ -202,7 +202,21 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
     @Override
     public void onCloseClickDetected() {
         if (mAllowCloseOnClick) {
-            getSupportFragmentManager().popBackStack();
+            if(!mCommentsOpen){
+                getSupportFragmentManager().popBackStack();
+            }
+            else{
+                // Check mCommentsOpen prevents this scenario:
+                // View submission if full displayer -> Open comments ->
+                // Click zoomieview while comments open ->
+                // Full displayer closes (should close comments before closing entire view)
+                Fragment fragment = getSupportFragmentManager()
+                        .findFragmentByTag(Constants.TAG_FRAG_FULL_DISPLAYER);
+                // should never be null
+                if(fragment != null){
+                    ((FragmentFullDisplay) fragment).closeComments();
+                }
+            }
         }
     }
 

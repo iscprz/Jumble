@@ -116,10 +116,12 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
     // Comments
     boolean mCommentsOpen = false;
+    boolean mCommentsInitialized = false;
     LinearLayout mCommentsContainer;
     ProgressBar mCommentsProgressBar;
     ImageView mCommentsButtonClose;
     RelativeLayout mCommentsDummyTopView;
+    FrameLayout mCommentsScrollViewContainer;
     RecyclerView mCommentsRecyclerView;
     LinearLayoutManager mCommentsRecyclerLayoutManager;
     public ArrayList<CommentObj> comments;
@@ -202,6 +204,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         /* Comments */
         mCommentsContainer = (LinearLayout) v.findViewById(R.id.full_displayer_comments_container);
         mCommentsDummyTopView = (RelativeLayout) v.findViewById(R.id.full_displayer_comments_dummy_top);
+        mCommentsScrollViewContainer = (FrameLayout) v.findViewById(R.id.full_displayer_comments_scrollview_container);
         mCommentsRecyclerView = (RecyclerView) v.findViewById(R.id.full_displayer_comments_recycler);
         mCommentsProgressBar = (ProgressBar) v.findViewById(R.id.full_displayer_comments_progress_bar);
         mCommentsButtonClose = (ImageView) v.findViewById(R.id.comments_button_close);
@@ -315,6 +318,12 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             }
         });
 
+        mSnackbarContainer.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return commentsGestureDetector.onTouchEvent(motionEvent);
+            }
+        });
         return v;
     }
 
@@ -573,7 +582,6 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             @Override
             public void onClick(View view) {
                 openComments();
-                initComments();
             }
         });
         mCommentCountTextView.setOnClickListener(new View.OnClickListener() {
@@ -688,6 +696,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
 
     public void openComments() {
+        if(!mCommentsInitialized){
+            initComments();
+        }
         mCommentsContainer.setVisibility(View.VISIBLE);
         TranslateAnimation animate = new TranslateAnimation(
                 0,
@@ -978,7 +989,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             setupCommentsAdapter();
             Log.e("NUM_ROOT_COMMENTS: ", String.valueOf(comments.size()));
             mCommentsProgressBar.setVisibility(View.GONE);
-            //mCommentsButtonClose.setVisibility(View.VISIBLE);
+            mCommentsInitialized = true;
         }
     }
 
@@ -986,6 +997,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     private class CommentsGestureDetector extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDown(MotionEvent e) {
+            // don't handle simple down click events
             return false;
         }
 
@@ -996,7 +1008,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                                float velocityY) {
             // Minimal x and y axis swipe distance.
             int MIN_SWIPE_DISTANCE_X = 100;
-            int MIN_SWIPE_DISTANCE_Y = 100;
+            int MIN_SWIPE_DISTANCE_Y = 5;
 
             // Maximal x and y axis swipe distance.
             int MAX_SWIPE_DISTANCE_X = 1000;
@@ -1014,7 +1026,10 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
                 if ((deltaYAbs >= MIN_SWIPE_DISTANCE_Y) && (deltaYAbs <= MAX_SWIPE_DISTANCE_Y)) {
                     if (deltaY > 0) {
-                        //Log.e("SWIPE_TEST", "SWIPED UP!");
+                        if(!mCommentsOpen){
+                            openComments();
+                        }
+                        Log.e("SWIPE_TEST", "SWIPED UP!");
                     } else {
                         if(mCommentsOpen){
                             closeComments();

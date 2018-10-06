@@ -2,13 +2,13 @@
 
 /**
  * Copyright 2016 Jeffrey Sibbold
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,7 @@
  */
 
 package com.sometimestwo.moxie;
+
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
@@ -32,6 +33,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.ScaleGestureDetectorCompat;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -44,7 +46,9 @@ import android.widget.ImageView;
  * automatic resetting, and allows for exterior bounds restriction to keep the image within
  * visible window.
  */
-public class ZoomieView extends AppCompatImageView implements OnScaleGestureListener{
+public class ZoomieView extends AppCompatImageView implements OnScaleGestureListener {
+    // Allow ability to revoke permission from zoomie view to capture touch events
+    private boolean mZoomieHasPermission = true;
 
     private static final float MIN_SCALE = 0.6f;
     private static final float MAX_SCALE = 8f;
@@ -75,7 +79,8 @@ public class ZoomieView extends AppCompatImageView implements OnScaleGestureList
     private boolean animateOnReset;
     private boolean autoCenter;
     private float doubleTapToZoomScaleFactor;
-    @AutoResetMode private int autoResetMode;
+    @AutoResetMode
+    private int autoResetMode;
 
     private PointF last = new PointF(0, 0);
     private float startScale = 1f;
@@ -85,7 +90,10 @@ public class ZoomieView extends AppCompatImageView implements OnScaleGestureList
 
     private ScaleGestureDetector scaleDetector;
 
-    private GestureDetector gestureDetector;
+    //private GestureDetector gestureDetector;
+
+    final ZoomieGestureDetector gestureListener = new ZoomieGestureDetector();
+    GestureDetector gestureDetector = null;
     private boolean doubleTapDetected = false;
     private boolean singleTapDetected = false;
 
@@ -108,7 +116,7 @@ public class ZoomieView extends AppCompatImageView implements OnScaleGestureList
 
     private void init(Context context, AttributeSet attrs) {
         scaleDetector = new ScaleGestureDetector(context, this);
-        gestureDetector = new GestureDetector(context, gestureListener);
+        gestureDetector = new GestureDetector(getContext(), gestureListener);
         closeClickListener = (OnCloseClickEventListener) context;
 
         ScaleGestureDetectorCompat.setQuickScaleEnabled(scaleDetector, false);
@@ -431,7 +439,6 @@ public class ZoomieView extends AppCompatImageView implements OnScaleGestureList
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
         if (!isClickable() && isEnabled() && (zoomable || translatable)) {
             if (getScaleType() != ScaleType.MATRIX) {
                 super.setScaleType(ScaleType.MATRIX);
@@ -558,8 +565,7 @@ public class ZoomieView extends AppCompatImageView implements OnScaleGestureList
     public void reset(final boolean animate) {
         if (animate) {
             animateToStartMatrix();
-        }
-        else {
+        } else {
             setImageMatrix(startMatrix);
         }
     }
@@ -610,7 +616,7 @@ public class ZoomieView extends AppCompatImageView implements OnScaleGestureList
             }
         });
 
-        anim.addListener(new SimpleAnimatorListener(){
+        anim.addListener(new SimpleAnimatorListener() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 setImageMatrix(targetMatrix);
@@ -703,8 +709,7 @@ public class ZoomieView extends AppCompatImageView implements OnScaleGestureList
         //prevents image from translating an infinite distance offscreen
         if (bounds.right + xdistance < 0) {
             xdistance = -bounds.right;
-        }
-        else if (bounds.left + xdistance > getWidth()) {
+        } else if (bounds.left + xdistance > getWidth()) {
             xdistance = getWidth() - bounds.left;
         }
 
@@ -758,8 +763,7 @@ public class ZoomieView extends AppCompatImageView implements OnScaleGestureList
         //prevents image from translating an infinite distance offscreen
         if (bounds.bottom + ydistance < 0) {
             ydistance = -bounds.bottom;
-        }
-        else if (bounds.top + ydistance > getHeight()) {
+        } else if (bounds.top + ydistance > getHeight()) {
             ydistance = getHeight() - bounds.top;
         }
 
@@ -825,13 +829,38 @@ public class ZoomieView extends AppCompatImageView implements OnScaleGestureList
         scaleBy = 1f;
     }
 
-    private final GestureDetector.OnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener(){
+/*    public void setmZoomieHasPermission(boolean zoomieHasPermission) {
+        this.mZoomieHasPermission = zoomieHasPermission;
+    }
+
+    public boolean zoomieHasPermission() {
+        return this.mZoomieHasPermission;
+    }*/
+
+    private class SimpleAnimatorListener implements Animator.AnimatorListener {
+        @Override
+        public void onAnimationStart(Animator animation) {
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animation) {
+        }
+
+        @Override
+        public void onAnimationRepeat(Animator animation) {
+        }
+    }
+
+    private class ZoomieGestureDetector extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDoubleTapEvent(MotionEvent e) {
             if (e.getAction() == MotionEvent.ACTION_UP) {
                 doubleTapDetected = true;
             }
-
             return false;
         }
 
@@ -852,20 +881,44 @@ public class ZoomieView extends AppCompatImageView implements OnScaleGestureList
         public boolean onDown(MotionEvent e) {
             return true;
         }
-    };
-
-    private class SimpleAnimatorListener implements Animator.AnimatorListener {
-        @Override
-        public void onAnimationStart(Animator animation) {}
 
         @Override
-        public void onAnimationEnd(Animator animation) {}
+        public boolean onFling(MotionEvent e1,
+                               MotionEvent e2,
+                               float velocityX,
+                               float velocityY) {
+            // Minimal x and y axis swipe distance.
+            int MIN_SWIPE_DISTANCE_X = 100;
+            int MIN_SWIPE_DISTANCE_Y = 100;
 
-        @Override
-        public void onAnimationCancel(Animator animation) {}
+            // Maximal x and y axis swipe distance.
+            int MAX_SWIPE_DISTANCE_X = 1000;
+            int MAX_SWIPE_DISTANCE_Y = 1000;
+            try {
+                // Get swipe delta value in x axis.
+                float deltaX = e1.getX() - e2.getX();
 
-        @Override
-        public void onAnimationRepeat(Animator animation) {}
+                // Get swipe delta value in y axis.
+                float deltaY = e1.getY() - e2.getY();
+
+                // Get absolute value.
+                float deltaXAbs = Math.abs(deltaX);
+                float deltaYAbs = Math.abs(deltaY);
+
+                if ((deltaYAbs >= MIN_SWIPE_DISTANCE_Y) && (deltaYAbs <= MAX_SWIPE_DISTANCE_Y)) {
+                    if (deltaY > 0) {
+                        Log.e("SWIPE_TEST", "SWIPED UP!");
+                        return true;
+
+                    } else {
+                        Log.e("SWIPE_TEST", "SWIPED DOWN!");
+                        return true;
+                    }
+                }
+            } catch (Exception e) {
+                // nothing
+            }
+            return super.onFling(e1, e2, velocityX, velocityY);
+        }
     }
-
 }

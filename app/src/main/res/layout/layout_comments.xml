@@ -5,9 +5,9 @@
     android:layout_height="match_parent"
     android:layout_alignParentBottom="true"
     android:background="@color/transparent"
+    android:clickable="true"
     android:orientation="vertical"
-    android:visibility="invisible"
-    android:clickable="true">
+    android:visibility="invisible">
 
     <RelativeLayout
         android:id="@+id/full_displayer_comments_dummy_top"
@@ -21,20 +21,28 @@
             android:layout_height="match_parent"
             android:visibility="invisible" />
 
-        <ImageView
-            android:id="@+id/comments_button_close"
-            android:layout_width="@dimen/comments_collapse_bar"
-            android:layout_height="15dp"
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/comments_collapse_bar"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:layout_gravity="center"
-            android:background="@drawable/ic_white_collapse_down"
-            android:scaleType="fitXY"
-            android:visibility="visible" />
+            android:background="@color/colorBgBlackTint">
+
+            <ImageView
+                android:id="@+id/comments_button_close"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/ic_white_collapse_down"
+                android:scaleType="fitXY"
+                android:visibility="visible" />
+        </FrameLayout>
+
     </RelativeLayout>
 
 
     <FrameLayout
+        android:id="@+id/full_displayer_comments_scrollview_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight=".675"

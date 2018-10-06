@@ -2,8 +2,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBgBlackTintDarkest"
+    android:id="@+id/full_displayer_master_container"
     android:orientation="vertical">
-
 
     <!-- Failed to load text-->
     <TextView

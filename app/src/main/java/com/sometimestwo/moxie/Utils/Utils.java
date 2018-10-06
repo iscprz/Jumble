@@ -71,6 +71,19 @@ public class Utils {
         return ugly;
     }
 
+    /* Truncates a large number such as 14,303 and
+    converts it to a truncated string: "14.3k"*/
+    // 14925 -> 14.9k
+    // 101231 -> 100.2k
+    public static String truncateCount(int count){
+        int left ,right;
+        if(count > 9999){
+            left = count / 1000;
+            right = (count % 1000) / 100;
+            return String.valueOf(left) + "." +  String.valueOf(right) + "k";
+        }
+        return String.valueOf(count);
+    }
     /*
        imgur links will be given in the following format :
        https://i.imgur.com/CtyvHl6.gifv

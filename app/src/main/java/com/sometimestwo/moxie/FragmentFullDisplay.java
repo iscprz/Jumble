@@ -570,9 +570,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         int colorUpvoteOrange = getResources().getColor(R.color.upvote_orange);
         int colorWhite = getResources().getColor(R.color.colorWhite);
 
-        mCommentCountTextView.setText(mCurrSubmission.getCommentCount().toString());
+        mCommentCountTextView.setText(Utils.truncateCount(mCurrSubmission.getCommentCount()));
         mUpvoteCountTextView.setTextColor(mCurrSubmission.getVote() == VoteDirection.UP ? colorUpvoteOrange : colorWhite);
-        mUpvoteCountTextView.setText(String.valueOf(mCurrSubmission.getScore()));
+        mUpvoteCountTextView.setText(Utils.truncateCount(mCurrSubmission.getScore()));
         mButtonUpvote.setBackground(mVoteDirection == VoteDirection.UP ? upVoteOrange : upVoteWhite);
         mButtonDownvote.setBackground(mVoteDirection == VoteDirection.DOWN ? downVoteBlue : downVoteWhite);
         mButtonSave.setBackground(mIsSaved ? yellowStar : whiteStar);

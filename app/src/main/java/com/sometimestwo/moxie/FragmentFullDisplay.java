@@ -853,13 +853,6 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         //mPlayButton.setVisibility( focused1 == mPlayButton || focused2 == mPlayButton ? View.VISIBLE : View.GONE);
     }
 
-/*    private void openSubmissionViewer() {
-        Intent submissionViewerIntent = new Intent(getContext(), ActivitySubmissionViewer.class);
-        submissionViewerIntent.putExtra(Constants.EXTRA_SUBMISSION_OBJ, mCurrSubmission);
-        startActivity(submissionViewerIntent);
-        closeFullDisplay();
-    }*/
-
     // Pop this fragment off the stack, effectively closing the submission viewer.
     private void closeFullDisplay() {
         //releaseExoPlayer();
@@ -989,6 +982,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         }
     }
 
+    // Used when detecting swipe gestures in comments section
     private class CommentsGestureDetector extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onDown(MotionEvent e) {

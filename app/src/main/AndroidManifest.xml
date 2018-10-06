@@ -46,10 +46,6 @@
         <activity android:name=".ActivitySubredditViewer">
         </activity>
 
-        <activity
-            android:name=".ActivitySubmissionViewer"
-            android:theme="@style/AppThemeDark">
-        </activity>
         <activity android:name=".YouTubePlayerClass">
 
         </activity>

@@ -6,10 +6,6 @@ import net.dean.jraw.tree.CommentNode;
 public class MoreChildItem extends CommentObj {
     public MoreChildren children;
 
-    @Override
-    public boolean isComment(){
-        return false;
-    }
     public MoreChildItem(CommentNode node, MoreChildren children) {
         comment = node;
         this.children = children;

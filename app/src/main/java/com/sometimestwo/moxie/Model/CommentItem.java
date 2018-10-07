@@ -15,9 +15,6 @@ public class CommentItem extends CommentObj {
         //return comment.getComment().getFullName();
     }
 
-    @Override
-    public boolean isComment() {
-        return true;
-    }
+
 
 }

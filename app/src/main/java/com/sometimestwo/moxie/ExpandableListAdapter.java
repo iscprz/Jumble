@@ -22,13 +22,14 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private Context context;
     private List<ExpandableMenuModel> listDataHeader;
     private HashMap<ExpandableMenuModel, List<ExpandableMenuModel>> listDataChild;
-    private String mCurrLoggedInUser = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
+    private String mCurrLoggedInUser;
 
     public ExpandableListAdapter(Context context, List<ExpandableMenuModel> listDataHeader,
                                  HashMap<ExpandableMenuModel, List<ExpandableMenuModel>> listChildData) {
         this.context = context;
         this.listDataHeader = listDataHeader;
         this.listDataChild = listChildData;
+        mCurrLoggedInUser = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
     }
 
     @Override

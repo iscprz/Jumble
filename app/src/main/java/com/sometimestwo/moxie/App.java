@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.VideoCacher.HttpProxyCacheServer;
@@ -27,7 +29,7 @@ public final class App extends Application {
     private static MoxieInfoObj currSubredditObj;
     private static SharedPreferences shared_prefs;
     public static HttpProxyCacheServer proxy;
-
+    public static RequestManager GlideApp;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -74,13 +76,16 @@ public final class App extends Application {
                 .maxCacheFilesCount(20)
                 .build();
 
+        // Glide
+        GlideApp = Glide.with(this);
+
     }
 
     public static AccountHelper getAccountHelper() { return accountHelper; }
     public static SharedPreferencesTokenStore getTokenStore() { return tokenStore; }
     public static MoxieInfoObj getMoxieInfoObj() {return currSubredditObj;}
     public static SharedPreferences getSharedPrefs(){return shared_prefs;};
-
+    public static RequestManager getGlideApp() { return GlideApp; }
 
     // Video cache
     public static HttpProxyCacheServer getProxy(Context context) {

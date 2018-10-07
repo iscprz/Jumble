@@ -644,11 +644,11 @@ public class Utils {
 
     }
 
-    public static class VerifyRedditHeartbeatTask extends AsyncTask<Void, Void, Void> {
+    public static class RedditHeartbeatTask extends AsyncTask<Void, Void, Void> {
         String mostRecentUser;
         RedditHeartbeatListener listener;
 
-        public VerifyRedditHeartbeatTask(RedditHeartbeatListener listener) {
+        public RedditHeartbeatTask(RedditHeartbeatListener listener) {
             this.mostRecentUser = App.getSharedPrefs()
                     .getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
             this.listener = listener;

@@ -41,7 +41,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -79,13 +81,16 @@ import net.dean.jraw.tree.RootCommentNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 
 public class FragmentFullDisplay extends Fragment implements OnVRedditTaskCompletedListener {
     public static String TAG = FragmentFullDisplay.class.getSimpleName();
 
+    private RequestManager GlideApp = App.getGlideApp();
     private SubmissionObj mCurrSubmission;
     private boolean mIsUserless;
     private boolean mPrefsAllowNSFW;
@@ -385,9 +390,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                                     public void run() {
                                         focusView(mZoomieImageView, null);
                                         mProgressBar.setVisibility(View.GONE);
-                                        Glide.with(FragmentFullDisplay.this)
-                                                .load(mCurrSubmission.getCleanedUrl())
-                                                /*.listener(new GlideProgressListener(mProgressBar))*/
+                                        GlideApp.load(mCurrSubmission.getCleanedUrl())
+                                                .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
                                                 .into(mZoomieImageView);
                                     }
                                 });
@@ -401,9 +405,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             } else {
                 focusView(mZoomieImageView, null);
                 mProgressBar.setVisibility(View.GONE);
-                Glide.with(FragmentFullDisplay.this)
-                        .load(imageUrl)
+                GlideApp.load(imageUrl)
                         .listener(new GlideProgressListener(mProgressBar))
+                        .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
                         .into(mZoomieImageView);
             }
 
@@ -488,10 +492,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
                 //TODO Progress bar
                 mProgressBar.setVisibility(View.GONE);
-                Glide.with(this)
-                        .asGif()
+                GlideApp.asGif()
                         .load(imageUrl)
-                        /*.listener(new GlideProgressListener(mProgressBar))*/
+                        .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
                         .into(mZoomieImageView);
             }
             // Every other domain for GIF
@@ -507,9 +510,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         else {
             focusView(mZoomieImageView, null);
             mProgressBar.setVisibility(View.VISIBLE);
-            Glide.with(this)
-                    .load(Constants.URI_404)
+            GlideApp.load(Constants.URI_404)
                     .listener(new GlideProgressListener(mProgressBar))
+                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
                     .into(mZoomieImageView);
         }
     }
@@ -755,7 +758,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mCommentsRecyclerView.addItemDecoration(new CommentsItemDecorator());
 
         // ensure our reddit client is still authenticated
-        new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
+        new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
             @Override
             public void redditUserAuthenticated(){
                 new FetchCommentsTask().execute();
@@ -782,6 +785,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     }
 
     private class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
+        Set<String> hiddenIDs = new HashSet<>();
 
         public CommentsAdapter() {
 
@@ -795,18 +799,89 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         }
 
         @Override
-        public void onBindViewHolder(@NonNull CommentViewHolder holder, int rootPosition) {
-            CommentNode item = comments.get(rootPosition).comment;
-            holder.commentAuthorTextView.setText(item.getSubject().getAuthor() + "::: " + item.getDepth());
-            holder.commentBodyTextView.setText(item.getSubject().getBody());
+        public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
+            CommentNode item = comments.get(position).comment;
+            /*if(hiddenIDs.contains(item.getParent().getSubject().getId())){
+                hiddenIDs.add(item.getSubject().getId());
+                holder.itemView.setActivated(false);
+                holder.itemView.setVisibility(View.GONE);
+            }*/
+
+                holder.commentAuthorTextView.setText(item.getSubject().getAuthor() + "::: " + item.getDepth());
+                holder.commentBodyTextView.setText(item.getSubject().getBody());
 
 
             // button that will collapse a single comment and its children
-            holder.mCommentInfoContainer.setOnClickListener(new View.OnClickListener() {
+            holder.commentInfoContainer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    int currPosition = holder.getAdapterPosition();
+                    CommentNode currNode = comments.get(currPosition).comment;
+                    //hiddenIDs.add(currNode.getSubject().getId());
+
+
+
+
+
                     int currentVisibility = holder.commentBodyTextView.getVisibility();
                     holder.commentBodyTextView.setVisibility(currentVisibility == View.VISIBLE ? View.GONE : View.VISIBLE);
+
+
+
+                    /*
+                    for(int i = currPosition+1 ; i < comments.size(); i++){
+                        currNode = comments.get(i).comment;
+
+                        String parentID = currNode.getParent().getSubject().getId();
+                        if((currNode.getParent().getDepth() == 0) || (!parentIDs.contains(parentID))){
+                            break;
+                        }
+                    }*/
+
+                    notifyItemRangeRemoved(1,4);
+                    // Set will hold IDs of parents IDs so we can hide all of their children
+
+                    // add current node (that we clicked on) as a parent
+
+                    // search through our comments list for any comments
+                    // which derive from comments with IDs in parentIDs
+                 /*   for(int i = currPosition+1 ; i < comments.size(); i++){
+                        currNode = comments.get(i).comment;
+                        try{
+                            String parentID = currNode.getParent().getSubject().getId();
+                           if((currNode.getParent().getDepth() == 0) || (!parentIDs.contains(parentID))){
+                               break;
+                           }
+                            *//*String parentID = currNode.getParent().getSubject().getId();
+                            if(!parentIDs.contains(parentID)){
+                                break;
+                            }*//*
+                            View childToHide = mCommentsRecyclerView.getChildAt(i);
+                            int currVisibility = childToHide.getVisibility();
+                            childToHide.setVisibility(currVisibility == View.VISIBLE ? View.GONE : View.VISIBLE);
+
+
+                             *//*   //IllegalStateException if no parent
+                            if(currNode.getParent().getDepth() > 0){
+                                String currNodeParentID = currNode.getParent().getSubject().getId();
+                                if(parentIDs.contains(currNodeParentID)){
+                                    View childToHide = mCommentsRecyclerView.getChildAt(i);
+                                    int currVisibility = childToHide.getVisibility();
+                                    childToHide.setVisibility(currVisibility == View.VISIBLE ? View.GONE : View.VISIBLE);
+                                }
+                                else{
+                                    break;
+                                }
+                            }
+                            // when no parent is found, we've found the end of the collapsing
+                            else{
+                                break;
+                            }*//*
+                        }catch (IllegalStateException ise){
+                            break;
+                        }
+
+                    }*/
                 }
             });
         }
@@ -820,13 +895,15 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     }
 
     public class CommentViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        RelativeLayout mCommentInfoContainer; // collapse button, author, vote count
+        RelativeLayout commentMasterContainer; // master comment item container
+        RelativeLayout commentInfoContainer; // collapse button, author, vote count
         TextView commentAuthorTextView;
         TextView commentBodyTextView;
 
         public CommentViewHolder(View itemView) {
             super(itemView);
-            mCommentInfoContainer = (RelativeLayout) itemView.findViewById(R.id.comment_info_container);
+            commentMasterContainer = (RelativeLayout) itemView.findViewById(R.id.comment_item_master);
+            commentInfoContainer = (RelativeLayout) itemView.findViewById(R.id.comment_info_container);
             commentAuthorTextView = (TextView) itemView.findViewById(R.id.comment_item_author);
             commentBodyTextView = (TextView) itemView.findViewById(R.id.comment_item_body);
         }

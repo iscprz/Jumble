@@ -16,7 +16,9 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.VideoView;
 
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
@@ -40,10 +42,10 @@ import com.sometimestwo.moxie.Utils.Utils;
 
 public class FragmentSimpleImageDisplay extends Fragment implements OnVRedditTaskCompletedListener {
 
+    private RequestManager GlideApp = App.getGlideApp();
     private SubmissionObj mCurrSubmission;
     private boolean mPrefsAllowNSFW;
     private boolean mAllowCloseOnClick;
-
 
     private ImageView mButtonShare;
     private ImageView mButtonCopyURL;
@@ -213,8 +215,8 @@ public class FragmentSimpleImageDisplay extends Fragment implements OnVRedditTas
             mSimpleDisplayExoplayer.setVisibility(View.GONE);
             mSimpleDisplayVideoView.setVisibility(View.GONE);
 
-            Glide.with(this)
-                    .load(Uri.parse(imageUrl))
+            GlideApp.load(Uri.parse(imageUrl))
+                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
                     .into(mZoomieImageView);
         } else {
             mZoomieImageView.setVisibility(View.GONE);

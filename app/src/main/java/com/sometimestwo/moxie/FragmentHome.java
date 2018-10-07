@@ -102,7 +102,7 @@ public class FragmentHome extends Fragment {
 
     private int mScreenWidth;
     private int mScreenHeight;
-    private RequestManager GlideApp;
+    private RequestManager GlideApp = App.getGlideApp();
     private SwipeRefreshLayout mRefreshLayout;
     private MultiClickRecyclerView mRecyclerHome;
     private Toolbar mToolbar;
@@ -193,8 +193,6 @@ public class FragmentHome extends Fragment {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        GlideApp = Glide.with(this);
-        //  mRedditClient = App.getAccountHelper().isAuthenticated() ? App.getAccountHelper().getReddit() : App.getAccountHelper().switchToUserless();
         setHasOptionsMenu(true);
         prefs_settings = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
     }

@@ -112,7 +112,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     protected void onStart() {
         super.onStart();
         // Need to make sure user is authenticated
-        new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
+        new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
             @Override
             public void redditUserAuthenticated() {
                 // do nothing

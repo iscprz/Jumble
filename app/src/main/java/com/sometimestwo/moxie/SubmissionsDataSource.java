@@ -38,17 +38,19 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     }
 
     @Override
-    public void loadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {
+    public void loadInitial(@NonNull LoadInitialParams<String> params,
+                            @NonNull final LoadInitialCallback<SubmissionObj> callback) {
         // gotta make sure we're authenticated before making calls to reddit api
-            new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
-                @Override
-                public void redditUserAuthenticated() {
-                    doLoadInitial(params, callback);
-                }
-            }).execute();
+        new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
+            @Override
+            public void redditUserAuthenticated() {
+                doLoadInitial(params, callback);
+            }
+        }).execute();
     }
 
-    private void doLoadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {
+    private void doLoadInitial(@NonNull LoadInitialParams<String> params,
+                               @NonNull final LoadInitialCallback<SubmissionObj> callback) {
         SubredditSort sortBy = App.getMoxieInfoObj().getmSortBy();
         TimePeriod timePeriod = App.getMoxieInfoObj().getmTimePeriod();
 
@@ -94,21 +96,21 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     public void loadAfter(@NonNull final LoadParams<String> params, @NonNull final LoadCallback<SubmissionObj> callback) {
         if (!mIs404 && !mEndOfSubreddit) {
             // make sure we're authenticated
-                new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
-                    @Override
-                    public void redditUserAuthenticated() {
-                        SubredditSort sortBy = App.getMoxieInfoObj().getmSortBy();
-                        TimePeriod timePeriod = App.getMoxieInfoObj().getmTimePeriod();
+            new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
+                @Override
+                public void redditUserAuthenticated() {
+                    SubredditSort sortBy = App.getMoxieInfoObj().getmSortBy();
+                    TimePeriod timePeriod = App.getMoxieInfoObj().getmTimePeriod();
 
-                       // Listing<Submission> current = mPaginator.getCurrent();
-                        mPaginator = getSubredditSortBuilder()
-                                .limit(Constants.QUERY_PAGE_SIZE)
-                                .sorting(sortBy == null ? SubredditSort.HOT : sortBy)
-                                .timePeriod(timePeriod == null ? TimePeriod.DAY : timePeriod)
-                                .build();
-                                new FetchSubmissionsTask(callback).execute();
-                    }
-                }).execute();
+                    // Listing<Submission> current = mPaginator.getCurrent();
+                    mPaginator = getSubredditSortBuilder()
+                            .limit(Constants.QUERY_PAGE_SIZE)
+                            .sorting(sortBy == null ? SubredditSort.HOT : sortBy)
+                            .timePeriod(timePeriod == null ? TimePeriod.DAY : timePeriod)
+                            .build();
+                    new FetchSubmissionsTask(callback).execute();
+                }
+            }).execute();
 
         }
     }

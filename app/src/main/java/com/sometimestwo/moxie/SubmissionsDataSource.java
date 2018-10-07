@@ -54,7 +54,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
         mPaginator = getSubredditSortBuilder()
                 .limit(Constants.QUERY_PAGE_SIZE)
-                .sorting(sortBy == null ? SubredditSort.HOT : sortBy)
+                .sorting(sortBy == null ? SubredditSort.BEST : sortBy)
                 .timePeriod(timePeriod == null ? TimePeriod.DAY : timePeriod)
                 .build();
 
@@ -107,11 +107,11 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                     TimePeriod timePeriod = App.getMoxieInfoObj().getmTimePeriod();
 
                     // Listing<Submission> current = mPaginator.getCurrent();
-                    mPaginator = getSubredditSortBuilder()
+                    /*mPaginator = getSubredditSortBuilder()
                             .limit(Constants.QUERY_PAGE_SIZE)
-                            .sorting(sortBy == null ? SubredditSort.HOT : sortBy)
+                            .sorting(sortBy == null ? SubredditSort.BEST : sortBy)
                             .timePeriod(timePeriod == null ? TimePeriod.DAY : timePeriod)
-                            .build();
+                            .build();*/
                     new FetchSubmissionsTask(callback).execute();
                 }
             }).execute();

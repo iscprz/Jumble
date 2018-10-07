@@ -46,7 +46,6 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                     doLoadInitial(params, callback);
                 }
             }).execute();
-
     }
 
     private void doLoadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {

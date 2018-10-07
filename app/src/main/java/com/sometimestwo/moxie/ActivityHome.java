@@ -40,7 +40,7 @@ import com.sometimestwo.moxie.Utils.Utils;
 public class ActivityHome extends AppCompatActivity implements HomeEventListener,
         OnCloseClickEventListener,
         Fragment404.Fragment404EventListener,
-        FragmentFullDisplay.OnCommentsEventListener{
+        FragmentFullDisplay.OnCommentsEventListener {
 
     private final String TAG = ActivityHome.class.getSimpleName();
     private SharedPreferences prefs_settings;
@@ -70,7 +70,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         loadReddit(false);
     }
 
-    private void loadReddit(boolean invalidateData ) {
+    private void loadReddit(boolean invalidateData) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Fragment fragment = FragmentHome.newInstance();
         Bundle args = new Bundle();
@@ -82,7 +82,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     }
 
     // Actually removes current fragment and creates new one
-    protected void refreshFragment(String fragmentTag, boolean invalidateData ) {
+    protected void refreshFragment(String fragmentTag, boolean invalidateData) {
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(fragmentTag);
         final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         try {
@@ -110,18 +110,14 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
 
     @Override
     protected void onStart() {
+        super.onStart();
         // Need to make sure user is authenticated
-        if(!App.getAccountHelper().isAuthenticated()){
-            new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
-                @Override
-                public void redditUserAuthenticated() {
-                    ActivityHome.super.onStart();
-                }
-            }).execute();
-        }
-        else{
-            super.onStart();
-        }
+        new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
+            @Override
+            public void redditUserAuthenticated() {
+                // do nothing
+            }
+        }).execute();
     }
 
     @Override
@@ -139,24 +135,23 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     public void onBackPressed() {
         // Back button should close nav view drawers if they're open (on either side)
         DrawerLayout navViewDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if(isNavViewOpen(navViewDrawer)){
+        if (isNavViewOpen(navViewDrawer)) {
             navViewDrawer.closeDrawers();
-        }
-        else if(mCommentsOpen){
+        } else if (mCommentsOpen) {
             Fragment fragment = getSupportFragmentManager()
                     .findFragmentByTag(Constants.TAG_FRAG_FULL_DISPLAYER);
             // should never be null since comments cannot be open
-            if(fragment != null){
+            if (fragment != null) {
                 ((FragmentFullDisplay) fragment).closeComments();
             }
         }
         // Back arrow should open left nav menu drawer if we're not currently in any fragments
-        else if((getSupportFragmentManager().getBackStackEntryCount() == 0)
-                && !navViewDrawer.isDrawerOpen(GravityCompat.START)){
+        else if ((getSupportFragmentManager().getBackStackEntryCount() == 0)
+                && !navViewDrawer.isDrawerOpen(GravityCompat.START)) {
             navViewDrawer.openDrawer(GravityCompat.START);
         }
         // Not at the home screen, pop back stack instead of closing activity
-        else if(getSupportFragmentManager().getBackStackEntryCount() > 0){
+        else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStack();
         }
     }
@@ -167,11 +162,11 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         // Back button should close nav view drawers if they're open (on either side)
         DrawerLayout navViewDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-            if(getSupportFragmentManager().getBackStackEntryCount() > 0 || isNavViewOpen(navViewDrawer)){
+            if (getSupportFragmentManager().getBackStackEntryCount() > 0 || isNavViewOpen(navViewDrawer)) {
                 onBackPressed();
             }
             // Confirm exit app
-            else{
+            else {
                 AlertDialog.Builder builder = new AlertDialog.Builder(ActivityHome.this, R.style.TransparentDialog);
                 builder.setTitle("Confirm exit");
                 builder.setMessage("Really exit app?");
@@ -222,7 +217,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     }
 
     // A Navigation View is a menu that slides from the left or right
-    private boolean isNavViewOpen(DrawerLayout drawer){
+    private boolean isNavViewOpen(DrawerLayout drawer) {
         return drawer.isDrawerOpen(GravityCompat.START) || drawer.isDrawerOpen(GravityCompat.END);
     }
 
@@ -237,7 +232,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     }
 
     @Override
-    public void refreshFeed( boolean invalidateData) {
+    public void refreshFeed(boolean invalidateData) {
         // ignore targetSubreddit. It's only here for the sake of ActivitySubredditViewer
         // We'll always want to refresh home when we're in ActivityHome, no target needed
         refreshFragment(Constants.TAG_FRAG_HOME, invalidateData);
@@ -257,11 +252,10 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
 
     @Override
     public void onCloseClickDetected() {
-        if(mAllowCloseOnClick){
-            if(!mCommentsOpen){
+        if (mAllowCloseOnClick) {
+            if (!mCommentsOpen) {
                 getSupportFragmentManager().popBackStack();
-            }
-            else{
+            } else {
                 // Check mCommentsOpen prevents this scenario:
                 // View submission if full displayer -> Open comments ->
                 // Click zoomieview while comments open ->
@@ -269,7 +263,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
                 Fragment fragment = getSupportFragmentManager()
                         .findFragmentByTag(Constants.TAG_FRAG_FULL_DISPLAYER);
                 // should never be null since comments cannot be open
-                if(fragment != null){
+                if (fragment != null) {
                     ((FragmentFullDisplay) fragment).closeComments();
                 }
             }
@@ -285,14 +279,14 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     // P
     @Override
     public void startOver() {
-        while(getSupportFragmentManager().getBackStackEntryCount() > 0 ){
+        while (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStack();
         }
         refreshFeed(true);
     }
 
     @Override
-    public void isCommentsOpen(boolean commentsOpen ) {
+    public void isCommentsOpen(boolean commentsOpen) {
         mCommentsOpen = commentsOpen;
     }
 }

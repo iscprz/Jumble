@@ -16,7 +16,7 @@ import com.sometimestwo.moxie.Utils.Utils;
 
 public class ActivitySubredditViewer extends AppCompatActivity implements HomeEventListener,
         Fragment404.Fragment404EventListener,
-        OnCloseClickEventListener, FragmentFullDisplay.OnCommentsEventListener{
+        OnCloseClickEventListener, FragmentFullDisplay.OnCommentsEventListener {
 
     public final String TAG = this.getClass().getCanonicalName();
     private SharedPreferences prefs_settings;
@@ -66,18 +66,14 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
 
     @Override
     protected void onStart() {
+        super.onStart();
         // Need to make sure user is authenticated
-        if(!App.getAccountHelper().isAuthenticated()){
-            new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
-                @Override
-                public void redditUserAuthenticated() {
-                    ActivitySubredditViewer.super.onStart();
-                }
-            }).execute();
-        }
-        else{
-            super.onStart();
-        }
+        new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
+            @Override
+            public void redditUserAuthenticated() {
+                // do nothing
+            }
+        }).execute();
     }
 
     @Override
@@ -111,12 +107,11 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START) || drawer.isDrawerOpen(GravityCompat.END)) {
             drawer.closeDrawers();
-        }
-        else if(mCommentsOpen){
+        } else if (mCommentsOpen) {
             Fragment fragment = getSupportFragmentManager()
                     .findFragmentByTag(Constants.TAG_FRAG_FULL_DISPLAYER);
             // should never be null since comments cannot be open
-            if(fragment != null){
+            if (fragment != null) {
                 ((FragmentFullDisplay) fragment).closeComments();
             }
         }
@@ -201,10 +196,9 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
     @Override
     public void onCloseClickDetected() {
         if (mAllowCloseOnClick) {
-            if(!mCommentsOpen){
+            if (!mCommentsOpen) {
                 getSupportFragmentManager().popBackStack();
-            }
-            else{
+            } else {
                 // Check mCommentsOpen prevents this scenario:
                 // View submission if full displayer -> Open comments ->
                 // Click zoomieview while comments open ->
@@ -212,7 +206,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
                 Fragment fragment = getSupportFragmentManager()
                         .findFragmentByTag(Constants.TAG_FRAG_FULL_DISPLAYER);
                 // should never be null
-                if(fragment != null){
+                if (fragment != null) {
                     ((FragmentFullDisplay) fragment).closeComments();
                 }
             }
@@ -224,8 +218,9 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
         setResult(Constants.RESULT_OK_START_OVER);
         finish();
     }
+
     @Override
-    public void isCommentsOpen(boolean commentsOpen ) {
+    public void isCommentsOpen(boolean commentsOpen) {
         mCommentsOpen = commentsOpen;
     }
 }

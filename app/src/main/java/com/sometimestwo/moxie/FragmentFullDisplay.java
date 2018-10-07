@@ -1038,7 +1038,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                 comments.add(new CommentObj(n));
                 insertNodes(n.getReplies());
 
-                if(numRootNodes == 25){
+                if(numRootNodes == Constants.COMMENTS_MAX_CURR_DEPTH){
                     break;
                 }
             }

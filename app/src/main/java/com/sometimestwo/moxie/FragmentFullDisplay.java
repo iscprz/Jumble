@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -62,9 +63,7 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
-import com.sometimestwo.moxie.Model.CommentItem;
 import com.sometimestwo.moxie.Model.CommentObj;
-import com.sometimestwo.moxie.Model.MoreChildItem;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.DownloadBinder;
@@ -81,7 +80,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 
@@ -114,7 +112,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     private boolean mIsSaved;
     private int mUpvoteCount;
 
-    // Comments
+    /* Comments */
     boolean mCommentsOpen = false;
     boolean mCommentsInitialized = false;
     LinearLayout mCommentsContainer;
@@ -254,8 +252,10 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         setupHeader();
         setupMedia();
         setupSnackBar();
+        setupComments();
         startAndBindDownloadService();
 
+        /* Click listeners that listen for click-to-close functionality*/
         mExoplayerContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -281,49 +281,6 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             }
         });
 
-        // Each time we enter the full display we need to make sure
-        // our hosting activity knows comments section isnt opened yet.
-        // This is for handling back button press when comments are open
-        mCommentsEventListener.isCommentsOpen(false);
-
-        // Button that minimizes comments section
-        mCommentsButtonClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //redundant check
-                if (mCommentsOpen) {
-                    closeComments();
-                }
-            }
-        });
-        mCommentsDummyTopView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //redundant check
-                if (mCommentsOpen) {
-                    closeComments();
-                }
-            }
-        });
-
-        // detects swipes when our comment section is active
-        final CommentsGestureDetector gestureListener = new CommentsGestureDetector();
-        final GestureDetector commentsGestureDetector
-                = new GestureDetector(getActivity(), gestureListener);
-
-        mCommentsDummyTopView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                return commentsGestureDetector.onTouchEvent(motionEvent);
-            }
-        });
-
-        mSnackbarContainer.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                return commentsGestureDetector.onTouchEvent(motionEvent);
-            }
-        });
         return v;
     }
 
@@ -694,6 +651,54 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         });
     }
 
+    // Does not actually LOAD comments. Only initializes views and click listeners
+    private void setupComments(){
+        // Each time we enter the full display we need to make sure
+        // our hosting activity knows comments section isn't open yet.
+        // This is for handling back button press when comments are open
+        mCommentsEventListener.isCommentsOpen(false);
+
+        // Button that closes the entire comments section (an alternative to swiping downwards)
+        mCommentsButtonClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //redundant check
+                if (mCommentsOpen) {
+                    closeComments();
+                }
+            }
+        });
+
+        // Dummy area that is used for capturing events to close comment section
+        mCommentsDummyTopView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //redundant check
+                if (mCommentsOpen) {
+                    closeComments();
+                }
+            }
+        });
+
+        // Detects swipes when our comment section is open
+        final CommentsGestureDetector gestureListener = new CommentsGestureDetector();
+        final GestureDetector commentsGestureDetector
+                = new GestureDetector(getActivity(), gestureListener);
+
+        mCommentsDummyTopView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return commentsGestureDetector.onTouchEvent(motionEvent);
+            }
+        });
+
+        mSnackbarContainer.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return commentsGestureDetector.onTouchEvent(motionEvent);
+            }
+        });
+    }
 
     public void openComments() {
         if(!mCommentsInitialized){
@@ -746,7 +751,16 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     private void initComments() {
         mCommentsRecyclerLayoutManager = new LinearLayoutManager(getContext());
         mCommentsRecyclerView.setLayoutManager(mCommentsRecyclerLayoutManager);
-        new FetchCommentsTask().execute();
+        // adds the margin to the left of a comment to show indentation
+        mCommentsRecyclerView.addItemDecoration(new CommentsItemDecorator());
+
+        // ensure our reddit client is still authenticated
+        new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
+            @Override
+            public void redditUserAuthenticated(){
+                new FetchCommentsTask().execute();
+            }
+        }).execute();
     }
 
 
@@ -756,8 +770,21 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mCommentsRecyclerView.setAdapter(adapter);
     }
 
+    // give comment an indentation based on comment depth
+    private class CommentsItemDecorator extends RecyclerView.ItemDecoration{
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            Context context = view.getContext();
+            int indentation = context.getResources().getDimensionPixelSize(R.dimen.comments_indentation);
+            CommentViewHolder holder = (CommentViewHolder) parent.getChildViewHolder(view);
+            outRect.left = indentation * holder.getIndentationLevel();
+        }
+    }
+
     private class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
+
         public CommentsAdapter() {
+
         }
 
         @NonNull
@@ -769,21 +796,19 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
         @Override
         public void onBindViewHolder(@NonNull CommentViewHolder holder, int rootPosition) {
-            CommentNode viewholderComment = comments.get(rootPosition).comment;
-            holder.commentsTextViewAuthor.setText(comments.get(rootPosition).comment.getSubject().getAuthor()/* + "::: " + position*/);
-            holder.commentsTextViewBody.setText(comments.get(rootPosition).comment.getSubject().getBody());
-
-            //children
-           /* List replies = comments.get(rootPosition).comment.getReplies();
+            CommentNode item = comments.get(rootPosition).comment;
+            holder.commentAuthorTextView.setText(item.getSubject().getAuthor() + "::: " + item.getDepth());
+            holder.commentBodyTextView.setText(item.getSubject().getBody());
 
 
-            CommentNode curr = viewholderComment;
-
-            for(int i = 0; i < Constants.COMMENT_LOAD_CHILD_LIMIT; i++){
-                if(curr.getReplies().size() > 0){
-                    curr.getReplies().get(0);
+            // button that will collapse a single comment and its children
+            holder.mCommentInfoContainer.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int currentVisibility = holder.commentBodyTextView.getVisibility();
+                    holder.commentBodyTextView.setVisibility(currentVisibility == View.VISIBLE ? View.GONE : View.VISIBLE);
                 }
-            }*/
+            });
         }
 
 
@@ -791,20 +816,28 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         public int getItemCount() {
             return comments.size();
         }
+
     }
 
     public class CommentViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView commentsTextViewAuthor;
-        TextView commentsTextViewBody;
+        RelativeLayout mCommentInfoContainer; // collapse button, author, vote count
+        TextView commentAuthorTextView;
+        TextView commentBodyTextView;
 
         public CommentViewHolder(View itemView) {
             super(itemView);
-            commentsTextViewAuthor = (TextView) itemView.findViewById(R.id.comment_item_author);
-            commentsTextViewBody = (TextView) itemView.findViewById(R.id.comment_item_body);
+            mCommentInfoContainer = (RelativeLayout) itemView.findViewById(R.id.comment_info_container);
+            commentAuthorTextView = (TextView) itemView.findViewById(R.id.comment_item_author);
+            commentBodyTextView = (TextView) itemView.findViewById(R.id.comment_item_body);
         }
 
         @Override
         public void onClick(View view) {
+        }
+
+        // Gets comment depth. Minus 1 since root level comments are considered depth 1
+        public int getIndentationLevel(){
+            return comments.get(getLayoutPosition()).comment.getDepth()-1;
         }
     }
 
@@ -962,26 +995,53 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
 
             comments = new ArrayList<>();
-            Map<Integer, MoreChildItem> waiting = new HashMap<>();
             commentOPs = new HashMap<>();
-            String currentOP = "";
-
-
             List<CommentNode<Comment>> rootComments =
                     baseComments.walkTree().iterator().next().getReplies();
 
-            for (CommentNode<Comment> root : rootComments) {
-                // maps comment ID to author
-                commentOPs.put(root.getSubject().getId(), root.getSubject().getAuthor());
-                CommentObj commentObj = new CommentItem(root);
-                comments.add(commentObj);
+            insertNodes(rootComments);
+            return null;
+        }
 
+        /* Traverses comment tree in depth first manner adding
+         *each child to a comments list. Illustration of comments section:
+         *
+         * -Green
+         * --Hey
+         * --Hola
+         * --Yo
+         * ---Turtle
+         * -Blue
+         * -Yellow
+         * --Hello
+         * ---Snake
+         * -Brown
+         *
+         * comments will look like:
+         * Green,Hey,Hola,Yo,Turtle,Blue,Yellow,Hello,Snake,Brown
+         *
+         * Will only collect up to depth COMMENTS_MAX_DEPTH and will limit
+         * any depth to COMMENTS_MAX_CURR_DEPTH comments. This means that if
+         * there is 150 root level comments and COMMENTS_MAX_CURR_DEPTH = 40,
+         * we will only load the first 40 root level comments here.
+         *
+         */
+        private void insertNodes(List<CommentNode<Comment>> rootComments){
+            if (rootComments == null
+                    || rootComments.size() < 1
+                    || rootComments.get(0).getDepth() > Constants.COMMENTS_MAX_DEPTH){
+                return;
+            }
+            int numRootNodes = 0;
+            for(CommentNode<Comment> n : rootComments){
+                numRootNodes++;
+                comments.add(new CommentObj(n));
+                insertNodes(n.getReplies());
 
-                if (root.hasMoreChildren()) {
-                    waiting.put(root.getDepth(), new MoreChildItem(root, root.getMoreChildren()));
+                if(numRootNodes == 25){
+                    break;
                 }
             }
-            return null;
         }
 
         @Override

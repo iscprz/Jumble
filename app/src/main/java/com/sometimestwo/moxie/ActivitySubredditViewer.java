@@ -11,7 +11,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 
-import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
 
@@ -69,7 +68,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
     protected void onStart() {
         // Need to make sure user is authenticated
         if(!App.getAccountHelper().isAuthenticated()){
-            new Utils.FetchAuthenticatedUserTask(new OnRedditUserReadyListener() {
+            new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
                 @Override
                 public void redditUserAuthenticated() {
                     ActivitySubredditViewer.super.onStart();

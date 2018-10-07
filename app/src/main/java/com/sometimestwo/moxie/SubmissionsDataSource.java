@@ -40,16 +40,13 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     @Override
     public void loadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {
         // gotta make sure we're authenticated before making calls to reddit api
-        if (!App.getAccountHelper().isAuthenticated()) {
-            new Utils.FetchAuthenticatedUserTask(new OnRedditUserReadyListener() {
+            new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
                 @Override
                 public void redditUserAuthenticated() {
                     doLoadInitial(params, callback);
                 }
             }).execute();
-        } else {
-            doLoadInitial(params, callback);
-        }
+
     }
 
     private void doLoadInitial(@NonNull LoadInitialParams<String> params, @NonNull final LoadInitialCallback<SubmissionObj> callback) {
@@ -98,8 +95,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     public void loadAfter(@NonNull final LoadParams<String> params, @NonNull final LoadCallback<SubmissionObj> callback) {
         if (!mIs404 && !mEndOfSubreddit) {
             // make sure we're authenticated
-            if (!App.getAccountHelper().isAuthenticated()) {
-                new Utils.FetchAuthenticatedUserTask(new OnRedditUserReadyListener() {
+                new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
                     @Override
                     public void redditUserAuthenticated() {
                         SubredditSort sortBy = App.getMoxieInfoObj().getmSortBy();
@@ -114,9 +110,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                                 new FetchSubmissionsTask(callback).execute();
                     }
                 }).execute();
-            } else {
-                new FetchSubmissionsTask(callback).execute();
-            }
+
         }
     }
 

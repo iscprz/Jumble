@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -16,8 +14,6 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.View;
-import android.widget.ProgressBar;
 
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
@@ -116,7 +112,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     protected void onStart() {
         // Need to make sure user is authenticated
         if(!App.getAccountHelper().isAuthenticated()){
-            new Utils.FetchAuthenticatedUserTask( new OnRedditUserReadyListener() {
+            new Utils.VerifyRedditHeartbeatTask(new RedditHeartbeatListener() {
                 @Override
                 public void redditUserAuthenticated() {
                     ActivityHome.super.onStart();

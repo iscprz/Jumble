@@ -1,5 +1,5 @@
 package com.sometimestwo.moxie;
 
-public interface OnRedditUserReadyListener {
+public interface RedditHeartbeatListener {
     public void redditUserAuthenticated();
 }

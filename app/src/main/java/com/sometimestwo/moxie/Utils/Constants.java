@@ -92,7 +92,8 @@ public class Constants {
     public final static int PERMISSIONS_DOWNLOAD_MEDIA = 900;
     public final static int COMMENTS_CLOSE_SWIPE_DURATION = 200;
     public final static int COMMENTS_OPEN_SWIPE_DURATION = 500;
-
+    public final static int COMMENTS_ROOT_MAX_LOAD_SIZE = 50;
+    public final static int COMMENTS_MAX_DEPTH = 7;
 
     // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
 

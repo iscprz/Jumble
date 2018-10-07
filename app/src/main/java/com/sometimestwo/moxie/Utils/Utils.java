@@ -4,7 +4,6 @@ package com.sometimestwo.moxie.Utils;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -29,7 +28,7 @@ import com.sometimestwo.moxie.Imgur.response.images.SubmissionRoot;
 import com.sometimestwo.moxie.Model.GfyItem;
 import com.sometimestwo.moxie.Model.GfycatWrapper;
 import com.sometimestwo.moxie.Model.SubmissionObj;
-import com.sometimestwo.moxie.OnRedditUserReadyListener;
+import com.sometimestwo.moxie.RedditHeartbeatListener;
 import com.sometimestwo.moxie.OnTaskCompletedListener;
 import com.sometimestwo.moxie.OnVRedditTaskCompletedListener;
 
@@ -75,15 +74,16 @@ public class Utils {
     converts it to a truncated string: "14.3k"*/
     // 14925 -> 14.9k
     // 101231 -> 100.2k
-    public static String truncateCount(int count){
-        int left ,right;
-        if(count > 9999){
+    public static String truncateCount(int count) {
+        int left, right;
+        if (count > 9999) {
             left = count / 1000;
             right = (count % 1000) / 100;
-            return String.valueOf(left) + "." +  String.valueOf(right) + "k";
+            return String.valueOf(left) + "." + String.valueOf(right) + "k";
         }
         return String.valueOf(count);
     }
+
     /*
        imgur links will be given in the following format :
        https://i.imgur.com/CtyvHl6.gifv
@@ -123,7 +123,7 @@ public class Utils {
     }
 
     // TODO Verify this is the only qualification...
-    public static boolean isImgurAlbum(String url){
+    public static boolean isImgurAlbum(String url) {
         return url.contains("/a/");
     }
 
@@ -133,8 +133,8 @@ public class Utils {
        We also are setting the item's submission type here. Might need to do this elsewhere.
     */
     public static void fixIndirectImgurUrl(SubmissionObj item,
-                                    String imgurHash,
-                                    OnTaskCompletedListener listener) {
+                                           String imgurHash,
+                                           OnTaskCompletedListener listener) {
         ImgurClient imgurClient = new ImgurClient();
 
         imgurClient.getImageService()
@@ -217,6 +217,7 @@ public class Utils {
                     }
                 });
     }
+
     public static String getGfycatHash(String gfycatUrl) {
         String hash = gfycatUrl.substring(gfycatUrl.lastIndexOf("/", gfycatUrl.length()));
         if (hash.contains("-size_restricted")) {
@@ -256,7 +257,7 @@ public class Utils {
                                     + e.getMessage());
                     call.cancel();
                 }
-                if(gfyItem!=null) {
+                if (gfyItem != null) {
                     item.setCleanedUrl(gfyItem.getMobileUrl() != null ? gfyItem.getMobileUrl() : gfyItem.getMp4Url());
                     item.setMp4Url(gfyItem.getMp4Url());
                 }
@@ -271,6 +272,7 @@ public class Utils {
 
         });
     }
+
     public static String getYouTubeID(String url) {
         String pattern = "(?<=watch\\?v=|/videos/|embed\\/|youtu.be\\/|\\/v\\/|\\/e\\/|watch\\?v%3D|watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%\u200C\u200B2F|youtu.be%2F|%2Fv%2F)[^#\\&\\?\\n]*";
 
@@ -379,7 +381,7 @@ public class Utils {
         }
     }
 
-    public static String getCleanVRedditDownloadUrl(String url){
+    public static String getCleanVRedditDownloadUrl(String url) {
         if (!url.contains("DASH")) {
             if (url.endsWith("/")) {
                 url = url.substring(url.length() - 2);
@@ -642,11 +644,11 @@ public class Utils {
 
     }
 
-    public static class FetchAuthenticatedUserTask extends AsyncTask<Void, Void, Void> {
+    public static class VerifyRedditHeartbeatTask extends AsyncTask<Void, Void, Void> {
         String mostRecentUser;
-        OnRedditUserReadyListener listener;
+        RedditHeartbeatListener listener;
 
-        public FetchAuthenticatedUserTask(OnRedditUserReadyListener listener) {
+        public VerifyRedditHeartbeatTask(RedditHeartbeatListener listener) {
             this.mostRecentUser = App.getSharedPrefs()
                     .getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
             this.listener = listener;
@@ -654,14 +656,14 @@ public class Utils {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            Log.e("FETCH_AUTH_USER", "Attempting to reauthenticate: " + mostRecentUser);
-            //if (!App.getAccountHelper().isAuthenticated()) {
-            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
-                App.getAccountHelper().switchToUser(mostRecentUser);
-            } else {
-                App.getAccountHelper().switchToUserless();
+            if (!App.getAccountHelper().isAuthenticated()) {
+                Log.e("FETCH_AUTH_USER", "Attempting to reauthenticate: " + mostRecentUser);
+                if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
+                    App.getAccountHelper().switchToUser(mostRecentUser);
+                } else {
+                    App.getAccountHelper().switchToUserless();
+                }
             }
-            //  }
             return null;
         }
 
@@ -670,20 +672,6 @@ public class Utils {
             super.onPostExecute(aVoid);
             Log.e("FETCH_AUTH_USER", "Authenticated success! ");
             listener.redditUserAuthenticated();
-        }
-    }
-
-    public static void validateRedditIntegrity(Context context) {
-        if (!App.getAccountHelper().isAuthenticated()) {
-            SharedPreferences prefs_settings =
-                    context.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
-            String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
-
-            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
-                App.getAccountHelper().switchToUser(mostRecentUser);
-            } else {
-                App.getAccountHelper().switchToUserless();
-            }
         }
     }
 

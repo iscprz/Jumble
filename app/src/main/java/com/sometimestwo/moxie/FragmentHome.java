@@ -383,7 +383,15 @@ public class FragmentHome extends Fragment {
             case R.id.menu_explore:
                 mDrawerLayout.openDrawer(GravityCompat.END);
                 return true;
+            case R.id.menu_submissions_overflow_refresh:
+                refresh(true);
+                return true;
             /* Sort by*/
+            case R.id.menu_submissions_sortby_BEST:
+                App.getMoxieInfoObj().setmSortBy(SubredditSort.BEST);
+                App.getMoxieInfoObj().setmTimePeriod(null);
+                refresh(true);
+                return true;
             case R.id.menu_submissions_sortby_HOT:
                 App.getMoxieInfoObj().setmSortBy(SubredditSort.HOT);
                 App.getMoxieInfoObj().setmTimePeriod(null);

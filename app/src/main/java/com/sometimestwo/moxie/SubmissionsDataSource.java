@@ -30,8 +30,6 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     MoxieInfoObj mMoxieInfoObj;
     private boolean mIs404 = false;
     private boolean mEndOfSubreddit = false;
-    //TODO figure this out
-    String defaultSubreddit = "gifs";
 
     public SubmissionsDataSource(MoxieInfoObj moxieInfoObj) {
         this.mMoxieInfoObj = moxieInfoObj;
@@ -82,7 +80,13 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         }
         // USERLESS and no subreddit request - display default
         else {
-            return redditClient.subreddit(defaultSubreddit).posts();
+            StringBuilder sb = new StringBuilder();
+            for(String subreddit : App.getMoxieInfoObj().getDefaultSubreddits()){
+                sb.append(subreddit).append("+");
+            }
+            // remove trailing +
+            String defaultSubreddits = sb.toString().substring(0,sb.toString().length()-1);
+            return redditClient.subreddit(defaultSubreddits).posts();
         }
     }
 

@@ -5,20 +5,6 @@
         <item>Subreddits</item>
     </string-array>
 
-    <string-array name="explore_catagories">
-        <item>Funny</item>
-        <item>Awwwww</item>
-        <item>Food</item>
-        <item>Art</item>
-        <item>Travel</item>
-        <item>Meme</item>
-        <item>GIFs</item>
-        <item>Motivational</item>
-        <item>Woah</item>
-        <item>Design</item>
-        <item>WTF</item>
-        <item>NSFW</item>
-        <item>Adventure</item>
-        <item>Nature</item>
-    </string-array>
+
+
 </resources>

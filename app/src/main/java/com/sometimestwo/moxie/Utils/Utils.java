@@ -547,6 +547,10 @@ public class Utils {
                         fos.close();
                         isa.close();
 
+                        //TODO:
+                        //W/OkHttpClient: A connection to https://v.redd.it/ was leaked. Did you forget to close a response body?
+                        cona.disconnect();
+
                         Utils.mux(videoOutput.getAbsolutePath(), audioOutput.getAbsolutePath(),
                                 muxedPath.getAbsolutePath());
 
@@ -647,6 +651,7 @@ public class Utils {
     public static class RedditHeartbeatTask extends AsyncTask<Void, Void, Void> {
         String mostRecentUser;
         RedditHeartbeatListener listener;
+        boolean didSomething = false;
 
         public RedditHeartbeatTask(RedditHeartbeatListener listener) {
             this.mostRecentUser = App.getSharedPrefs()
@@ -657,6 +662,7 @@ public class Utils {
         @Override
         protected Void doInBackground(Void... voids) {
             if (!App.getAccountHelper().isAuthenticated()) {
+                didSomething = true;
                 Log.e("FETCH_AUTH_USER", "Attempting to reauthenticate: " + mostRecentUser);
                 if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
                     App.getAccountHelper().switchToUser(mostRecentUser);
@@ -670,7 +676,8 @@ public class Utils {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            Log.e("FETCH_AUTH_USER", "Authenticated success! ");
+            if (didSomething)
+                Log.e("FETCH_AUTH_USER", "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Authenticated success! ");
             listener.redditUserAuthenticated();
         }
     }

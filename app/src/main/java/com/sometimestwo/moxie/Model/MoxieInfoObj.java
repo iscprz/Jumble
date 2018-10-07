@@ -3,6 +3,9 @@ package com.sometimestwo.moxie.Model;
 import net.dean.jraw.models.SubredditSort;
 import net.dean.jraw.models.TimePeriod;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 
 /*
@@ -14,6 +17,17 @@ public class MoxieInfoObj {
     SubredditSort mSortBy;
     TimePeriod mTimePeriod;
     boolean hideNSFW = true;
+    List<String> defaultSubreddits =
+            new ArrayList<String>(Arrays.asList(
+                    "funny",
+                    "gifs",
+                    "pics",
+                    "earthporn",
+                    "aww",
+                    "videos",
+                    "mildlyinteresting",
+                    "wallpapers"));
+
 
     public SubredditSort getmSortBy() {
         return mSortBy == null ? SubredditSort.HOT : mSortBy;
@@ -45,5 +59,13 @@ public class MoxieInfoObj {
 
     public void setHideNSFW(boolean hideNSFW) {
         this.hideNSFW = hideNSFW;
+    }
+
+    public List<String> getDefaultSubreddits() {
+        return defaultSubreddits;
+    }
+
+    public void setDefaultSubreddits(List<String> defaultSubreddits) {
+        this.defaultSubreddits = defaultSubreddits;
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="subreddits">
+    <string-array name="subreddits_all">
         <item>frontpage</item>
         <item>all</item>
         <item>adviceanimals</item>
@@ -9,6 +9,17 @@
         <item>animalsbeingjerks</item>
         <item>animalsbeingfunny</item>
         <item>art</item>
-
     </string-array>
+
+    <!--    <string-array name="subreddits_default">
+            <item>pics</item>
+            <item>funny</item>
+            <item>gifs</item>
+            <item>earthporn</item>
+            <item>videos</item>
+            <item>mildlyinteresting</item>
+            <item>wallpapers</item>
+            <item>aww</item>
+        </string-array>-->
+
 </resources>

@@ -181,7 +181,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         SharedPreferences prefs = getContext().getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
 
         mPrefsAllowNSFW = prefs.getBoolean(Constants.PREFS_HIDE_NSFW, false);
-        mAllowCloseOnClick = prefs.getBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        mAllowCloseOnClick = prefs.getBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, true);
     }
 
     @Nullable

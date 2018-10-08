@@ -46,10 +46,6 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         FragmentFullDisplay.OnCommentsEventListener {
 
     private final String TAG = ActivityHome.class.getSimpleName();
-    private SharedPreferences prefs_settings;
-
-    // Permissions we'll need to make use of
-    private boolean mAllowCloseOnClick;
 
     //screen size metrics for flexibility in displaying dialogs
     private DisplayMetrics mDisplayMetrics;
@@ -66,9 +62,6 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
 
         mScreenWidth = getResources().getDisplayMetrics().widthPixels;
         mScreenHeight = getResources().getDisplayMetrics().heightPixels;
-
-        prefs_settings = this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
-        mAllowCloseOnClick = prefs_settings.getBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
 
         loadReddit(false);
     }
@@ -259,7 +252,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
 
     @Override
     public void onCloseClickDetected() {
-        if (mAllowCloseOnClick) {
+        if (App.getSharedPrefs().getBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK,true)) {
             if (!mCommentsOpen) {
                 getSupportFragmentManager().popBackStack();
             } else {

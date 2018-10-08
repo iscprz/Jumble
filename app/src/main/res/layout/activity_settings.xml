@@ -164,7 +164,8 @@
                 <CheckBox
                     android:id="@+id/settings_nsfw_overlay_checkbox"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:theme="@style/Theme.Settings.Checkbox"/>
             </RelativeLayout>
 
 
@@ -275,7 +276,7 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@id/settings_title_allow_previewer"
                         android:paddingLeft="@dimen/settings_padding_left"
-                        android:text="Long press submission thumbnail to preview title and media"
+                        android:text="Long press submission thumbnail to preview full size submission"
                         android:textColor="@color/colorWhite"
                         android:textSize="12sp" />
                 </RelativeLayout>
@@ -427,7 +428,7 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@id/settings_title_filetype_icon"
                         android:paddingLeft="@dimen/settings_padding_left"
-                        android:text="Display overlay icons showing the type of submission it is (IMG, GIF, VID)"
+                        android:text="Display overlay icons showing submission type (IMG, GIF, VID)"
                         android:textColor="@color/colorWhite"
                         android:textSize="12sp" />
                 </RelativeLayout>
@@ -500,7 +501,8 @@
                 <CheckBox
                     android:id="@+id/settings_nsfw_icon_checkbox"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:theme="@style/Theme.Settings.Checkbox"/>
             </RelativeLayout>
 
 

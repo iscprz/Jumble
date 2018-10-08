@@ -59,7 +59,7 @@ public class Constants {
     public final static String PREFS_HIDE_NSFW = "PREFS_HIDE_NSFW";
     public final static String PREFS_ALLOW_HOVER_PREVIEW = "PREFS_ALLOW_HOVER_PREVIEW";
     public final static String PREFS_PREVIEW_SIZE = "PREFS_PREVIEW_SIZE";
-    public final static String PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK = "PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK";
+    public final static String PREFS_ALLOW_CLOSE_CLICK = "PREFS_ALLOW_CLOSE_CLICK";
     public final static String PREFS_ALLOW_DOMAIN_ICON = "PREFS_ALLOW_DOMAIN_ICON";
     public final static String PREFS_ALLOW_FILETYPE_ICON = "PREFS_ALLOW_FILETYPE_ICON";
     public final static String PREFS_HIDE_NSFW_THUMBS = "PREFS_HIDE_NSFW_THUMBS";

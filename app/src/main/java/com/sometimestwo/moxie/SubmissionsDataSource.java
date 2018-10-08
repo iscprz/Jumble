@@ -157,12 +157,15 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 }
                 submissionObjs = mapSubmissions(submissions);
             } catch (Exception e) {
+                // Let's tell the user 404 for anything that may go wrong here.
+                // Probably a network error...
+
                 // network issue
-                if (e instanceof UnknownHostException) {
+                //if (e instanceof UnknownHostException) {
                     mIs404 = true;
                     submissionObjs = new ArrayList<SubmissionObj>();
                     submissionObjs.add(new SubmissionObj(true));
-                }
+              //  }
                 //java.net.UnknownHostException: Unable to resolve host "www.reddit.com": No address associated with hostname
                 Log.e(SubmissionsDataSource.class.getSimpleName(),
                         " Failed to request initial submissions from reddit: " + e.getMessage());
@@ -199,6 +202,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 submissions = mPaginator.next();
                 submissionObjs = mapSubmissions(submissions);
             } catch (Exception e) {
+                // todo: catch network error such as timeout using similar techniques as above
                 Log.e(SubmissionsDataSource.class.getSimpleName(),
                         " Failed to request non-initial submissions from reddit: " + e.getMessage());
             }

@@ -934,7 +934,7 @@ public class FragmentHome extends Fragment {
                             mDrawerLayout.closeDrawer(mNavigationViewLeft);
                         } else if (getResources().getString(R.string.menu_settings)
                                 .equalsIgnoreCase(clickedItemTitle)) {
-                            //mHomeEventListener.openSettings();
+                            mHomeEventListener.openSettings();
                         }
                     }
                 }
@@ -1071,7 +1071,7 @@ public class FragmentHome extends Fragment {
         if (prefs_settings != null) {
             mHideNSFW = prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW, true);
             mAllowImagePreview = prefs_settings.getBoolean(Constants.PREFS_ALLOW_HOVER_PREVIEW, true);
-            mAllowBigDisplayClickClose = prefs_settings.getBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+            mAllowBigDisplayClickClose = prefs_settings.getBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, true);
             mPreviewSize = prefs_settings.getString(Constants.PREFS_PREVIEW_SIZE, Constants.PREFS_PREVIEW_SIZE_LARGE)
                     .equalsIgnoreCase(Constants.PREFS_PREVIEW_SIZE_LARGE)
                     ? Constants.HoverPreviewSize.LARGE : Constants.HoverPreviewSize.SMALL;

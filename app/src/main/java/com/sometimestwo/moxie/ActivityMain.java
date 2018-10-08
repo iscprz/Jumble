@@ -91,8 +91,8 @@ public class ActivityMain extends AppCompatActivity {
         }
 
         // Allow tap-to-close big display
-        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false) == false) {
-            prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, true) == true) {
+            prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, true);
         }
 
         // Allow domain icons - defaults to false

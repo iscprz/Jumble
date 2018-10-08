@@ -38,7 +38,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subreddit_viewer);
         prefs_settings = this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
-        mAllowCloseOnClick = prefs_settings.getBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        mAllowCloseOnClick = prefs_settings.getBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, true);
 
         unpackExtras();
         displaySubreddit(true);

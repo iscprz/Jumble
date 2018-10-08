@@ -143,13 +143,13 @@ public class ActivitySettings extends Activity {
 
         /********** Close big display on click*********/
         mCheckboxAllowBigDisplayCloseClick = (CheckBox) findViewById(R.id.settings_bigdisplay_closeclick_checkbox);
-        boolean closeOnClick = prefs_settings.getBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        boolean closeOnClick = prefs_settings.getBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, true);
         mCheckboxAllowBigDisplayCloseClick.setChecked(closeOnClick);
         mCheckboxAllowBigDisplayCloseClick.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //boolean newValue = mCheckboxAllowBigDisplayCloseClick.isChecked();
-                prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, b);
+                prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, b);
                 mModified = true;
             }
         });

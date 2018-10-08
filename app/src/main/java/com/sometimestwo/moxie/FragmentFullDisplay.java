@@ -65,6 +65,9 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
+import com.sometimestwo.moxie.EventListeners.OnTaskCompletedListener;
+import com.sometimestwo.moxie.EventListeners.OnVRedditTaskCompletedListener;
+import com.sometimestwo.moxie.EventListeners.RedditHeartbeatListener;
 import com.sometimestwo.moxie.Model.CommentObj;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
@@ -175,10 +178,10 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         unpackArgs();
 
         // Read relevant permission settings
-        SharedPreferences prefs = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        SharedPreferences prefs = getContext().getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
 
-        mPrefsAllowNSFW = prefs.getBoolean(Constants.SETTINGS_HIDE_NSFW, false);
-        mAllowCloseOnClick = prefs.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        mPrefsAllowNSFW = prefs.getBoolean(Constants.PREFS_HIDE_NSFW, false);
+        mAllowCloseOnClick = prefs.getBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
     }
 
     @Nullable
@@ -385,16 +388,22 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                         new OnTaskCompletedListener() {
                             @Override
                             public void downloadSuccess() {
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        focusView(mZoomieImageView, null);
-                                        mProgressBar.setVisibility(View.GONE);
-                                        GlideApp.load(mCurrSubmission.getCleanedUrl())
-                                                .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
-                                                .into(mZoomieImageView);
-                                    }
-                                });
+                                if (getActivity() != null) {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            focusView(mZoomieImageView, null);
+                                            mProgressBar.setVisibility(View.GONE);
+                                            GlideApp.load(mCurrSubmission.getCleanedUrl())
+                                                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
+                                                    .into(mZoomieImageView);
+                                        }
+                                    });
+                                }else{
+                                    Log.e(TAG,
+                                            "getActivity() null when trying to fixIndirectImgurUrl for URL "
+                                                    + mCurrSubmission.getUrl());
+                                }
                             }
 
                             @Override
@@ -427,15 +436,21 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                             @Override
                             public void downloadSuccess() {
                                 super.downloadSuccess();
-                                getActivity().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        //exo player has its own progress bar
-                                        mProgressBar.setVisibility(View.GONE);
-                                        focusView(mExoplayer, mExoplayerContainer);
-                                        initializeExoPlayer(mCurrSubmission.getCleanedUrl());
-                                    }
-                                });
+                                if (getActivity() != null) {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            //exo player has its own progress bar
+                                            mProgressBar.setVisibility(View.GONE);
+                                            focusView(mExoplayer, mExoplayerContainer);
+                                            initializeExoPlayer(mCurrSubmission.getCleanedUrl());
+                                        }
+                                    });
+                                }else{
+                                    Log.e(TAG,
+                                            "getActivity null when trying to getMp4LinkImgur for url "
+                                            + mCurrSubmission.getUrl());
+                                }
                             }
 
                             @Override
@@ -655,7 +670,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     }
 
     // Does not actually LOAD comments. Only initializes views and click listeners
-    private void setupComments(){
+    private void setupComments() {
         // Each time we enter the full display we need to make sure
         // our hosting activity knows comments section isn't open yet.
         // This is for handling back button press when comments are open
@@ -704,7 +719,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     }
 
     public void openComments() {
-        if(!mCommentsInitialized){
+        if (!mCommentsInitialized) {
             initComments();
         }
         mCommentsContainer.setVisibility(View.VISIBLE);
@@ -760,7 +775,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         // ensure our reddit client is still authenticated
         new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
             @Override
-            public void redditUserAuthenticated(){
+            public void redditUserAuthenticated() {
                 new FetchCommentsTask().execute();
             }
         }).execute();
@@ -774,7 +789,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     }
 
     // give comment an indentation based on comment depth
-    private class CommentsItemDecorator extends RecyclerView.ItemDecoration{
+    private class CommentsItemDecorator extends RecyclerView.ItemDecoration {
         @Override
         public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
             Context context = view.getContext();
@@ -807,8 +822,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                 holder.itemView.setVisibility(View.GONE);
             }*/
 
-                holder.commentAuthorTextView.setText(item.getSubject().getAuthor() + "::: " + item.getDepth());
-                holder.commentBodyTextView.setText(item.getSubject().getBody());
+            holder.commentAuthorTextView.setText(item.getSubject().getAuthor() + "::: " + item.getDepth());
+            holder.commentBodyTextView.setText(item.getSubject().getBody());
 
 
             // button that will collapse a single comment and its children
@@ -818,9 +833,6 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                     int currPosition = holder.getAdapterPosition();
                     CommentNode currNode = comments.get(currPosition).comment;
                     //hiddenIDs.add(currNode.getSubject().getId());
-
-
-
 
 
                     int currentVisibility = holder.commentBodyTextView.getVisibility();
@@ -838,7 +850,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                         }
                     }*/
 
-                    notifyItemRangeRemoved(1,4);
+                    notifyItemRangeRemoved(1, 4);
                     // Set will hold IDs of parents IDs so we can hide all of their children
 
                     // add current node (that we clicked on) as a parent
@@ -913,8 +925,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         }
 
         // Gets comment depth. Minus 1 since root level comments are considered depth 1
-        public int getIndentationLevel(){
-            return comments.get(getLayoutPosition()).comment.getDepth()-1;
+        public int getIndentationLevel() {
+            return comments.get(getLayoutPosition()).comment.getDepth() - 1;
         }
     }
 
@@ -1103,19 +1115,19 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
          * we will only load the first 40 root level comments here.
          *
          */
-        private void insertNodes(List<CommentNode<Comment>> rootComments){
+        private void insertNodes(List<CommentNode<Comment>> rootComments) {
             if (rootComments == null
                     || rootComments.size() < 1
-                    || rootComments.get(0).getDepth() > Constants.COMMENTS_MAX_DEPTH){
+                    || rootComments.get(0).getDepth() > Constants.COMMENTS_MAX_DEPTH) {
                 return;
             }
             int numRootNodes = 0;
-            for(CommentNode<Comment> n : rootComments){
+            for (CommentNode<Comment> n : rootComments) {
                 numRootNodes++;
                 comments.add(new CommentObj(n));
                 insertNodes(n.getReplies());
 
-                if(numRootNodes == Constants.COMMENTS_MAX_CURR_DEPTH){
+                if (numRootNodes == Constants.COMMENTS_MAX_CURR_DEPTH) {
                     break;
                 }
             }
@@ -1163,12 +1175,12 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
                 if ((deltaYAbs >= MIN_SWIPE_DISTANCE_Y) && (deltaYAbs <= MAX_SWIPE_DISTANCE_Y)) {
                     if (deltaY > 0) {
-                        if(!mCommentsOpen){
+                        if (!mCommentsOpen) {
                             openComments();
                         }
                         Log.e("SWIPE_TEST", "SWIPED UP!");
                     } else {
-                        if(mCommentsOpen){
+                        if (mCommentsOpen) {
                             closeComments();
                         }
                     }

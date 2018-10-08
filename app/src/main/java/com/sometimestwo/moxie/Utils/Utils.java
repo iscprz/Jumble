@@ -17,6 +17,7 @@ import android.util.Log;
 import android.widget.ProgressBar;
 
 import com.coremedia.iso.boxes.Container;
+import com.google.gson.reflect.TypeToken;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
@@ -28,12 +29,19 @@ import com.sometimestwo.moxie.Imgur.response.images.SubmissionRoot;
 import com.sometimestwo.moxie.Model.GfyItem;
 import com.sometimestwo.moxie.Model.GfycatWrapper;
 import com.sometimestwo.moxie.Model.SubmissionObj;
-import com.sometimestwo.moxie.RedditHeartbeatListener;
-import com.sometimestwo.moxie.OnTaskCompletedListener;
-import com.sometimestwo.moxie.OnVRedditTaskCompletedListener;
+import com.sometimestwo.moxie.EventListeners.OnRedditTaskListener;
+import com.sometimestwo.moxie.EventListeners.RedditHeartbeatListener;
+import com.sometimestwo.moxie.EventListeners.OnTaskCompletedListener;
+import com.sometimestwo.moxie.EventListeners.OnVRedditTaskCompletedListener;
+import com.sometimestwo.moxie.StringListIgnoreCase;
 
 
+import net.dean.jraw.RedditClient;
+import net.dean.jraw.models.Listing;
+import net.dean.jraw.models.Subreddit;
 import net.dean.jraw.models.VoteDirection;
+import net.dean.jraw.pagination.BarebonesPaginator;
+import net.dean.jraw.pagination.Paginator;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,6 +57,7 @@ import java.net.URL;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -284,31 +293,6 @@ public class Utils {
         return "";
     }
 
-    /**
-     * Shows a ProgressBar in the UI. If this method is called from a non-main thread, it will run
-     * the UI code on the main thread
-     *
-     * @param activity        The activity context to use to display the ProgressBar
-     * @param progressBar     The ProgressBar to display
-     * @param isIndeterminate True to show an indeterminate ProgressBar, false otherwise
-     */
-    public static void showProgressBar(final Activity activity, final ProgressBar progressBar,
-                                       final boolean isIndeterminate) {
-        if (activity == null) return;
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            // Current Thread is Main Thread.
-            if (progressBar != null) progressBar.setIndeterminate(isIndeterminate);
-        } else {
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (progressBar != null) progressBar.setIndeterminate(isIndeterminate);
-                }
-            });
-        }
-    }
-
-
     public static boolean mux(String videoFile, String audioFile, String outputFile) {
         com.googlecode.mp4parser.authoring.Movie video;
         try {
@@ -448,6 +432,132 @@ public class Utils {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
+    // stores the current user's subscriptions in shared preferences
+    public static void storeLocalUserSubscriptions(StringListIgnoreCase subs){
+        String subsStr = App.getGsonApp().toJson(subs);
+        App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS,subsStr).commit();
+    }
+
+    public static void addToLocalUserSubscriptions(String newSub){
+        StringListIgnoreCase currSubs = getCurrUserLocalSubscriptions();
+        if(!currSubs.contains(newSub)) {
+            currSubs.add(newSub);
+            storeLocalUserSubscriptions(currSubs);
+        }
+    }
+
+    public static StringListIgnoreCase getCurrUserLocalSubscriptions(){
+        StringListIgnoreCase userSubs = new StringListIgnoreCase();
+
+        String subsStr = App.getSharedPrefs().getString(Constants.PREFS_CURR_USER_SUBS,null);
+        userSubs.addAll(App.getGsonApp().fromJson(subsStr,new TypeToken<StringListIgnoreCase>(){}.getType()));
+
+        return userSubs;
+    }
+
+
+
+    public static void removeFromLocalUserSubscriptions(String subToRemove){
+        StringListIgnoreCase currSubs = getCurrUserLocalSubscriptions();
+        if(currSubs.contains(subToRemove)) {
+            currSubs.remove(subToRemove);
+            storeLocalUserSubscriptions(currSubs);
+        }
+    }
+
+    // removes all subscriptions info from shared prefs
+    public static void removeLocalSubscriptionsList(){
+        App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS,"").commit();
+    }
+
+    // Updates our shared preferences with a list of logged in user's subreddit subscriptions
+    public static class FetchUserSubscriptionsAndStoreLocally extends AsyncTask<Void, Void, Void>{
+        String username;
+
+        public FetchUserSubscriptionsAndStoreLocally(String username) {
+            this.username = username;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            RedditClient redditClient = App.getAccountHelper().switchToUser(username);
+            // get the list of the new user's subscriptions
+            BarebonesPaginator<Subreddit> paginator = redditClient.me()
+                    .subreddits("subscriber")
+                    .limit(Paginator.RECOMMENDED_MAX_LIMIT)
+                    .build();
+
+            StringListIgnoreCase listOfSubredditNames = new StringListIgnoreCase();
+            // Paginator implements Iterable
+            for (Listing<Subreddit> page : paginator) {
+                for(Subreddit s : page){
+                    listOfSubredditNames.add(s.getName());
+                }
+            }
+            storeLocalUserSubscriptions(listOfSubredditNames);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+
+    public static class SubscribeSubredditTask extends AsyncTask<Void,Void,Void>{
+        String subreddit;
+        OnRedditTaskListener listener;
+
+        public SubscribeSubredditTask(String subreddit, OnRedditTaskListener listener) {
+            this.subreddit = subreddit;
+            this.listener = listener;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            RedditClient redditClient = App.getAccountHelper().getReddit();
+            redditClient.subreddit(subreddit).subscribe();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            listener.onSuccess();
+            super.onPostExecute(aVoid);
+        }
+
+    }
+
+    public static class UnsubscribeSubredditTask extends AsyncTask<Void,Void,Boolean>{
+        String subreddit;
+        OnRedditTaskListener listener;
+        public UnsubscribeSubredditTask(String subreddit, OnRedditTaskListener listener) {
+            this.subreddit = subreddit;
+            this.listener = listener;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            try{
+                RedditClient redditClient = App.getAccountHelper().getReddit();
+                redditClient.subreddit(subreddit).unsubscribe();
+            }
+            catch (Exception e){
+                listener.onFailure(e.getMessage());
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if(success)
+                listener.onSuccess();
+
+            super.onPostExecute(success);
+        }
+
+    }
 
     /***********[V.REDDIT SPECIFIC FUNCTION] ***************/
     public static class FetchVRedditGifTask extends AsyncTask<String, Void, String> {

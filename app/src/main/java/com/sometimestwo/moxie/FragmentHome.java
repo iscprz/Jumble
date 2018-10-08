@@ -51,9 +51,9 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
@@ -79,6 +79,10 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
 import com.makeramen.roundedimageview.RoundedImageView;
+import com.sometimestwo.moxie.EventListeners.HomeEventListener;
+import com.sometimestwo.moxie.EventListeners.OnRedditTaskListener;
+import com.sometimestwo.moxie.EventListeners.OnTaskCompletedListener;
+import com.sometimestwo.moxie.EventListeners.OnVRedditTaskCompletedListener;
 import com.sometimestwo.moxie.Model.ExpandableMenuModel;
 import com.sometimestwo.moxie.Model.Explore;
 import com.sometimestwo.moxie.Model.SubmissionObj;
@@ -194,7 +198,7 @@ public class FragmentHome extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        prefs_settings = getContext().getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        prefs_settings = getContext().getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -366,8 +370,32 @@ public class FragmentHome extends Fragment {
     public void onPrepareOptionsMenu(Menu menu) {
         menu.findItem(R.id.menu_submissions_sortby).setVisible(true);
         menu.findItem(R.id.menu_explore).setVisible(true);
-        menu.findItem(R.id.menu_comments_sortby).setVisible(false);
 
+        // Sub/Unsub menu option only if we're not in guest mode and viewing a subreddit exists
+        if(!App.getSharedPrefs().getString(
+                Constants.MOST_RECENT_USER,
+                Constants.USERNAME_USERLESS)
+                .equalsIgnoreCase(Constants.USERNAME_USERLESS)
+                && mCurrSubreddit != null
+                && !is404){
+            // User is subbed to this subreddit, display "Unsubscribe" option
+            if(Utils.getCurrUserLocalSubscriptions().contains(mCurrSubreddit)){
+                menu.findItem(R.id.menu_submissions_overflow_sub).setVisible(false);
+                menu.findItem(R.id.menu_submissions_overflow_unsub).setVisible(true);
+                String unsubString = getString(R.string.unsub_from, mCurrSubreddit);
+                menu.findItem(R.id.menu_submissions_overflow_unsub).setTitle(unsubString);
+            }
+            // User is not subscribed to this subreddit, display "Subscribe" option
+            else{
+                menu.findItem(R.id.menu_submissions_overflow_unsub).setVisible(false);
+                menu.findItem(R.id.menu_submissions_overflow_sub).setVisible(true);
+                String subString = getString(R.string.sub_to, mCurrSubreddit);
+                menu.findItem(R.id.menu_submissions_overflow_sub).setTitle(subString);
+            }
+        }else{
+            menu.findItem(R.id.menu_submissions_overflow_sub).setVisible(false);
+            menu.findItem(R.id.menu_submissions_overflow_unsub).setVisible(false);
+        }
 
         super.onPrepareOptionsMenu(menu);
     }
@@ -385,6 +413,45 @@ public class FragmentHome extends Fragment {
                 return true;
             case R.id.menu_submissions_overflow_refresh:
                 refresh(true);
+                return true;
+            case R.id.menu_submissions_overflow_sub:
+                new Utils.SubscribeSubredditTask(mCurrSubreddit, new OnRedditTaskListener(){
+                    @Override
+                    public void onSuccess() {
+                        Utils.addToLocalUserSubscriptions(mCurrSubreddit);
+                        Toast.makeText(FragmentHome.this.getContext(),
+                                "Subscribed",
+                                Toast.LENGTH_SHORT)
+                                .show();
+                    }
+
+                    @Override
+                    public void onFailure(String exceptionMessage) {
+                        Toast.makeText(FragmentHome.this.getContext(),
+                                getResources().getString(R.string.toast_subscribe_failed),
+                                Toast.LENGTH_LONG)
+                                .show();
+                    }
+                }).execute();
+                return true;
+            case R.id.menu_submissions_overflow_unsub:
+                new Utils.UnsubscribeSubredditTask(mCurrSubreddit, new OnRedditTaskListener(){
+                    @Override
+                    public void onSuccess() {
+                        Utils.removeFromLocalUserSubscriptions(mCurrSubreddit);
+                        Toast.makeText(FragmentHome.this.getContext(),
+                                "Unsubscribed",
+                                Toast.LENGTH_SHORT)
+                                .show();
+                    }
+                    @Override
+                    public void onFailure(String exceptionMessage) {
+                        Toast.makeText(FragmentHome.this.getContext(),
+                                getResources().getString(R.string.toast_unsubscribe_failed),
+                                Toast.LENGTH_LONG)
+                                .show();
+                    }
+                }).execute();
                 return true;
             /* Sort by*/
             case R.id.menu_submissions_sortby_BEST:
@@ -609,7 +676,10 @@ public class FragmentHome extends Fragment {
         mButtonLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                confirmLogout(App.getAccountHelper().getReddit().getAuthManager().currentUsername());
+
+                confirmLogout(App.getSharedPrefs().getString(
+                        Constants.MOST_RECENT_USER,
+                        Constants.USERNAME_USERLESS));
             }
         });
     }
@@ -887,6 +957,7 @@ public class FragmentHome extends Fragment {
                         }
                         // user selected a non-guest switch to
                         else {
+                            new Utils.FetchUserSubscriptionsAndStoreLocally(clickedMenuItemName).execute();
                             App.getAccountHelper().switchToUser(clickedMenuItemName);
                             switchOrLogoutCleanup(clickedMenuItemName);
                         }
@@ -998,22 +1069,22 @@ public class FragmentHome extends Fragment {
 
     private void validatePreferences() throws Exception {
         if (prefs_settings != null) {
-            mHideNSFW = prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW, true);
-            mAllowImagePreview = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true);
-            mAllowBigDisplayClickClose = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
-            mPreviewSize = prefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE)
-                    .equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_LARGE)
+            mHideNSFW = prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW, true);
+            mAllowImagePreview = prefs_settings.getBoolean(Constants.PREFS_ALLOW_HOVER_PREVIEW, true);
+            mAllowBigDisplayClickClose = prefs_settings.getBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+            mPreviewSize = prefs_settings.getString(Constants.PREFS_PREVIEW_SIZE, Constants.PREFS_PREVIEW_SIZE_LARGE)
+                    .equalsIgnoreCase(Constants.PREFS_PREVIEW_SIZE_LARGE)
                     ? Constants.HoverPreviewSize.LARGE : Constants.HoverPreviewSize.SMALL;
-            mDisplayDomainIcon = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false);
-            mHideNSFWThumbs = prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false);
-            mDisplayFiletypeIcons = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false);
-            mDisplayNSFWIcon = prefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false);
+            mDisplayDomainIcon = prefs_settings.getBoolean(Constants.PREFS_ALLOW_DOMAIN_ICON, false);
+            mHideNSFWThumbs = prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW_THUMBS, false);
+            mDisplayFiletypeIcons = prefs_settings.getBoolean(Constants.PREFS_ALLOW_FILETYPE_ICON, false);
+            mDisplayNSFWIcon = prefs_settings.getBoolean(Constants.PREFS_SHOW_NSFW_ICON, false);
 
             App.getMoxieInfoObj().setHideNSFW(mHideNSFW);
             //App.getMoxieInfoObj().setSubreddit("pics");
         } else {
             throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
-                    + "Could not find prefs_settings KEY_GET_PREFS_SETTINGS.");
+                    + "Could not find prefs_settings KEY_SHARED_PREFS.");
         }
     }
 
@@ -1213,17 +1284,22 @@ public class FragmentHome extends Fragment {
                                         new OnTaskCompletedListener() {
                                             @Override
                                             public void downloadSuccess() {
-                                                getActivity().runOnUiThread(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        mPreviewerProgressBar.setVisibility(View.GONE);
-                                                        GlideApp.load(item.getCleanedUrl())
-                                                                .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
-                                                                /* .listener(new GlideProgressListener(mPreviewerProgressBar))*/
-                                                                .into(mHoverImagePreviewLarge);
-                                                    }
-                                                });
-
+                                                if(getActivity() != null) {
+                                                    getActivity().runOnUiThread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            mPreviewerProgressBar.setVisibility(View.GONE);
+                                                            GlideApp.load(item.getCleanedUrl())
+                                                                    .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
+                                                                    /* .listener(new GlideProgressListener(mPreviewerProgressBar))*/
+                                                                    .into(mHoverImagePreviewLarge);
+                                                        }
+                                                    });
+                                                }else{
+                                                    Log.e(TAG,
+                                                            "getActivity() null when trying to fixIndirectImgurUrl for url "
+                                                                    + item.getUrl());
+                                                }
                                             }
                                             @Override
                                             public void downloadFailure() {
@@ -1249,13 +1325,19 @@ public class FragmentHome extends Fragment {
                                     @Override
                                     public void downloadSuccess() {
                                         super.downloadSuccess();
-                                        getActivity().runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                // cleaned url should contain .mp4 link
-                                                initializePreviewExoPlayer(item.getCleanedUrl());
-                                            }
-                                        });
+                                        if (getActivity() != null) {
+                                            getActivity().runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    // cleaned url should contain .mp4 link
+                                                    initializePreviewExoPlayer(item.getCleanedUrl());
+                                                }
+                                            });
+                                        } else{
+                                          Log.e(TAG,
+                                                  "getActivity() null when trying getMp4LinkImgur for url "
+                                                          + item.getUrl());
+                                        }
                                     }
 
                                     @Override
@@ -1542,7 +1624,7 @@ public class FragmentHome extends Fragment {
     private void switchOrLogoutCleanup(String newCurrUser) {
         mDrawerLayout.closeDrawer(mNavigationViewLeft);
         // Update most recent user to new user
-        prefs_settings.edit().putString(Constants.MOST_RECENT_USER, newCurrUser).apply();
+        prefs_settings.edit().putString(Constants.MOST_RECENT_USER, newCurrUser).commit();
 
         // start our subreddit stack over cause we're starting over again
         while (!App.getMoxieInfoObj().getmSubredditStack().isEmpty()) {
@@ -1683,6 +1765,9 @@ public class FragmentHome extends Fragment {
         @Override
         protected Void doInBackground(Void... voids) {
             App.getAccountHelper().switchToUserless();
+
+            // remove the list of user's subscriptions from shared prefs
+            Utils.removeLocalSubscriptionsList();
             return null;
         }
 

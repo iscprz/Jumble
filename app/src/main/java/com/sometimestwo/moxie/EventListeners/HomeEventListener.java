@@ -1,4 +1,4 @@
-package com.sometimestwo.moxie;
+package com.sometimestwo.moxie.EventListeners;
 
 public interface HomeEventListener {
     public void openSettings();

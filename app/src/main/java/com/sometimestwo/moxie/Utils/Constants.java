@@ -55,18 +55,18 @@ public class Constants {
 
 
     /*SharedPrefs */
-    public final static String KEY_GET_PREFS_SETTINGS = "KEY_GET_PREFS_SETTINGS";
-    public final static String SETTINGS_HIDE_NSFW = "SETTINGS_HIDE_NSFW";
-    public final static String SETTINGS_ALLOW_HOVER_PREVIEW = "SETTINGS_ALLOW_HOVER_PREVIEW";
-    public final static String SETTINGS_PREVIEW_SIZE = "SETTINGS_PREVIEW_SIZE";
-    public final static String SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK = "SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK";
-    public final static String SETTINGS_ALLOW_DOMAIN_ICON = "SETTINGS_ALLOW_DOMAIN_ICON";
-    public final static String SETTINGS_ALLOW_FILETYPE_ICON = "SETTINGS_ALLOW_FILETYPE_ICON";
-    public final static String SETTINGS_HIDE_NSFW_THUMBS = "SETTINGS_HIDE_NSFW_THUMBS";
-    public final static String SETTINGS_SHOW_NSFW_ICON = "SETTINGS_SHOW_NSFW_ICON";
-
+    public final static String KEY_SHARED_PREFS = "KEY_SHARED_PREFS";
+    public final static String PREFS_HIDE_NSFW = "PREFS_HIDE_NSFW";
+    public final static String PREFS_ALLOW_HOVER_PREVIEW = "PREFS_ALLOW_HOVER_PREVIEW";
+    public final static String PREFS_PREVIEW_SIZE = "PREFS_PREVIEW_SIZE";
+    public final static String PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK = "PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK";
+    public final static String PREFS_ALLOW_DOMAIN_ICON = "PREFS_ALLOW_DOMAIN_ICON";
+    public final static String PREFS_ALLOW_FILETYPE_ICON = "PREFS_ALLOW_FILETYPE_ICON";
+    public final static String PREFS_HIDE_NSFW_THUMBS = "PREFS_HIDE_NSFW_THUMBS";
+    public final static String PREFS_SHOW_NSFW_ICON = "PREFS_SHOW_NSFW_ICON";
+    public final static String PREFS_CURR_USER_SUBS = "PREFS_CURR_USER_SUBS";
     public final static String SETTINGS_PREVIEW_SIZE_SMALL = "SETTINGS_PREVIEW_SIZE_SMALL";
-    public final static String SETTINGS_PREVIEW_SIZE_LARGE = "SETTINGS_PREVIEW_SIZE_LARGE";
+    public final static String PREFS_PREVIEW_SIZE_LARGE = "PREFS_PREVIEW_SIZE_LARGE";
     public final static String MOST_RECENT_USER = "MOST_RECENT_USER";
 
     /* API */

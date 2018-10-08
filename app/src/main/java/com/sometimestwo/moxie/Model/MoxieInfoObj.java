@@ -30,7 +30,7 @@ public class MoxieInfoObj {
 
 
     public SubredditSort getmSortBy() {
-        return mSortBy == null ? SubredditSort.HOT : mSortBy;
+        return mSortBy == null ? SubredditSort.BEST : mSortBy;
     }
 
     public void setmSortBy(SubredditSort mSortBy) {

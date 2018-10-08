@@ -40,6 +40,8 @@ import android.view.ScaleGestureDetector;
 import android.view.ScaleGestureDetector.OnScaleGestureListener;
 import android.widget.ImageView;
 
+import com.sometimestwo.moxie.EventListeners.OnCloseClickEventListener;
+
 /**
  * ZoomageView is a pinch-to-zoom extension of {@link ImageView}, providing a smooth
  * user experience and a very natural feel when zooming and translating. It also supports

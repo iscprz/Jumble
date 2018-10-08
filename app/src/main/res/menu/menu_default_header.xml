@@ -10,7 +10,7 @@
         android:icon="@drawable/ic_explore"
         android:orderInCategory="90"
         android:title="Explore"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom" />
     <!-- Submission sort by options HOT,NEW,TOP etc-->
     <item
         android:id="@+id/menu_submissions_sortby"
@@ -87,14 +87,6 @@
     </item>
 
 
-    <!-- Comments sort by-->
-    <item
-        android:id="@+id/menu_comments_sortby"
-        android:icon="@drawable/ic_white_expand_down"
-        android:orderInCategory="100"
-        android:title="Sort by"
-        app:showAsAction="ifRoom"></item>
-
     <!-- Overflow -->
     <item
         android:id="@+id/menu_overflow"
@@ -103,13 +95,17 @@
         android:title="Overflow"
         app:showAsAction="never">
 
-            <item
-                android:title="Refresh"
-                android:id="@+id/menu_submissions_overflow_refresh"/>
+        <item
+            android:id="@+id/menu_submissions_overflow_refresh"
+            android:title="Refresh" />
 
-            <item
-                android:title="Subscribe"
-                android:id="@+id/menu_submissions_overflow_sub_unsub"/>
+        <item
+            android:id="@+id/menu_submissions_overflow_sub"
+            android:title="Subscribe" />
+        <item
+            android:id="@+id/menu_submissions_overflow_unsub"
+            android:title="Unsubscribe"
+            />
     </item>
     <!--<item
         android:id="@+id/action_user"

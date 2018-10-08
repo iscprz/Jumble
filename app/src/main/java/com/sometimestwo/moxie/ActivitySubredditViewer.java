@@ -11,6 +11,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 
+import com.sometimestwo.moxie.EventListeners.HomeEventListener;
+import com.sometimestwo.moxie.EventListeners.OnCloseClickEventListener;
+import com.sometimestwo.moxie.EventListeners.RedditHeartbeatListener;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
 
@@ -34,8 +37,8 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subreddit_viewer);
-        prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
-        mAllowCloseOnClick = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        prefs_settings = this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
+        mAllowCloseOnClick = prefs_settings.getBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
 
         unpackExtras();
         displaySubreddit(true);

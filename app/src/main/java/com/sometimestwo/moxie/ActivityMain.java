@@ -5,21 +5,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 
 import com.sometimestwo.moxie.Utils.Constants;
-import com.sometimestwo.moxie.Utils.Utils;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
 
 /*
         TODOS:
@@ -70,50 +64,50 @@ public class ActivityMain extends AppCompatActivity {
          *
          * This is more of a precautionary mesaure to ensure we don't find null preferences later.
          */
-        prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        prefs_settings = this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
         prefs_settings_editor =
-                this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE)
+                this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE)
                         .edit();
 
         // Hover previewer size - defaults to small
-        if (prefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, null) == null) {
-            prefs_settings_editor.putString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE);
+        if (prefs_settings.getString(Constants.PREFS_PREVIEW_SIZE, null) == null) {
+            prefs_settings_editor.putString(Constants.PREFS_PREVIEW_SIZE, Constants.PREFS_PREVIEW_SIZE_LARGE);
         }
 
 
         // Allow NSFW
-        if (prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW, true) == true) {
-            prefs_settings_editor.putBoolean(Constants.SETTINGS_HIDE_NSFW, true);
+        if (prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW, true) == true) {
+            prefs_settings_editor.putBoolean(Constants.PREFS_HIDE_NSFW, true);
         }
 
         // Hide NSFW thumbs
-        if (prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false) == false) {
-            prefs_settings_editor.putBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false);
+        if (prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW_THUMBS, false) == false) {
+            prefs_settings_editor.putBoolean(Constants.PREFS_HIDE_NSFW_THUMBS, false);
         }
 
         // Allow hover previewer - default to yes
-        if (prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true) == true) {
-            prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true);
+        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_HOVER_PREVIEW, true) == true) {
+            prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_HOVER_PREVIEW, true);
         }
 
         // Allow tap-to-close big display
-        if (prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false) == false) {
-            prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false) == false) {
+            prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
         }
 
         // Allow domain icons - defaults to false
-        if (prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false) == false) {
-            prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false);
+        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_DOMAIN_ICON, false) == false) {
+            prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_DOMAIN_ICON, false);
         }
 
         // Allow filetype icons - defaults to false
-        if (prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false) == false) {
-            prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, false);
+        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_FILETYPE_ICON, false) == false) {
+            prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_FILETYPE_ICON, false);
         }
 
         // Show NSFW icon on NSFW submissions
-        if (prefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false) == false) {
-            prefs_settings_editor.putBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false);
+        if (prefs_settings.getBoolean(Constants.PREFS_SHOW_NSFW_ICON, false) == false) {
+            prefs_settings_editor.putBoolean(Constants.PREFS_SHOW_NSFW_ICON, false);
         }
 
         prefs_settings_editor.commit();

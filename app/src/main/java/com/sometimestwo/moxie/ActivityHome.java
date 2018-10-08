@@ -15,6 +15,9 @@ import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.Menu;
 
+import com.sometimestwo.moxie.EventListeners.HomeEventListener;
+import com.sometimestwo.moxie.EventListeners.OnCloseClickEventListener;
+import com.sometimestwo.moxie.EventListeners.RedditHeartbeatListener;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
 
@@ -64,8 +67,8 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         mScreenWidth = getResources().getDisplayMetrics().widthPixels;
         mScreenHeight = getResources().getDisplayMetrics().heightPixels;
 
-        prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
-        mAllowCloseOnClick = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        prefs_settings = this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
+        mAllowCloseOnClick = prefs_settings.getBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
 
         loadReddit(false);
     }
@@ -130,6 +133,10 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         super.onStop();
     }
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return super.onPrepareOptionsMenu(menu);
+    }
 
     @Override
     public void onBackPressed() {

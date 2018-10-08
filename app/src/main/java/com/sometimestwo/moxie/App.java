@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
+import com.google.gson.Gson;
 import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.VideoCacher.HttpProxyCacheServer;
@@ -30,6 +31,8 @@ public final class App extends Application {
     private static SharedPreferences shared_prefs;
     public static HttpProxyCacheServer proxy;
     public static RequestManager GlideApp;
+    public static Gson GsonApp;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -68,7 +71,7 @@ public final class App extends Application {
             // If you want to disable logging, use a NoopHttpLogger instead:
             // redditClient.setLogger(new NoopHttpLogger());
 
-            shared_prefs = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+            shared_prefs = this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
             return null;
         });
 
@@ -79,6 +82,9 @@ public final class App extends Application {
         // Glide
         GlideApp = Glide.with(this);
 
+        // Gson
+        GsonApp = new Gson();
+
     }
 
     public static AccountHelper getAccountHelper() { return accountHelper; }
@@ -86,6 +92,7 @@ public final class App extends Application {
     public static MoxieInfoObj getMoxieInfoObj() {return currSubredditObj;}
     public static SharedPreferences getSharedPrefs(){return shared_prefs;};
     public static RequestManager getGlideApp() { return GlideApp; }
+    public static Gson getGsonApp() {return GsonApp;}
 
     // Video cache
     public static HttpProxyCacheServer getProxy(Context context) {

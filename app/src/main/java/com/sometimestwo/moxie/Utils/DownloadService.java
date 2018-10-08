@@ -11,7 +11,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.sometimestwo.moxie.App;
-import com.sometimestwo.moxie.OnVRedditTaskCompletedListener;
+import com.sometimestwo.moxie.EventListeners.OnVRedditTaskCompletedListener;
 import com.sometimestwo.moxie.R;
 
 import java.io.File;

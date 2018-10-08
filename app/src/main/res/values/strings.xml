@@ -15,6 +15,9 @@
     <string name="title_click_actions"><b>Click actions</b></string>
     <string name="title_filters"><b>Filters</b></string>
     <string name="title_settings"><b>Settings</b></string>
+    <string name="unsub_from">Unsubscribe from /r/%1$s</string>
+    <string name="sub_to">Subscribe to /r/%1$s</string>
+
     <!-- Toasts-->
     <string name="toast_settings_saved">Settings saved</string>
     <string name="toast_settings_saved_refresh">Settings saved. Refresh to update.</string>
@@ -25,12 +28,12 @@
     <string name="toast_download_success"> Media downloaded</string>
     <string name="toast_download_fail">Media failed to download</string>
     <string name="toast_download_permissions_required">Download permissions required.</string>
+    <string name="toast_subscribe_failed">Failed to subscribe. Refresh and try again.</string>
+    <string name="toast_unsubscribe_failed">Failed to unsubscribe. Refresh and try again.</string>
+
     <!--Error -->
     <string name="error_404">There doesn\'t seem to be anything here... </string>
-    <string name="error_404_expanded">
-        - Reddit might be down\n
-        - Ensure you\'re connected to the internet\n
-        - Check filter settings\n
+    <string name="error_404_expanded"> - Reddit might be down\n- Ensure you\'re connected to the internet\n- Check filter settings\n
     </string>
     <!--<String name="error_404_no_submissions"></String>-->
     <string name="error_404_retry"><u>Retry</u></string>

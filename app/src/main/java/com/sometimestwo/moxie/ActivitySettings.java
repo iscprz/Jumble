@@ -76,19 +76,19 @@ public class ActivitySettings extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        prefs_settings = this.getSharedPreferences(Constants.KEY_GET_PREFS_SETTINGS, Context.MODE_PRIVATE);
+        prefs_settings = this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
         prefs_settings_editor = prefs_settings.edit();
         mColorWhite = getResources().getColor(R.color.colorWhite);
         mColorGrayout = getResources().getColor(R.color.colorGray);
 
         // NSFW
         mCheckboxHideNSFW = (CheckBox) findViewById(R.id.settings_hide_nsfw_checkbox);
-        mHideNSFW = prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW, true);
+        mHideNSFW = prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW, true);
         mCheckboxHideNSFW.setChecked(mHideNSFW);
         mCheckboxHideNSFW.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                prefs_settings_editor.putBoolean(Constants.SETTINGS_HIDE_NSFW, b);
+                prefs_settings_editor.putBoolean(Constants.PREFS_HIDE_NSFW, b);
                 mModified = true;
                 mNeedsRefresh = true;
                 mHideNSFW = b;
@@ -115,7 +115,7 @@ public class ActivitySettings extends Activity {
         mTitleNSFWOverlay = (TextView) findViewById(R.id.settings_title_nsfw_overlay);
         mSubtitleNSFWOverlay = (TextView) findViewById(R.id.settings_nsfw_overlay_subtitle);
 
-        boolean hideNSFWThumbnails = prefs_settings.getBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, false);
+        boolean hideNSFWThumbnails = prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW_THUMBS, false);
         mCheckboxNSFWOverlay.setChecked(hideNSFWThumbnails);
 
         // Will need to "disable" this LL if NSFW posts are not allowed
@@ -125,7 +125,7 @@ public class ActivitySettings extends Activity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //boolean newValue = mCheckboxPreviewImage.isChecked();
-                prefs_settings_editor.putBoolean(Constants.SETTINGS_HIDE_NSFW_THUMBS, b);
+                prefs_settings_editor.putBoolean(Constants.PREFS_HIDE_NSFW_THUMBS, b);
                 mModified = true;
             }
         });
@@ -143,13 +143,13 @@ public class ActivitySettings extends Activity {
 
         /********** Close big display on click*********/
         mCheckboxAllowBigDisplayCloseClick = (CheckBox) findViewById(R.id.settings_bigdisplay_closeclick_checkbox);
-        boolean closeOnClick = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
+        boolean closeOnClick = prefs_settings.getBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, false);
         mCheckboxAllowBigDisplayCloseClick.setChecked(closeOnClick);
         mCheckboxAllowBigDisplayCloseClick.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //boolean newValue = mCheckboxAllowBigDisplayCloseClick.isChecked();
-                prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_BIGDISPLAY_CLOSE_CLICK, b);
+                prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_BIGDISPLAY_CLOSE_CLICK, b);
                 mModified = true;
             }
         });
@@ -165,13 +165,13 @@ public class ActivitySettings extends Activity {
 
         /* Previewing */
         mCheckboxPreviewImage = (CheckBox) findViewById(R.id.settings_allow_previewer_checkbox);
-        boolean allowPreviewImage = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, true);
+        boolean allowPreviewImage = prefs_settings.getBoolean(Constants.PREFS_ALLOW_HOVER_PREVIEW, true);
         mCheckboxPreviewImage.setChecked(allowPreviewImage);
         mCheckboxPreviewImage.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //boolean newValue = mCheckboxPreviewImage.isChecked();
-                prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_HOVER_PREVIEW, b);
+                prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_HOVER_PREVIEW, b);
                 mModified = true;
             }
         });
@@ -187,7 +187,7 @@ public class ActivitySettings extends Activity {
 
         /* Preview size radio buttons */
       /*  mRadioGroupPreviewSize = (RadioGroup) findViewById(R.id.radio_group_preview_size);
-        String previewSizeSelection = prefs_settings.getString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
+        String previewSizeSelection = prefs_settings.getString(Constants.PREFS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
         // check prefs_settings for what user has selected for preview size and initialize radio buttons accordingly
         mRadioGroupPreviewSize.check(previewSizeSelection.equalsIgnoreCase(Constants.SETTINGS_PREVIEW_SIZE_SMALL)
                 ? R.id.radio_preview_size_option_small : R.id.radio_preview_size_option_large);
@@ -196,13 +196,13 @@ public class ActivitySettings extends Activity {
 
         /* Display domain icons */
         mCheckboxDomainIcon = (CheckBox) findViewById(R.id.settings_domain_icon_checkbox);
-        boolean displayDomainIcons = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, false);
+        boolean displayDomainIcons = prefs_settings.getBoolean(Constants.PREFS_ALLOW_DOMAIN_ICON, false);
         mCheckboxDomainIcon.setChecked(displayDomainIcons);
         mCheckboxDomainIcon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //boolean newValue = mCheckboxPreviewImage.isChecked();
-                prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_DOMAIN_ICON, b);
+                prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_DOMAIN_ICON, b);
                 mModified = true;
             }
         });
@@ -219,14 +219,14 @@ public class ActivitySettings extends Activity {
 
         /****** Display filetype icons *******/
         mCheckboxFiletypeIcon = (CheckBox) findViewById(R.id.settings_filetype_icon_checkbox);
-        boolean displayFiletypeIcon = prefs_settings.getBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, true);
+        boolean displayFiletypeIcon = prefs_settings.getBoolean(Constants.PREFS_ALLOW_FILETYPE_ICON, true);
         mCheckboxFiletypeIcon.setChecked(displayFiletypeIcon);
 
         mCheckboxFiletypeIcon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //boolean newValue = mCheckboxPreviewImage.isChecked();
-                prefs_settings_editor.putBoolean(Constants.SETTINGS_ALLOW_FILETYPE_ICON, b);
+                prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_FILETYPE_ICON, b);
                 mModified = true;
             }
         });
@@ -247,7 +247,7 @@ public class ActivitySettings extends Activity {
         mTitleNSFWIcon = (TextView) findViewById(R.id.settings_title_nsfw_icon);
         mSubtitleNSFWIcon = (TextView) findViewById(R.id.settings_nsfw_icon_subtitle);
 
-        boolean showNSFWIcon = prefs_settings.getBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, false);
+        boolean showNSFWIcon = prefs_settings.getBoolean(Constants.PREFS_SHOW_NSFW_ICON, false);
         mCheckboxNSFWIcon.setChecked(showNSFWIcon);
         /*mTitleNSFWIcon.setTextColor(mHideNSFW ? mColorWhite
                 : mColorGrayout);*/
@@ -259,7 +259,7 @@ public class ActivitySettings extends Activity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //boolean newValue = mCheckboxPreviewImage.isChecked();
-                prefs_settings_editor.putBoolean(Constants.SETTINGS_SHOW_NSFW_ICON, b);
+                prefs_settings_editor.putBoolean(Constants.PREFS_SHOW_NSFW_ICON, b);
                 mModified = true;
             }
         });
@@ -364,13 +364,13 @@ public class ActivitySettings extends Activity {
         switch (view.getId()) {
             case R.id.radio_preview_size_option_large:
                 if (checked) {
-                    prefs_settings_editor.putString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_LARGE);
+                    prefs_settings_editor.putString(Constants.PREFS_PREVIEW_SIZE, Constants.PREFS_PREVIEW_SIZE_LARGE);
                     mModified = true;
                 }
                 break;
             case R.id.radio_preview_size_option_small:
                 if (checked) {
-                    prefs_settings_editor.putString(Constants.SETTINGS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
+                    prefs_settings_editor.putString(Constants.PREFS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
                     mModified = true;
                 }
                 break;

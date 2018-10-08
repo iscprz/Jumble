@@ -140,7 +140,7 @@ public class ActivityNewUserLogin extends AppCompatActivity {
         // stores the current user's subscriptions in shared preferences
         private void storeUserSubscriptions(ArrayList<String> subs){
             String subsStr = App.getGsonApp().toJson(subs);
-            App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS,subsStr).apply();
+            App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS,subsStr).commit();
         }
 
         @Override

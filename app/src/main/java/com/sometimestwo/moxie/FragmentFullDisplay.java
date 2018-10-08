@@ -943,9 +943,13 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     };
 
     private void startAndBindDownloadService() {
-        Intent downloadIntent = new Intent(getActivity(), DownloadService.class);
-        getActivity().startService(downloadIntent);
-        getActivity().getApplicationContext().bindService(downloadIntent, serviceConnection, BIND_AUTO_CREATE);
+        if (getActivity() != null) {
+            Intent downloadIntent = new Intent(getActivity(), DownloadService.class);
+            getActivity().startService(downloadIntent);
+            getActivity().getApplicationContext().bindService(downloadIntent, serviceConnection, BIND_AUTO_CREATE);
+        }else{
+            Log.e(TAG,"getActivity() null on attempting to startAndBindDownloadService()");
+        }
     }
 
     // we've deemed the media downloadable at this point (Download button

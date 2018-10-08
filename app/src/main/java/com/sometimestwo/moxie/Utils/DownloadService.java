@@ -38,18 +38,19 @@ public class DownloadService extends Service implements OnVRedditTaskCompletedLi
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String action = intent.getAction();
-        if (ACTION_PAUSE_DOWNLOAD.equals(action)) {
-            downloadBinder.pauseDownload();
-            Toast.makeText(getApplicationContext(), "Download is paused", Toast.LENGTH_LONG).show();
-        } else if (ACTION_CANCEL_DOWNLOAD.equals(action)) {
-            downloadBinder.cancelDownload();
-            Toast.makeText(getApplicationContext(), "Download is canceled", Toast.LENGTH_LONG).show();
-        } else if (ACTION_CONTINUE_DOWNLOAD.equals(action)) {
-            downloadBinder.continueDownload();
-            Toast.makeText(getApplicationContext(), "Download continue", Toast.LENGTH_LONG).show();
+        if(intent!=null) {
+            String action = intent.getAction();
+            if (ACTION_PAUSE_DOWNLOAD.equals(action)) {
+                downloadBinder.pauseDownload();
+                Toast.makeText(getApplicationContext(), "Download is paused", Toast.LENGTH_LONG).show();
+            } else if (ACTION_CANCEL_DOWNLOAD.equals(action)) {
+                downloadBinder.cancelDownload();
+                Toast.makeText(getApplicationContext(), "Download is canceled", Toast.LENGTH_LONG).show();
+            } else if (ACTION_CONTINUE_DOWNLOAD.equals(action)) {
+                downloadBinder.continueDownload();
+                Toast.makeText(getApplicationContext(), "Download continue", Toast.LENGTH_LONG).show();
+            }
         }
-
         return super.onStartCommand(intent, flags, startId);
     }
 

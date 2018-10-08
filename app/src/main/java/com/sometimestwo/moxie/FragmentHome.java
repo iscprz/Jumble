@@ -934,7 +934,7 @@ public class FragmentHome extends Fragment {
                             mDrawerLayout.closeDrawer(mNavigationViewLeft);
                         } else if (getResources().getString(R.string.menu_settings)
                                 .equalsIgnoreCase(clickedItemTitle)) {
-                            mHomeEventListener.openSettings();
+                            //mHomeEventListener.openSettings();
                         }
                     }
                 }

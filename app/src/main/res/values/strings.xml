@@ -37,5 +37,6 @@
     </string>
     <!--<String name="error_404_no_submissions"></String>-->
     <string name="error_404_retry"><u>Retry</u></string>
+    <string name="title_activity_app_settings">Settings</string>
 
 </resources>

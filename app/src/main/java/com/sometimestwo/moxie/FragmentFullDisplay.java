@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -69,11 +68,13 @@ import com.sometimestwo.moxie.EventListeners.OnTaskCompletedListener;
 import com.sometimestwo.moxie.EventListeners.OnVRedditTaskCompletedListener;
 import com.sometimestwo.moxie.EventListeners.RedditHeartbeatListener;
 import com.sometimestwo.moxie.Model.CommentObj;
+import com.sometimestwo.moxie.Model.ExpandableCommentGroup;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.DownloadBinder;
 import com.sometimestwo.moxie.Utils.DownloadService;
 import com.sometimestwo.moxie.Utils.Utils;
+import com.xwray.groupie.GroupAdapter;
 
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.models.Comment;
@@ -782,11 +783,6 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     }
 
     private void initComments() {
-        mCommentsRecyclerLayoutManager = new LinearLayoutManager(getContext());
-        mCommentsRecyclerView.setLayoutManager(mCommentsRecyclerLayoutManager);
-        // adds the margin to the left of a comment to show indentation
-        mCommentsRecyclerView.addItemDecoration(new CommentsItemDecorator());
-
         // ensure our reddit client is still authenticated
         if (!App.getAccountHelper().isAuthenticated()) {
             new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
@@ -803,149 +799,15 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
     // Comments stuff
     private void setupCommentsAdapter() {
-        CommentsAdapter adapter = new CommentsAdapter();
-        mCommentsRecyclerView.setAdapter(adapter);
-    }
+        GroupAdapter groupAdapter = new GroupAdapter();
+        mCommentsRecyclerView.setAdapter(groupAdapter);
+        mCommentsRecyclerLayoutManager = new LinearLayoutManager(getContext());
+        mCommentsRecyclerView.setLayoutManager(mCommentsRecyclerLayoutManager);
 
-    // give comment an indentation based on comment depth
-    private class CommentsItemDecorator extends RecyclerView.ItemDecoration {
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            Context context = view.getContext();
-            int indentation = context.getResources().getDimensionPixelSize(R.dimen.comments_indentation);
-            CommentViewHolder holder = (CommentViewHolder) parent.getChildViewHolder(view);
-            outRect.left = indentation * holder.getIndentationLevel();
-        }
-    }
-
-    private class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
-        Set<String> hiddenIDs = new HashSet<>();
-
-        public CommentsAdapter() {
-
-        }
-
-        @NonNull
-        @Override
-        public CommentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = getLayoutInflater().inflate(R.layout.recycler_item_comment, parent, false);
-            return new CommentViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
-            CommentNode item = comments.get(position).comment;
-            /*if(hiddenIDs.contains(item.getParent().getSubject().getId())){
-                hiddenIDs.add(item.getSubject().getId());
-                holder.itemView.setActivated(false);
-                holder.itemView.setVisibility(View.GONE);
-            }*/
-
-            holder.commentAuthorTextView.setText(item.getSubject().getAuthor() + "::: " + item.getDepth());
-            holder.commentBodyTextView.setText(item.getSubject().getBody());
-
-
-            // button that will collapse a single comment and its children
-            holder.commentInfoContainer.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int currPosition = holder.getAdapterPosition();
-                    CommentNode currNode = comments.get(currPosition).comment;
-                    //hiddenIDs.add(currNode.getSubject().getId());
-
-
-                    int currentVisibility = holder.commentBodyTextView.getVisibility();
-                    holder.commentBodyTextView.setVisibility(currentVisibility == View.VISIBLE ? View.GONE : View.VISIBLE);
-
-
-
-                    /*
-                    for(int i = currPosition+1 ; i < comments.size(); i++){
-                        currNode = comments.get(i).comment;
-
-                        String parentID = currNode.getParent().getSubject().getId();
-                        if((currNode.getParent().getDepth() == 0) || (!parentIDs.contains(parentID))){
-                            break;
-                        }
-                    }*/
-
-                    notifyItemRangeRemoved(1, 4);
-                    // Set will hold IDs of parents IDs so we can hide all of their children
-
-                    // add current node (that we clicked on) as a parent
-
-                    // search through our comments list for any comments
-                    // which derive from comments with IDs in parentIDs
-                 /*   for(int i = currPosition+1 ; i < comments.size(); i++){
-                        currNode = comments.get(i).comment;
-                        try{
-                            String parentID = currNode.getParent().getSubject().getId();
-                           if((currNode.getParent().getDepth() == 0) || (!parentIDs.contains(parentID))){
-                               break;
-                           }
-                            *//*String parentID = currNode.getParent().getSubject().getId();
-                            if(!parentIDs.contains(parentID)){
-                                break;
-                            }*//*
-                            View childToHide = mCommentsRecyclerView.getChildAt(i);
-                            int currVisibility = childToHide.getVisibility();
-                            childToHide.setVisibility(currVisibility == View.VISIBLE ? View.GONE : View.VISIBLE);
-
-
-                             *//*   //IllegalStateException if no parent
-                            if(currNode.getParent().getDepth() > 0){
-                                String currNodeParentID = currNode.getParent().getSubject().getId();
-                                if(parentIDs.contains(currNodeParentID)){
-                                    View childToHide = mCommentsRecyclerView.getChildAt(i);
-                                    int currVisibility = childToHide.getVisibility();
-                                    childToHide.setVisibility(currVisibility == View.VISIBLE ? View.GONE : View.VISIBLE);
-                                }
-                                else{
-                                    break;
-                                }
-                            }
-                            // when no parent is found, we've found the end of the collapsing
-                            else{
-                                break;
-                            }*//*
-                        }catch (IllegalStateException ise){
-                            break;
-                        }
-
-                    }*/
-                }
-            });
-        }
-
-
-        @Override
-        public int getItemCount() {
-            return comments.size();
-        }
-
-    }
-
-    public class CommentViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        RelativeLayout commentMasterContainer; // master comment item container
-        RelativeLayout commentInfoContainer; // collapse button, author, vote count
-        TextView commentAuthorTextView;
-        TextView commentBodyTextView;
-
-        public CommentViewHolder(View itemView) {
-            super(itemView);
-            commentMasterContainer = (RelativeLayout) itemView.findViewById(R.id.comment_item_master);
-            commentInfoContainer = (RelativeLayout) itemView.findViewById(R.id.comment_info_container);
-            commentAuthorTextView = (TextView) itemView.findViewById(R.id.comment_item_author);
-            commentBodyTextView = (TextView) itemView.findViewById(R.id.comment_item_body);
-        }
-
-        @Override
-        public void onClick(View view) {
-        }
-
-        // Gets comment depth. Minus 1 since root level comments are considered depth 1
-        public int getIndentationLevel() {
-            return comments.get(getLayoutPosition()).comment.getDepth() - 1;
+        // add all root comments
+        for (CommentObj c : comments) {
+            ExpandableCommentGroup expandableCommentGroup = new ExpandableCommentGroup(c, true);
+            groupAdapter.add(expandableCommentGroup);
         }
     }
 
@@ -1105,55 +967,14 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             String id = mCurrSubmission.getId();
             RootCommentNode baseComments = redditClient.submission(id).comments();
 
-
             comments = new ArrayList<>();
-            commentOPs = new HashMap<>();
             List<CommentNode<Comment>> rootComments =
                     baseComments.walkTree().iterator().next().getReplies();
 
-            insertNodes(rootComments);
+            for(CommentNode<Comment> rootComment : rootComments){
+                comments.add(new CommentObj(rootComment));
+            }
             return null;
-        }
-
-        /* Traverses comment tree in depth first manner adding
-         *each child to a comments list. Illustration of comments section:
-         *
-         * -Green
-         * --Hey
-         * --Hola
-         * --Yo
-         * ---Turtle
-         * -Blue
-         * -Yellow
-         * --Hello
-         * ---Snake
-         * -Brown
-         *
-         * comments will look like:
-         * Green,Hey,Hola,Yo,Turtle,Blue,Yellow,Hello,Snake,Brown
-         *
-         * Will only collect up to depth COMMENTS_MAX_DEPTH and will limit
-         * any depth to COMMENTS_MAX_CURR_DEPTH comments. This means that if
-         * there is 150 root level comments and COMMENTS_MAX_CURR_DEPTH = 40,
-         * we will only load the first 40 root level comments here.
-         *
-         */
-        private void insertNodes(List<CommentNode<Comment>> rootComments) {
-            if (rootComments == null
-                    || rootComments.size() < 1
-                    || rootComments.get(0).getDepth() > Constants.COMMENTS_MAX_DEPTH) {
-                return;
-            }
-            int numRootNodes = 0;
-            for (CommentNode<Comment> n : rootComments) {
-                numRootNodes++;
-                comments.add(new CommentObj(n));
-                insertNodes(n.getReplies());
-
-                if (numRootNodes == Constants.COMMENTS_MAX_CURR_DEPTH) {
-                    break;
-                }
-            }
         }
 
         @Override

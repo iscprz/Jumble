@@ -4,6 +4,7 @@ package com.sometimestwo.moxie;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.util.Log;
 
 import com.bumptech.glide.Glide;
@@ -32,6 +33,7 @@ public final class App extends Application {
     public static HttpProxyCacheServer proxy;
     public static RequestManager GlideApp;
     public static Gson GsonApp;
+    public static Resources AppResources;
 
     @Override
     public void onCreate() {
@@ -85,6 +87,7 @@ public final class App extends Application {
         // Gson
         GsonApp = new Gson();
 
+        AppResources = this.getResources();
     }
 
     public static AccountHelper getAccountHelper() { return accountHelper; }
@@ -93,6 +96,7 @@ public final class App extends Application {
     public static SharedPreferences getSharedPrefs(){return shared_prefs;};
     public static RequestManager getGlideApp() { return GlideApp; }
     public static Gson getGsonApp() {return GsonApp;}
+    public static Resources getAppResources() {return AppResources;}
 
     // Video cache
     public static HttpProxyCacheServer getProxy(Context context) {

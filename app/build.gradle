@@ -101,4 +101,7 @@ dependencies {
     //youtube
     implementation files('libs/YouTubeAndroidPlayerApi.jar')
 
+    //Groupie
+    implementation 'com.xwray:groupie:2.1.0'
+
 }

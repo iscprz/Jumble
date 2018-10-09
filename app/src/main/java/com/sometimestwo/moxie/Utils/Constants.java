@@ -98,6 +98,8 @@ public class Constants {
     public final static int COMMENTS_MAX_DEPTH = 7;
     public final static int COMMENTS_MAX_CURR_DEPTH = 25;
     public final static int MAX_LENGTH_URL_DISPLAY = 25;
+    public final static int COMMENTS_INDENTATION_PADDING = 40;
+    public final static int COMMENTS_MIN_SCORE = 1;
 
     // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
 

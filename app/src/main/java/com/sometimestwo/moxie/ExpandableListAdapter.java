@@ -29,7 +29,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         this.context = context;
         this.listDataHeader = listDataHeader;
         this.listDataChild = listChildData;
-        mCurrLoggedInUser = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
+        mCurrLoggedInUser = App.getSharedPrefs().getString(
+                Constants.MOST_RECENT_USER,
+                Constants.USERNAME_USERLESS);
     }
 
     @Override
@@ -151,7 +153,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
 
     private int getMenuItemTextColor(View convertView, String headerTitle) {
-        String currLoggedInUser = App.getAccountHelper().getReddit().getAuthManager().currentUsername();
+        String currLoggedInUser =  App.getSharedPrefs().getString(
+                Constants.MOST_RECENT_USER,
+                Constants.USERNAME_USERLESS);//App.getAccountHelper().getReddit().getAuthManager().currentUsername();
 
         // swap username ugly to pretty for sake of comparing sharedpref details and menu item
         if (Constants.USERNAME_USERLESS.equalsIgnoreCase(currLoggedInUser)) {

@@ -26,7 +26,7 @@
             android:layout_height="@dimen/comments_collapse_bar"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:background="@color/colorBgBlackTint">
+            android:background="@color/colorBgBlackTintDarkest">
 
             <ImageView
                 android:id="@+id/comments_button_close"
@@ -46,7 +46,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight=".675"
-        android:background="@color/colorBgBlackTint">
+        android:background="@color/colorDarkerGray">
 
         <!-- Comments progress-->
         <ProgressBar

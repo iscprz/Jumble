@@ -1143,7 +1143,7 @@ public class FragmentHome extends Fragment {
                 is404 = true;
                 holder.itemView.setVisibility(View.GONE);
                 mHomeEventListener.set404(true);
-                // the requested subreddit was empty. Display something meaningful
+                // the requested subreddit was empty - Display 404 page
                 display404();
                 return;
             }
@@ -1215,7 +1215,8 @@ public class FragmentHome extends Fragment {
                 thumbnail = item.getUrl();
             } else {
                 // will assign 404 thumbnail if not given a thumbnail at this point
-                item.setThumbnail(thumbnail);
+                item.setThumbnail(Constants.URI_404_thumbnail);
+                thumbnail = Constants.URI_404_thumbnail;
                 //holder.thumbnailIconDomain.setBackground(null);
             }
 
@@ -1448,6 +1449,8 @@ public class FragmentHome extends Fragment {
 
         }
 
+        // Used for ensuring an icon (domain, nsfw, filetype - enabled through settings)
+        // and the image being loaded are loaded together in the recycler thumbnail
         private class RecyclerLoadProgressListener implements RequestListener<Drawable> {
             // recyclerview's thumbnail
             private ItemViewHolder holder;
@@ -1470,7 +1473,7 @@ public class FragmentHome extends Fragment {
             }
         }
 
-        // Release any resources that may be lingering after view has been recycled
+        // todo:Release any resources that may be lingering after view has been recycled
         @Override
         public void onViewRecycled(@NonNull ItemViewHolder holder) {
             super.onViewRecycled(holder);

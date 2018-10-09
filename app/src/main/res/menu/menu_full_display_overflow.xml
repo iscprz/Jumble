@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/menu_full_display_overflow_goto_subreddit"
-        android:title="Go to subreddit"
-        android:orderInCategory="100"/>
-    <item android:id="@+id/menu_full_display_overflow_download"
-        android:title="Download"
-        android:orderInCategory="200"/>
+    <item
+        android:id="@+id/menu_full_display_overflow_goto_subreddit"
+        android:orderInCategory="100"
+        android:title="Go to subreddit" />
+    <item
+        android:id="@+id/menu_full_display_overflow_download"
+        android:orderInCategory="200"
+        android:title="Download" />
 
-    <item android:id="@+id/menu_full_display_overflow_share"
-        android:title="Share"
-        android:orderInCategory="300"/>
+    <item
+        android:id="@+id/menu_full_display_overflow_open_web"
+        android:orderInCategory="300"
+        android:title="@string/goto_web_url" />
+
+    <item
+        android:id="@+id/menu_full_display_overflow_share"
+        android:orderInCategory="400"
+        android:title="Share" />
 
 </menu>

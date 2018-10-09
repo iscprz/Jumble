@@ -98,8 +98,11 @@ public class Utils {
        https://i.imgur.com/CtyvHl6.gifv
      */
     public static String getFileExtensionFromUrl(String postURL) {
-        String split[] = postURL.split("\\.");
-        return split.length > 0 ? split[split.length - 1] : "";
+        if(postURL != null){
+            String split[] = postURL.split("\\.");
+            return split.length > 0 ? split[split.length - 1] : "";
+        }
+        return "";
     }
 
     public static Constants.SubmissionType getSubmissionType(String url) {

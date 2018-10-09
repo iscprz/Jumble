@@ -17,6 +17,7 @@
     <string name="title_settings"><b>Settings</b></string>
     <string name="unsub_from">Unsubscribe from /r/%1$s</string>
     <string name="sub_to">Subscribe to /r/%1$s</string>
+    <string name="goto_web_url">Go to %1$s...</string>
 
     <!-- Toasts-->
     <string name="toast_settings_saved">Settings saved</string>

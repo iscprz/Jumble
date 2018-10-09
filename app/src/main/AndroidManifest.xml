@@ -39,6 +39,7 @@
         <activity android:name=".ActivityNewUserLogin"></activity>
         <activity android:name=".ActivitySubredditViewer"></activity>
         <activity android:name=".YouTubePlayerClass"></activity>
+        <activity android:name=".ActivityWebView"></activity>
 
         <service
             android:name=".Utils.DownloadService"

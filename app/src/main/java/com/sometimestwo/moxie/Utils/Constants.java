@@ -37,6 +37,8 @@ public class Constants {
     public final static String EXTRA_GOTO_EXPLORE_CATEGORY = "EXTRA_GOTO_EXPLORE_CATEGORY";
     public final static String EXTRA_SUBMISSION_OBJ = "EXTRA_SUBMISSION_OBJ";
     public final static String EXTRA_GOTO_SUBREDDIT = "EXTRA_GOTO_SUBREDDIT";
+    public final static String EXTRA_GOTO_WEB_URL = "EXTRA_GOTO_WEB_URL";
+
     public final static int REQUESTCODE_GOTO_SUBREDDIT_VIEWER = 200;
     public final static int REQUESTCODE_GOTO_LOG_IN = 300;
     public final static int REQUESTCODE_GOTO_BIG_DISPLAY = 400;
@@ -95,6 +97,7 @@ public class Constants {
     public final static int COMMENTS_ROOT_MAX_LOAD_SIZE = 50;
     public final static int COMMENTS_MAX_DEPTH = 7;
     public final static int COMMENTS_MAX_CURR_DEPTH = 25;
+    public final static int MAX_LENGTH_URL_DISPLAY = 25;
 
     // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
 

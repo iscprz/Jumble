@@ -20,6 +20,7 @@ import net.dean.jraw.pagination.DefaultPaginator;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SubmissionsDataSource extends ItemKeyedDataSource<String, SubmissionObj> {
@@ -82,11 +83,11 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         // USERLESS and no subreddit request - display default
         else {
             StringBuilder sb = new StringBuilder();
-            for(String subreddit : App.getMoxieInfoObj().getDefaultSubreddits()){
+            for (String subreddit : App.getMoxieInfoObj().getDefaultSubreddits()) {
                 sb.append(subreddit).append("+");
             }
             // remove trailing +
-            String defaultSubreddits = sb.toString().substring(0,sb.toString().length()-1);
+            String defaultSubreddits = sb.toString().substring(0, sb.toString().length() - 1);
             return redditClient.subreddit(defaultSubreddits).posts();
         }
     }
@@ -157,18 +158,20 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 }
                 submissionObjs = mapSubmissions(submissions);
             } catch (Exception e) {
-                // Let's tell the user 404 for anything that may go wrong here.
-                // Probably a network error...
-
                 // network issue
                 //if (e instanceof UnknownHostException) {
-                    mIs404 = true;
+                   /* mIs404 = true;
                     submissionObjs = new ArrayList<SubmissionObj>();
-                    submissionObjs.add(new SubmissionObj(true));
-              //  }
+                    submissionObjs.add(new SubmissionObj(true));*/
+                //  }
                 //java.net.UnknownHostException: Unable to resolve host "www.reddit.com": No address associated with hostname
+
                 Log.e(SubmissionsDataSource.class.getSimpleName(),
                         " Failed to request initial submissions from reddit: " + e.getMessage());
+                // Probably a network issue. Let's give user 404 page...
+
+                // mapSubmissions will handle null as a 404 page
+                return mapSubmissions(null);
             }
             return submissionObjs;
         }
@@ -267,9 +270,9 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             s.setPreviewUrl(submission.getPreview() == null ?
                     null : submission.getPreview().getImages().get(0).getSource().getUrl());
 
-            // Thumbnail can be many different things. Default to submission's URL if no thumbnail.
-            // Note: We're ignoring spoiler, nsfw, and potentially any subreddit specific rules
-            // which disallow thumbnails(?)
+            // Reddit can give us a few different non-image link strings as thumbnails.
+            // Check for these and default to the submission URL if we've been provided
+            // an invalid thumbnail.
             if (!submission.hasThumbnail()
                     || submission.getThumbnail() == null
                     || "image".equalsIgnoreCase(submission.getThumbnail())
@@ -277,8 +280,15 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                     || "spoiler".equalsIgnoreCase(submission.getThumbnail())
                     || "default".equalsIgnoreCase(submission.getThumbnail())
                     || submission.getThumbnail().length() < 1) {
-                s.setThumbnail(submission.getUrl());
-            } else {
+                // Make sure that if we're about to try using the submission URL as a thumbnail
+                // that it's actually something we can display as a thumbnail
+                if (Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
+                        .contains(Utils.getFileExtensionFromUrl(submission.getThumbnail()))) {
+                    s.setThumbnail(submission.getUrl());
+                }
+            }
+            // Reddit gave us an image as a thumbnail
+            else {
                 s.setThumbnail(submission.getThumbnail());
             }
 

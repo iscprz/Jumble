@@ -349,8 +349,10 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
     private void setupHeader() {
         // Title
-        mTitleTextView.setText(mCurrSubmission.getCompactTitle() != null
-                ? mCurrSubmission.getCompactTitle() : mCurrSubmission.getTitle());
+      /*  mTitleTextView.setText(mCurrSubmission.getCompactTitle() != null
+                ? mCurrSubmission.getCompactTitle() : mCurrSubmission.getTitle());*/
+        mTitleTextView.setText(mCurrSubmission.getTitle());
+
         // Author
         mAuthorTextView.setText(mCurrSubmission.getAuthor());
         // Subreddit
@@ -399,7 +401,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                                                     .into(mZoomieImageView);
                                         }
                                     });
-                                }else{
+                                } else {
                                     Log.e(TAG,
                                             "getActivity() null when trying to fixIndirectImgurUrl for URL "
                                                     + mCurrSubmission.getUrl());
@@ -446,10 +448,10 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                                             initializeExoPlayer(mCurrSubmission.getCleanedUrl());
                                         }
                                     });
-                                }else{
+                                } else {
                                     Log.e(TAG,
                                             "getActivity null when trying to getMp4LinkImgur for url "
-                                            + mCurrSubmission.getUrl());
+                                                    + mCurrSubmission.getUrl());
                                 }
                             }
 
@@ -579,7 +581,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                     mButtonDownvote.setBackground(mVoteDirection == VoteDirection.DOWN ? downVoteBlue : downVoteWhite);
 
                     mUpvoteCountTextView.setTextColor(mVoteDirection == VoteDirection.UP ? colorUpvoteOrange : colorWhite);
-                    mUpvoteCountTextView.setText(mVoteDirection == VoteDirection.UP ? String.valueOf(++mUpvoteCount) : String.valueOf(--mUpvoteCount));
+                    mUpvoteCountTextView.setText(mVoteDirection == VoteDirection.UP ? Utils.truncateCount(++mUpvoteCount):  Utils.truncateCount(--mUpvoteCount));
                     new Utils.VoteSubmissionTask(mCurrSubmission, FragmentFullDisplay.this, mVoteDirection).execute();
                 }
             }
@@ -604,7 +606,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                         mUpvoteCountTextView.setTextColor(colorWhite);
                     }
                     mUpvoteCountTextView.setText(mVoteDirection == VoteDirection.UP
-                            ? String.valueOf(--mUpvoteCount) : String.valueOf(mUpvoteCount));
+                            ?  Utils.truncateCount(--mUpvoteCount):  Utils.truncateCount(mUpvoteCount));
                     mVoteDirection = (mVoteDirection != VoteDirection.DOWN) ? VoteDirection.DOWN : VoteDirection.NONE;
                     mButtonDownvote.setBackground(mVoteDirection == VoteDirection.DOWN ? downVoteBlue : downVoteWhite);
                     mButtonUpvote.setBackground(mVoteDirection == VoteDirection.UP ? upVoteOrange : upVoteWhite);
@@ -643,6 +645,12 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                 m.findItem(R.id.menu_full_display_overflow_download)
                         .setVisible(mCurrSubmission.isDownloadableMedia());
 
+
+                // Display the submission's URL inside the option "go to {URL}..."
+                String truncatedURL = mCurrSubmission.getUrl().substring(0,Constants.MAX_LENGTH_URL_DISPLAY);
+                String gotoString = getResources().getString(R.string.goto_web_url,truncatedURL);
+                m.findItem(R.id.menu_full_display_overflow_open_web).setTitle(gotoString);
+
                 overflowPopup.show();
                 overflowPopup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
@@ -658,6 +666,13 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                                 // the callback from permissions request will call the
                                 // actual download method (see onRequestPermissionsResult)
                                 Utils.hasDownloadPermissions(FragmentFullDisplay.this);
+                                return true;
+                            case R.id.menu_full_display_overflow_open_web:
+                                Intent intent = new Intent(
+                                        FragmentFullDisplay.this.getActivity(),
+                                        ActivityWebView.class);
+                                intent.putExtra(Constants.EXTRA_GOTO_WEB_URL, mCurrSubmission.getUrl());
+                                startActivity(intent);
                                 return true;
                             case R.id.menu_full_display_overflow_share:
                                 return true;
@@ -947,8 +962,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             Intent downloadIntent = new Intent(getActivity(), DownloadService.class);
             getActivity().startService(downloadIntent);
             getActivity().getApplicationContext().bindService(downloadIntent, serviceConnection, BIND_AUTO_CREATE);
-        }else{
-            Log.e(TAG,"getActivity() null on attempting to startAndBindDownloadService()");
+        } else {
+            Log.e(TAG, "getActivity() null on attempting to startAndBindDownloadService()");
         }
     }
 

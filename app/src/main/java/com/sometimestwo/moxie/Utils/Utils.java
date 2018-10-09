@@ -98,7 +98,7 @@ public class Utils {
        https://i.imgur.com/CtyvHl6.gifv
      */
     public static String getFileExtensionFromUrl(String postURL) {
-        if(postURL != null){
+        if (postURL != null) {
             String split[] = postURL.split("\\.");
             return split.length > 0 ? split[split.length - 1] : "";
         }
@@ -436,45 +436,45 @@ public class Utils {
     }
 
     // stores the current user's subscriptions in shared preferences
-    public static void storeLocalUserSubscriptions(StringListIgnoreCase subs){
+    public static void storeLocalUserSubscriptions(StringListIgnoreCase subs) {
         String subsStr = App.getGsonApp().toJson(subs);
-        App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS,subsStr).commit();
+        App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS, subsStr).commit();
     }
 
-    public static void addToLocalUserSubscriptions(String newSub){
+    public static void addToLocalUserSubscriptions(String newSub) {
         StringListIgnoreCase currSubs = getCurrUserLocalSubscriptions();
-        if(!currSubs.contains(newSub)) {
+        if (!currSubs.contains(newSub)) {
             currSubs.add(newSub);
             storeLocalUserSubscriptions(currSubs);
         }
     }
 
-    public static StringListIgnoreCase getCurrUserLocalSubscriptions(){
+    public static StringListIgnoreCase getCurrUserLocalSubscriptions() {
         StringListIgnoreCase userSubs = new StringListIgnoreCase();
 
-        String subsStr = App.getSharedPrefs().getString(Constants.PREFS_CURR_USER_SUBS,null);
-        userSubs.addAll(App.getGsonApp().fromJson(subsStr,new TypeToken<StringListIgnoreCase>(){}.getType()));
+        String subsStr = App.getSharedPrefs().getString(Constants.PREFS_CURR_USER_SUBS, null);
+        userSubs.addAll(App.getGsonApp().fromJson(subsStr, new TypeToken<StringListIgnoreCase>() {
+        }.getType()));
 
         return userSubs;
     }
 
 
-
-    public static void removeFromLocalUserSubscriptions(String subToRemove){
+    public static void removeFromLocalUserSubscriptions(String subToRemove) {
         StringListIgnoreCase currSubs = getCurrUserLocalSubscriptions();
-        if(currSubs.contains(subToRemove)) {
+        if (currSubs.contains(subToRemove)) {
             currSubs.remove(subToRemove);
             storeLocalUserSubscriptions(currSubs);
         }
     }
 
     // removes all subscriptions info from shared prefs
-    public static void removeLocalSubscriptionsList(){
-        App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS,"").commit();
+    public static void removeLocalSubscriptionsList() {
+        App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS, "").commit();
     }
 
     // Updates our shared preferences with a list of logged in user's subreddit subscriptions
-    public static class FetchUserSubscriptionsAndStoreLocally extends AsyncTask<Void, Void, Void>{
+    public static class FetchUserSubscriptionsAndStoreLocally extends AsyncTask<Void, Void, Void> {
         String username;
 
         public FetchUserSubscriptionsAndStoreLocally(String username) {
@@ -493,7 +493,7 @@ public class Utils {
             StringListIgnoreCase listOfSubredditNames = new StringListIgnoreCase();
             // Paginator implements Iterable
             for (Listing<Subreddit> page : paginator) {
-                for(Subreddit s : page){
+                for (Subreddit s : page) {
                     listOfSubredditNames.add(s.getName());
                 }
             }
@@ -507,7 +507,7 @@ public class Utils {
         }
     }
 
-    public static class SubscribeSubredditTask extends AsyncTask<Void,Void,Void>{
+    public static class SubscribeSubredditTask extends AsyncTask<Void, Void, Void> {
         String subreddit;
         OnRedditTaskListener listener;
 
@@ -531,9 +531,10 @@ public class Utils {
 
     }
 
-    public static class UnsubscribeSubredditTask extends AsyncTask<Void,Void,Boolean>{
+    public static class UnsubscribeSubredditTask extends AsyncTask<Void, Void, Boolean> {
         String subreddit;
         OnRedditTaskListener listener;
+
         public UnsubscribeSubredditTask(String subreddit, OnRedditTaskListener listener) {
             this.subreddit = subreddit;
             this.listener = listener;
@@ -541,11 +542,10 @@ public class Utils {
 
         @Override
         protected Boolean doInBackground(Void... voids) {
-            try{
+            try {
                 RedditClient redditClient = App.getAccountHelper().getReddit();
                 redditClient.subreddit(subreddit).unsubscribe();
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 listener.onFailure(e.getMessage());
                 return false;
             }
@@ -554,7 +554,7 @@ public class Utils {
 
         @Override
         protected void onPostExecute(Boolean success) {
-            if(success)
+            if (success)
                 listener.onSuccess();
 
             super.onPostExecute(success);
@@ -774,14 +774,12 @@ public class Utils {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            if (!App.getAccountHelper().isAuthenticated()) {
-                didSomething = true;
-                Log.e("FETCH_AUTH_USER", "Attempting to reauthenticate: " + mostRecentUser);
-                if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
-                    App.getAccountHelper().switchToUser(mostRecentUser);
-                } else {
-                    App.getAccountHelper().switchToUserless();
-                }
+            didSomething = true;
+            Log.e("FETCH_AUTH_USER", "Attempting to reauthenticate: " + mostRecentUser);
+            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
+                App.getAccountHelper().switchToUser(mostRecentUser);
+            } else {
+                App.getAccountHelper().switchToUserless();
             }
             return null;
         }

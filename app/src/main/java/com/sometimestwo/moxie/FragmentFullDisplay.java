@@ -788,12 +788,16 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mCommentsRecyclerView.addItemDecoration(new CommentsItemDecorator());
 
         // ensure our reddit client is still authenticated
-        new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
-            @Override
-            public void redditUserAuthenticated() {
-                new FetchCommentsTask().execute();
-            }
-        }).execute();
+        if (!App.getAccountHelper().isAuthenticated()) {
+            new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
+                @Override
+                public void redditUserAuthenticated() {
+                    new FetchCommentsTask().execute();
+                }
+            }).execute();
+        }else{
+            new FetchCommentsTask().execute();
+        }
     }
 
 

@@ -41,12 +41,16 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     public void loadInitial(@NonNull LoadInitialParams<String> params,
                             @NonNull final LoadInitialCallback<SubmissionObj> callback) {
         // gotta make sure we're authenticated before making calls to reddit api
-        new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
-            @Override
-            public void redditUserAuthenticated() {
-                doLoadInitial(params, callback);
-            }
-        }).execute();
+        if (!App.getAccountHelper().isAuthenticated()) {
+            new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
+                @Override
+                public void redditUserAuthenticated() {
+                    doLoadInitial(params, callback);
+                }
+            }).execute();
+        }else{
+            doLoadInitial(params, callback);
+        }
     }
 
     private void doLoadInitial(@NonNull LoadInitialParams<String> params,
@@ -102,22 +106,16 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     public void loadAfter(@NonNull final LoadParams<String> params, @NonNull final LoadCallback<SubmissionObj> callback) {
         if (!mIs404 && !mEndOfSubreddit) {
             // make sure we're authenticated
-            new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
-                @Override
-                public void redditUserAuthenticated() {
-                    SubredditSort sortBy = App.getMoxieInfoObj().getmSortBy();
-                    TimePeriod timePeriod = App.getMoxieInfoObj().getmTimePeriod();
-
-                    // Listing<Submission> current = mPaginator.getCurrent();
-                    /*mPaginator = getSubredditSortBuilder()
-                            .limit(Constants.QUERY_PAGE_SIZE)
-                            .sorting(sortBy == null ? SubredditSort.BEST : sortBy)
-                            .timePeriod(timePeriod == null ? TimePeriod.DAY : timePeriod)
-                            .build();*/
-                    new FetchSubmissionsTask(callback).execute();
-                }
-            }).execute();
-
+            if (!App.getAccountHelper().isAuthenticated()) {
+                new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
+                    @Override
+                    public void redditUserAuthenticated() {
+                        new FetchSubmissionsTask(callback).execute();
+                    }
+                }).execute();
+            }else{
+                new FetchSubmissionsTask(callback).execute();
+            }
         }
     }
 

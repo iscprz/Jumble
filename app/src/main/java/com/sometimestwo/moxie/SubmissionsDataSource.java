@@ -33,8 +33,8 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     private boolean mIs404 = false;
     private boolean mEndOfSubreddit = false;
 
-    public SubmissionsDataSource(MoxieInfoObj moxieInfoObj) {
-        this.mMoxieInfoObj = moxieInfoObj;
+    public SubmissionsDataSource( ) {
+        mMoxieInfoObj = App.getMoxieInfoObj();
     }
 
     @Override

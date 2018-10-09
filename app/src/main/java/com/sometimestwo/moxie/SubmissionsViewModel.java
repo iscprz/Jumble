@@ -19,7 +19,7 @@ public class SubmissionsViewModel extends ViewModel {
     //constructor
     public SubmissionsViewModel() {
         //getting our data source factory
-         submissionsDataSourceFactory = new SubmissionsDataSourceFactory(App.getMoxieInfoObj());
+         submissionsDataSourceFactory = new SubmissionsDataSourceFactory();
 
         //getting the live data source from data source factory
         liveDataSource = submissionsDataSourceFactory.getItemLiveDataSource();

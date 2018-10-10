@@ -806,7 +806,11 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
         // add all root comments
         for (CommentObj c : comments) {
-            ExpandableCommentGroup expandableCommentGroup = new ExpandableCommentGroup(c, true);
+            ExpandableCommentGroup expandableCommentGroup =
+                    new ExpandableCommentGroup(
+                            c,
+                            true,
+                            mCurrSubmission);
             groupAdapter.add(expandableCommentGroup);
         }
     }
@@ -972,7 +976,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                     baseComments.walkTree().iterator().next().getReplies();
 
             for(CommentNode<Comment> rootComment : rootComments){
-                comments.add(new CommentObj(rootComment));
+                comments.add(new CommentObj(rootComment,mCurrSubmission));
             }
             return null;
         }

@@ -29,11 +29,11 @@ public final class App extends Application {
     private static AccountHelper accountHelper;
     private static SharedPreferencesTokenStore tokenStore;
     private static MoxieInfoObj currSubredditObj;
-    private static SharedPreferences shared_prefs;
-    public static HttpProxyCacheServer proxy;
-    public static RequestManager GlideApp;
-    public static Gson GsonApp;
-    public static Resources AppResources;
+    private static SharedPreferences Shared_prefs;
+    private static HttpProxyCacheServer proxy;
+    private static RequestManager GlideApp;
+    private static Gson GsonApp;
+    private static Resources AppResources;
 
     @Override
     public void onCreate() {
@@ -73,7 +73,6 @@ public final class App extends Application {
             // If you want to disable logging, use a NoopHttpLogger instead:
             // redditClient.setLogger(new NoopHttpLogger());
 
-            shared_prefs = this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
             return null;
         });
 
@@ -87,13 +86,15 @@ public final class App extends Application {
         // Gson
         GsonApp = new Gson();
 
+        Shared_prefs = this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
+
         AppResources = this.getResources();
     }
 
     public static AccountHelper getAccountHelper() { return accountHelper; }
     public static SharedPreferencesTokenStore getTokenStore() { return tokenStore; }
     public static MoxieInfoObj getMoxieInfoObj() {return currSubredditObj;}
-    public static SharedPreferences getSharedPrefs(){return shared_prefs;};
+    public static SharedPreferences getSharedPrefs(){return Shared_prefs;};
     public static RequestManager getGlideApp() { return GlideApp; }
     public static Gson getGsonApp() {return GsonApp;}
     public static Resources getAppResources() {return AppResources;}

@@ -30,6 +30,8 @@
     <color name="comments_orange">#ffa652</color>
     <color name="comments_blue">#6d8aff</color>
     <color name="comments_purple">#ac69ff</color>
+    <color name="comments_OP">#24c8ff</color>
+
 
 
 </resources>

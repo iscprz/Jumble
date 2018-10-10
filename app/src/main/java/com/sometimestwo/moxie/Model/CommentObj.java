@@ -18,11 +18,16 @@ import net.dean.jraw.tree.CommentNode;
 
 
 public class CommentObj extends Item implements ExpandableItem {
+    SubmissionObj currSubmission; // reference to the submission which this comment is for
     public CommentObj() {
     }
 
     public CommentObj(CommentNode comment) {
         this.comment = comment;
+    }
+    public CommentObj(CommentNode comment, SubmissionObj currSubmission) {
+        this.comment = comment;
+        this.currSubmission = currSubmission;
     }
 
     public CommentNode comment;
@@ -52,6 +57,8 @@ public class CommentObj extends Item implements ExpandableItem {
         commentCollapseButton.setBackgroundColor(App.getAppResources().getColor(getCommentColor(comment.getDepth()), null));
         // Author
         commentAuthorTextView.setText(comment.getSubject().getAuthor() /*+ "{" + comment.getDepth() + "}"*/);
+        // Check if Author of this comment is OP
+        commentAuthorTextView.setTextColor(getAuthorTextColor(comment.getSubject().getAuthor()));
         // Score
         commentScoreTextView.setText(getScoreText(comment.getSubject().getScore()));
         // Time submitted
@@ -157,5 +164,12 @@ public class CommentObj extends Item implements ExpandableItem {
         StringBuilder sb = new StringBuilder();
         if(goldCount <= 1) return "";
         else return sb.append("x").append(String.valueOf(goldCount)).toString();
+    }
+
+    private int getAuthorTextColor(String commentAuthor){
+        if(commentAuthor.equalsIgnoreCase(currSubmission.getAuthor()))
+            return App.getAppResources().getColor(R.color.comments_OP,null);
+        else
+            return App.getAppResources().getColor(R.color.colorWhite,null);
     }
 }

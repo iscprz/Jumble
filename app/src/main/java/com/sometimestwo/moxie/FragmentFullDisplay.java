@@ -190,7 +190,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_full_displayer, container, false);
 
-        mIsUserless = App.getAccountHelper().getReddit().getAuthMethod().isUserless();
+        mIsUserless = Utils.isUserlessSafe();
 
         /* Header */
         mHeaderContainer = (LinearLayout) v.findViewById(R.id.big_display_title_container);

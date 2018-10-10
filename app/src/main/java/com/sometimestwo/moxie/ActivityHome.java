@@ -101,21 +101,21 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
 
     @Override
     protected void onResume() {
+        // Need to make sure user is authenticated
+        if (!App.getAccountHelper().isAuthenticated()) {
+            new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
+                @Override
+                public void redditUserAuthenticated() {
+
+                }
+            }).execute();
+        }
         super.onResume();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        // Need to make sure user is authenticated
-        if (!App.getAccountHelper().isAuthenticated()) {
-            new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
-                @Override
-                public void redditUserAuthenticated() {
-                    // do nothing
-                }
-            }).execute();
-        }
     }
 
     @Override
@@ -254,7 +254,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
 
     @Override
     public void onCloseClickDetected() {
-        if (App.getSharedPrefs().getBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK,true)) {
+        if (App.getSharedPrefs().getBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, true)) {
             if (!mCommentsOpen) {
                 getSupportFragmentManager().popBackStack();
             } else {

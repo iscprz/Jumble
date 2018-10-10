@@ -105,6 +105,16 @@ public class Utils {
         return "";
     }
 
+    /* Alternative to using redditClient.getAuthMethod().isUserless()
+    *  This way relies on keeping sharedPrefs up-to-date with most recently
+    *  logged in user but allows us to avoid "No current authenticated client" JRAW errors
+    */
+    public static boolean isUserlessSafe(){
+        return App.getSharedPrefs()
+                .getString(Constants.MOST_RECENT_USER,Constants.USERNAME_USERLESS)
+                .equalsIgnoreCase(Constants.USERNAME_USERLESS);
+    }
+
     public static Constants.SubmissionType getSubmissionType(String url) {
 
         if (url != null) {

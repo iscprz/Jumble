@@ -164,7 +164,7 @@ public class FragmentHome extends Fragment {
     private RecyclerView mExploreRecyclerView;
     // maps an explore category to a background image uri
     private Map<String, Explore> mExploreCatagoriesMap;
-    // holds a list of the "Explore" catagories in memory
+    // holds a list of the "Explore" catagories
     private List<String> mExploreCatagoriesList;
 
     // log out button
@@ -253,7 +253,7 @@ public class FragmentHome extends Fragment {
 
         /* Viewmodel fetching and data updating */
         if (mInvalidateDataSource) {
-            // This is true when we are refreshing a page whether it be from a sipe refresh,
+            // This is true when we are refreshing a page whether it be from a swipe refresh,
             // a new user log in, or user log out
             invalidateData();
         }
@@ -372,12 +372,7 @@ public class FragmentHome extends Fragment {
         menu.findItem(R.id.menu_explore).setVisible(true);
 
         // Sub/Unsub menu option only if we're not in guest mode and viewing a subreddit exists
-        if(!App.getSharedPrefs().getString(
-                Constants.MOST_RECENT_USER,
-                Constants.USERNAME_USERLESS)
-                .equalsIgnoreCase(Constants.USERNAME_USERLESS)
-                && mCurrSubreddit != null
-                && !is404){
+        if(!Utils.isUserlessSafe() && mCurrSubreddit != null && !is404){
             // User is subbed to this subreddit, display "Unsubscribe" option
             if(Utils.getCurrUserLocalSubscriptions().contains(mCurrSubreddit)){
                 menu.findItem(R.id.menu_submissions_overflow_sub).setVisible(false);
@@ -670,9 +665,7 @@ public class FragmentHome extends Fragment {
         /* Log out button */
         mButtonLogout = (TextView) v.findViewById(R.id.navbar_button_logout);
         // hide logout button if we're in Guest mode
-        mButtonLogout.setVisibility(Constants.USERNAME_USERLESS
-                .equalsIgnoreCase(App.getAccountHelper().getReddit().getAuthManager().currentUsername())
-                ? View.GONE : View.VISIBLE);
+        mButtonLogout.setVisibility(Utils.isUserlessSafe() ? View.GONE : View.VISIBLE);
         mButtonLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -802,8 +795,11 @@ public class FragmentHome extends Fragment {
     }
 
     private void initExploreCatagories() {
-        //store these values in a list in memory for convenience
-        mExploreCatagoriesList = Arrays.asList(getResources().getStringArray(R.array.explore_catagories));
+        //store these values in a list for convenience
+        mExploreCatagoriesList = new ArrayList<String>();
+        for(String category : Arrays.asList(getResources().getStringArray(R.array.explore_catagories))){
+            mExploreCatagoriesList.add(category);
+        }
         // maps an explore category to an image file that will follow the following naming
         // convention: explore_bg_category, where category is the explore category
         mExploreCatagoriesMap = new HashMap<>();
@@ -818,9 +814,16 @@ public class FragmentHome extends Fragment {
         mExploreCatagoriesMap.put("Design", new Explore(R.drawable.explore_bg_design, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_design))));
         mExploreCatagoriesMap.put("Art", new Explore(R.drawable.explore_bg_art, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_art))));
         mExploreCatagoriesMap.put("WTF", new Explore(R.drawable.explore_bg_wtf, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_wtf))));
-        mExploreCatagoriesMap.put("NSFW", new Explore(R.drawable.explore_bg_nsfw, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nsfw))));
         mExploreCatagoriesMap.put("Adventure", new Explore(R.drawable.explore_bg_adventure, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_adventure))));
         mExploreCatagoriesMap.put("Nature", new Explore(R.drawable.explore_bg_nature, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nature))));
+
+
+        if(!mHideNSFW){
+            for(String nsfwCategory : Arrays.asList(getResources().getStringArray(R.array.explore_categories_NSFW))){
+                mExploreCatagoriesList.add(nsfwCategory);
+            }
+            mExploreCatagoriesMap.put("NSFW", new Explore(R.drawable.explore_bg_nsfw, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nsfw))));
+        }
     }
 
     private void prepareLeftMenuData() {
@@ -996,11 +999,11 @@ public class FragmentHome extends Fragment {
 
     private void setupNavViewHeader(View navViewHeader) {
         mNavViewHeaderTitle = (TextView) navViewHeader.findViewById(R.id.navview_header_text_title);
-        if (Constants.USERNAME_USERLESS
-                .equalsIgnoreCase(App.getAccountHelper().getReddit().getAuthManager().currentUsername())) {
+        String mostRecentUser = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,Constants.USERNAME_USERLESS);
+        if (Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
             mNavViewHeaderTitle.setText(Constants.USERNAME_USERLESS_PRETTY);
         } else {
-            mNavViewHeaderTitle.setText(App.getAccountHelper().getReddit().getAuthManager().currentUsername());
+            mNavViewHeaderTitle.setText(mostRecentUser);
         }
     }
 
@@ -1598,7 +1601,6 @@ public class FragmentHome extends Fragment {
         builder.setPositiveButton(R.string.remove, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 // log out, switch to userless, and clean up
-                //App.getAccountHelper().logout();
                 App.getTokenStore().deleteLatest(username);
                 App.getTokenStore().deleteRefreshToken(username);
                 new FetchUserlessAccountTask().execute();
@@ -1612,9 +1614,9 @@ public class FragmentHome extends Fragment {
             @Override
             public void onShow(DialogInterface dialogInterface) {
                 alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                        .setTextColor(getResources().getColor(R.color.colorWhite));
+                        .setTextColor(getResources().getColor(R.color.colorWhite,null));
                 alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-                        .setTextColor(getResources().getColor(R.color.colorWhite));
+                        .setTextColor(getResources().getColor(R.color.colorWhite, null));
             }
         });
 

@@ -2,7 +2,7 @@
 <resources>
     <string-array name="navview_right_dropdown_array">
         <item>Explore</item>
-        <item>Subreddits</item>
+        <item>My subreddits</item>
     </string-array>
 
 </resources>

@@ -12,10 +12,13 @@
         <item>Woah</item>
         <item>Design</item>
         <item>WTF</item>
-        <item>NSFW</item>
         <item>Adventure</item>
         <item>Nature</item>
     </string-array>
+    <string-array name="explore_categories_NSFW">
+        <item>NSFW</item>
+    </string-array>
+
     <string-array name="explore_subreddits_aww">
         <item>Aww</item>
         <item>RarePuppers</item>

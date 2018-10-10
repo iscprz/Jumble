@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 
 import com.sometimestwo.moxie.Utils.Constants;
@@ -172,22 +173,22 @@ public class ActivityMain extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... voids) {
-            // Load most recently logged in user
-            String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
+            try {
+                // Load most recently logged in user
+                String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
 
-            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
-                App.getAccountHelper().switchToUser(mostRecentUser);
+                if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
+                    App.getAccountHelper().switchToUser(mostRecentUser);
+                } else {
+                    App.getAccountHelper().switchToUserless();
+                }
+
             }
-            else {
+            catch (Exception e){
+                Log.e(TAG,"Failed to switch to most recent user. Defaulting to Guest");
                 App.getAccountHelper().switchToUserless();
+                return true;
             }
-
-            // TODO CRASH HERE ON TAB BACK IN:
-            // Caused by: java.lang.IllegalStateException: No unexpired OAuthData or refresh token available for user '<userless>'
-            // check authentication stuff and redo if necessary
-            // https://mattbdean.gitbooks.io/jraw/content/v/v1.1.0/oauth2.html
-
-
             return true;
         }
 

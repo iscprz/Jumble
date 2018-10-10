@@ -67,7 +67,7 @@ public class CommentObj extends Item implements ExpandableItem {
         commentNumRepliesTextView.setText(getNumRepliesText(comment.getReplies().size()));
         // Gold star if gilded
         commentGoldStarImageView.setBackground(comment.getSubject().getGilded() > 0
-                ? App.getAppResources().getDrawable(R.drawable.ic_yellow_star_filled,null) : null);
+                ? App.getAppResources().getDrawable(R.drawable.ic_yellow_star_filled_2,null) : null);
         // Gilded counter
         commentGoldCount.setText(getGoldCountText(comment.getSubject().getGilded()));
         // Comment text body
@@ -75,11 +75,22 @@ public class CommentObj extends Item implements ExpandableItem {
 
 
         // indentation
-        viewHolder.itemView.setPadding(
-                (comment.getDepth()) * Constants.COMMENTS_INDENTATION_PADDING,
-                0,
-                20,
-                0);
+        if(comment.getDepth() == 1){
+            // root comment only gets 5 left padding
+            viewHolder.itemView.setPadding(
+                    Constants.COMMENTS_INDENTATION_PADDING_ROOT,
+                    0,
+                    20,
+                    0);
+        }
+        else{
+            viewHolder.itemView.setPadding(
+                    (comment.getDepth()-1) * Constants.COMMENTS_INDENTATION_PADDING,
+                    0,
+                    20,
+                    0);
+        }
+
 
 
         // Hide body portion of comment if comment is deemed collapsed at this point.

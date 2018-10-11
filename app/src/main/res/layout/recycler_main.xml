@@ -10,8 +10,8 @@
         android:id="@+id/progress_bar_home"
         style="?android:attr/progressBarStyleLarge"
 
-        android:layout_width="@dimen/progress_bar_default"
-        android:layout_height="@dimen/progress_bar_default"
+        android:layout_width="@dimen/progress_bar_small"
+        android:layout_height="@dimen/progress_bar_small"
         android:layout_gravity="center"
         android:visibility="visible" />
 

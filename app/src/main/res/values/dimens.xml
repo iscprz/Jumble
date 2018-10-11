@@ -9,7 +9,7 @@
     <dimen name="domain_icon_size">18dp</dimen>
     <dimen name="filetype_icon_size">20dp</dimen>
     <dimen name="round_corner_radius">20dp</dimen>
-    <dimen name="progress_bar_default">30dp</dimen>
+    <dimen name="progress_bar_small">30dp</dimen>
     <dimen name="progress_bar_medium">55dp</dimen>
     <dimen name="progress_bar_large">70dp</dimen>
     <dimen name="comments_collapse_bar">15dp</dimen>

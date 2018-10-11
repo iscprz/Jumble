@@ -980,13 +980,7 @@ public class FragmentHome extends Fragment {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     String requestedSubreddit = input.getText().toString();
-                                    //TODO: This might be better placed as one of the first
-                                    // things ActivitySubredditViewer does
-                                    App.getMoxieInfoObj().getmSubredditStack().push(requestedSubreddit);
-
-                                    Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
-                                    visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, requestedSubreddit);
-                                    startActivityForResult(visitSubredditIntent, Constants.REQUESTCODE_GOTO_SUBREDDIT_VIEWER);
+                                    gotoSubreddit(requestedSubreddit);
                                 }
                             });
                             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -1094,6 +1088,13 @@ public class FragmentHome extends Fragment {
         public void onBindViewHolder(@NonNull MySubredditsViewHolder holder, int position) {
             String subreddit = listMySubreddits.get(position);
             holder.mMySubredditText.setText(subreddit);
+
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    gotoSubreddit(subreddit);
+                }
+            });
         }
 
         @Override
@@ -1624,6 +1625,14 @@ public class FragmentHome extends Fragment {
                 openFullDisplayer(submission);
             }
         }
+    }
+
+    private void gotoSubreddit(String subreddit){
+        App.getMoxieInfoObj().getmSubredditStack().push(subreddit);
+
+        Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
+        visitSubredditIntent.putExtra(Constants.EXTRA_GOTO_SUBREDDIT, subreddit);
+        startActivityForResult(visitSubredditIntent, Constants.REQUESTCODE_GOTO_SUBREDDIT_VIEWER);
     }
 
     private void display404() {

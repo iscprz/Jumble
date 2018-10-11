@@ -277,8 +277,8 @@
                     android:layout_height="wrap_content"/>
                 <!-- Comments progress-->
                 <ProgressBar
-                    android:layout_width="@dimen/progress_bar_default"
-                    android:layout_height="@dimen/progress_bar_default"
+                    android:layout_width="@dimen/progress_bar_small"
+                    android:layout_height="@dimen/progress_bar_small"
                     android:id="@+id/comments_progress_bar"
                     android:layout_below="@id/submission_viewer_vote_bar"
                     android:layout_centerHorizontal="true"

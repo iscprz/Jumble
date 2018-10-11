@@ -51,8 +51,8 @@
         <!-- Comments progress-->
         <ProgressBar
             android:id="@+id/full_displayer_comments_progress_bar"
-            android:layout_width="@dimen/progress_bar_default"
-            android:layout_height="@dimen/progress_bar_default"
+            android:layout_width="@dimen/progress_bar_small"
+            android:layout_height="@dimen/progress_bar_small"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/comments_collapse_bar"
             android:visibility="visible" />

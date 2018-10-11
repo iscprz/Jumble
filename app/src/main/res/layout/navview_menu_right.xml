@@ -21,10 +21,10 @@
 
     <ProgressBar
         android:id="@+id/navview_right_progress"
-        android:layout_width="@dimen/progress_bar_medium"
-        android:layout_height="@dimen/progress_bar_medium"
+        android:layout_width="@dimen/progress_bar_large"
+        android:layout_height="@dimen/progress_bar_large"
         android:paddingTop="@dimen/navview_right_header_height"
-        android:layout_gravity="top"
+        android:layout_gravity="center"
         android:visibility="gone"/>
     <!-- Displays error message if needed-->
     <FrameLayout

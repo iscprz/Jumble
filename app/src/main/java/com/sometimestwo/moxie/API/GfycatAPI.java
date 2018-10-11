@@ -20,7 +20,7 @@ public interface GfycatAPI {
 
     //static feed name
 //    @GET("earthporn/.rss")
-//    Call<Feed> getGfycat();
+//    Call<Feed> getGyfCatObjToEnqueue();
 
 /*    @POST("{user}")
     Call<CheckLogin> signIn(

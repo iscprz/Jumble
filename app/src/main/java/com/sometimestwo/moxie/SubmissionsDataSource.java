@@ -29,7 +29,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     // Info object that stores important browsing info such as current sortby and subreddit
     private MoxieInfoObj mMoxieInfoObj;
     // For paging through Reddit submission Listings
-    private DefaultPaginator<Submission> mPaginator;
+    private DefaultPaginator<?> mPaginator;
     private boolean mIs404 = false;
     private boolean mEndOfSubreddit = false;
 
@@ -59,7 +59,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         new FetchInitialSubmissionsTask(callback).execute();
     }
 
-    private DefaultPaginator<Submission> buildPaginator() {
+    private DefaultPaginator<?> buildPaginator() {
         RedditClient redditClient = App.getAccountHelper().getReddit();
         SubredditSort sortBy = mMoxieInfoObj.getmSortBy();
         TimePeriod timePeriod = mMoxieInfoObj.getmTimePeriod();
@@ -71,9 +71,19 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         if (!mMoxieInfoObj.getmSubredditStack().isEmpty()) {
             subredditRequested = mMoxieInfoObj.getmSubredditStack().peek();
         }
-        // We have a subreddit request - does not matter if logged in or not
-        if (subredditRequested != null) {
-            builder = redditClient.subreddit(subredditRequested).posts();
+        // Requested subreddit can be either a name of a subreddit
+        // or a special string indicating request for saved items
+        if(subredditRequested != null){
+            if(subredditRequested.equalsIgnoreCase(Constants.REQUEST_SAVED)){
+                return redditClient.me()
+                        .history("saved")
+                        .limit(Constants.QUERY_PAGE_SIZE)
+                        .build();
+            }
+            // We have a subreddit request - does not matter if logged in or not
+            else{
+                builder = redditClient.subreddit(subredditRequested).posts();
+            }
         }
         // Logged in with no subreddit request - display user's front page
         else if (!redditClient.getAuthMethod().isUserless()) {
@@ -168,7 +178,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
         @Override
         protected List<SubmissionObj> doInBackground(Void... voids) {
-            Listing<Submission> submissions = null;
+            Listing<?> submissions = null;
             List<SubmissionObj> submissionObjs = null;
 
             try {
@@ -227,7 +237,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
         @Override
         protected List<SubmissionObj> doInBackground(Void... voids) {
-            Listing<Submission> submissions = null;
+            Listing<?> submissions = null;
             List<SubmissionObj> submissionObjs = null;
             try {
                 if (mPaginator.getReddit() != App.getAccountHelper().getReddit()) {
@@ -259,17 +269,19 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         }
     }
 
-    private List<SubmissionObj> mapSubmissions(Listing<Submission> submissions) {
-        List<SubmissionObj> res = new ArrayList<SubmissionObj>();
+    private List<SubmissionObj> mapSubmissions(Listing<?> submissionsAsListing) {
+        // We might encounter non-submissions (saved comments). Filter first.
+        List<Submission> submissionsList = filterNonSubmissions(submissionsAsListing);
+        List<SubmissionObj> res = new ArrayList<>();
 
         // If the requested subreddit has 0 posts (non-existant)
-        if (submissions == null || submissions.size() < 1) {
+        if (submissionsList == null || submissionsList.size() < 1) {
             res.add(new SubmissionObj(true));
             mIs404 = true;
             return res;
         }
         mIs404 = false;
-        for (Submission submission : submissions) {
+        for (Submission submission : submissionsList) {
             // filter some submissions out here
             if (submission.isSelfPost()
                     || submission.isNsfw() && mMoxieInfoObj.isHideNSFW()) {
@@ -374,5 +386,19 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             res.add(s);
         }
         return res;
+    }
+
+    // JRAW will give us a Listing that can be different things. We only care about submissions.
+    // Note: This was added to filter saved comments in particular
+    private List<Submission> filterNonSubmissions(Listing<?> listing){
+        List<Submission> submissionsOnly = new ArrayList<Submission>();
+
+        for(int i = 0; i < listing.size(); i++) {
+            Object listingObj = listing.get(i);
+            if (listingObj instanceof net.dean.jraw.models.Submission) {
+                submissionsOnly.add((Submission) listingObj);
+            }
+        }
+        return submissionsOnly;
     }
 }

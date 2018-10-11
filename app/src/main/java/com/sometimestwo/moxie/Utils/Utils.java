@@ -260,7 +260,9 @@ public class Utils {
         //return gfycatUrl.substring(gfycatUrl.lastIndexOf("/", gfycatUrl.length()));
     }
 
-    public static void getGfycat(String gfycatHash, SubmissionObj item) {
+    // Gets the gfycat object required to make an API call to Gfycat.
+    // Must call .enqueue on this result to actually start api call
+    public static Call<GfycatWrapper> getGyfCatObjToEnqueue(String gfycatHash, SubmissionObj item) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(Constants.BASE_URL_GFYCAT)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -268,38 +270,7 @@ public class Utils {
 
         GfycatAPI gfycatAPI = retrofit.create(GfycatAPI.class);
         gfycatAPI.getGfycat(gfycatHash);
-        Call<GfycatWrapper> call = gfycatAPI.getGfycat(gfycatHash);
-        call.enqueue(new Callback<GfycatWrapper>() {
-            @Override
-            public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {
-                //Log.d(TAG, "onResponse: feed: " + response.body().toString());
-                Log.d("GFYCAT_RESPONSE",
-                        "getGfycat onResponse: Server Response: " + response.toString());
-
-                GfyItem gfyItem = new GfyItem();
-                try {
-                    gfyItem = response.body().getGfyItem();
-                } catch (Exception e) {
-                    Log.e("GFYCAT_RESPONSE_ERROR",
-                            "Failed in attempt to retrieve gfycat object for hash "
-                                    + gfycatHash + ". "
-                                    + e.getMessage());
-                    call.cancel();
-                }
-                if (gfyItem != null) {
-                    item.setCleanedUrl(gfyItem.getMobileUrl() != null ? gfyItem.getMobileUrl() : gfyItem.getMp4Url());
-                    item.setMp4Url(gfyItem.getMp4Url());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<GfycatWrapper> call, Throwable t) {
-                call.cancel();
-                Log.e("GETGFYCAT_ERROR",
-                        "getGfycat onFailure: Unable to retrieve Gfycat: " + t.getMessage());
-            }
-
-        });
+        return gfycatAPI.getGfycat(gfycatHash);
     }
 
     public static String getYouTubeID(String url) {

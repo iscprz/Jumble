@@ -5,6 +5,7 @@
     <string name="menu_goto_subreddit">Go to subreddit...</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_add_account"><u>Add account</u></string>
+    <string name="menu_saved_submissions"> Saved submissions</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="subreddit_prefix">/r/</string>

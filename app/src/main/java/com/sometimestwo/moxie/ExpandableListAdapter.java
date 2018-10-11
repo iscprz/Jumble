@@ -134,6 +134,8 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
             return convertView.getResources().getDrawable(R.drawable.ic_send_it);
         } else if (convertView.getResources().getString(R.string.menu_settings).equalsIgnoreCase(headerTitle)) {
             return convertView.getResources().getDrawable(R.drawable.ic_white_settings);
+        } else if(convertView.getResources().getString(R.string.menu_saved_submissions).equalsIgnoreCase(headerTitle)){
+            return convertView.getResources().getDrawable(R.drawable.ic_yellow_star_filled_2);
         } else if (convertView.getResources().getString(R.string.menu_add_account).equalsIgnoreCase(headerTitle)) {
             return convertView.getResources().getDrawable(R.drawable.ic_white_add_account);
         } else if ((Constants.USERNAME_USERLESS_PRETTY).equalsIgnoreCase(headerTitle)) {

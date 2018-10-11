@@ -86,6 +86,8 @@ import com.sometimestwo.moxie.EventListeners.OnTaskCompletedListener;
 import com.sometimestwo.moxie.EventListeners.OnVRedditTaskCompletedListener;
 import com.sometimestwo.moxie.Model.ExpandableMenuModel;
 import com.sometimestwo.moxie.Model.Explore;
+import com.sometimestwo.moxie.Model.GfyItem;
+import com.sometimestwo.moxie.Model.GfycatWrapper;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
@@ -98,6 +100,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -816,7 +822,6 @@ public class FragmentHome extends Fragment {
 
         @Override
         public void onClick(View view) {
-            //onAlbumClick(getAdapterPosition());
         }
     }
 
@@ -955,7 +960,7 @@ public class FragmentHome extends Fragment {
             }
         }
 
-        // add option to add new account
+        // option to add new account
         childModel = new ExpandableMenuModel(
                 getResources().getString(R.string.menu_add_account),
                 false,
@@ -963,7 +968,17 @@ public class FragmentHome extends Fragment {
         childModelsList.add(childModel);
         childList.put(expandableMenuModel, childModelsList);
 
-        // add option to go to subreddit
+
+        // option to go to saved submissions if logged in
+        if(!Utils.isUserlessSafe()) {
+            expandableMenuModel = new ExpandableMenuModel(
+                    getResources().getString(R.string.menu_saved_submissions),
+                    true,
+                    false);
+            headerList.add(expandableMenuModel);
+            childList.put(expandableMenuModel, null);
+        }
+        // option to go to subreddit
         expandableMenuModel = new ExpandableMenuModel(
                 getResources().getString(R.string.menu_goto_subreddit),
                 true,
@@ -971,7 +986,7 @@ public class FragmentHome extends Fragment {
         headerList.add(expandableMenuModel);
         childList.put(expandableMenuModel, null);
 
-        // add option to open settings
+        // option to open settings
         expandableMenuModel = new ExpandableMenuModel(
                 getResources().getString(R.string.menu_settings),
                 true,
@@ -1036,6 +1051,10 @@ public class FragmentHome extends Fragment {
                         } else if (getResources().getString(R.string.menu_settings)
                                 .equalsIgnoreCase(clickedItemTitle)) {
                             mHomeEventListener.openSettings();
+                        }
+                        else if(getResources().getString(R.string.menu_saved_submissions)
+                                .equalsIgnoreCase(clickedItemTitle)){
+                            gotoSubreddit(Constants.REQUEST_SAVED);
                         }
                     }
                 }
@@ -1363,11 +1382,6 @@ public class FragmentHome extends Fragment {
             }
             //gfycat
             else if (item.getDomain() == Constants.SubmissionDomain.GFYCAT) {
-                // We're given a URL in this format: //https://gfycat.com/SpitefulGoldenAracari
-                // extract gfycat ID (looks like:SpitefulGoldenAracari)
-                String gfycatHash = Utils.getGfycatHash(item.getUrl());
-                // get Gfycat .mp4 "clean url"
-                Utils.getGfycat(gfycatHash, item);
                 // Assume all Gfycat links are of submission type GIF
                 item.setSubmissionType(Constants.SubmissionType.GIF);
                 thumbnail = item.getThumbnail();
@@ -1452,10 +1466,12 @@ public class FragmentHome extends Fragment {
                         setupPreviewer(item);
 
                         if (item.getSubmissionType() == Constants.SubmissionType.IMAGE) {
+                            // use cleanedURL if exists (might have already fetched this indirect image before)
+                            String imgurUrl = item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl();
                             // Imgur Urls might be pointing to indirect image URLs
                             if (item.getDomain() == Constants.SubmissionDomain.IMGUR
                                     && !Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
-                                    .contains(Utils.getFileExtensionFromUrl(item.getUrl()))) {
+                                    .contains(imgurUrl)) {
                                 mPreviewerProgressBar.setVisibility(View.VISIBLE);
                                 // fixes indirect imgur url and uses Glide to load image on success
                                 Utils.fixIndirectImgurUrl(item, Utils.getImgurHash(item.getUrl()),
@@ -1499,7 +1515,8 @@ public class FragmentHome extends Fragment {
                             // ...need to fetch corresponding .mp4
                             if (item.getDomain() == Constants.SubmissionDomain.IMGUR
                                     && Utils.getFileExtensionFromUrl(item.getUrl())
-                                    .equalsIgnoreCase("gifv")) {
+                                    .equalsIgnoreCase("gifv")
+                                    && item.getCleanedUrl() == null) {
                                 Utils.getMp4LinkImgur(item, Utils.getImgurHash(item.getUrl()), new OnTaskCompletedListener() {
                                     @Override
                                     public void downloadSuccess() {
@@ -1523,6 +1540,55 @@ public class FragmentHome extends Fragment {
                                     public void downloadFailure() {
                                         super.downloadFailure();
                                     }
+                                });
+                            }
+                            // gifv URL that we've already fetched before
+                            else if(item.getDomain() == Constants.SubmissionDomain.IMGUR
+                                    && item.getCleanedUrl() != null){
+                                initializePreviewExoPlayer(item.getCleanedUrl());
+                            }
+                            //GFYCAT
+                            else if (item.getDomain() == Constants.SubmissionDomain.GFYCAT
+                                    && item.getCleanedUrl() == null){
+                                // We're given a URL in this format: //https://gfycat.com/SpitefulGoldenAracari
+                                // extract gfycat ID (looks like:SpitefulGoldenAracari)
+                                String gfycatHash = Utils.getGfycatHash(item.getUrl());
+                                // get Gfycat .mp4 "clean url"
+                                Call<GfycatWrapper> gfycatObj = Utils.getGyfCatObjToEnqueue(gfycatHash, item);
+                                gfycatObj.enqueue(new Callback<GfycatWrapper>() {
+                                    @Override
+                                    public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {
+                                        //Log.d(TAG, "onResponse: feed: " + response.body().toString());
+                                        Log.d("GFYCAT_RESPONSE",
+                                                "getGyfCatObjToEnqueue onResponse: Server Response: " + response.toString());
+
+                                        GfyItem gfyItem = new GfyItem();
+                                        try {
+                                            gfyItem = response.body().getGfyItem();
+                                        } catch (Exception e) {
+                                            Log.e("GFYCAT_RESPONSE_ERROR",
+                                                    "Failed in attempt to retrieve gfycat object for hash "
+                                                            + gfycatHash + ". "
+                                                            + e.getMessage());
+                                            call.cancel();
+                                        }
+                                        if (gfyItem != null) {
+                                            item.setCleanedUrl(gfyItem.getMobileUrl() != null
+                                                    ? gfyItem.getMobileUrl() : gfyItem.getMp4Url());
+                                            item.setMp4Url(gfyItem.getMp4Url());
+
+                                            // Display gfycat
+                                            initializePreviewExoPlayer(item.getCleanedUrl());
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<GfycatWrapper> call, Throwable t) {
+                                        call.cancel();
+                                        Log.e("GETGFYCAT_ERROR",
+                                                "getGyfCatObjToEnqueue onFailure: Unable to retrieve Gfycat: " + t.getMessage());
+                                    }
+
                                 });
                             }
                             // VREDDIT videos are high maintance
@@ -1560,15 +1626,17 @@ public class FragmentHome extends Fragment {
                             else if (item.getDomain() == Constants.SubmissionDomain.IREDDIT
                                     || Utils.getFileExtensionFromUrl(item.getUrl()).equalsIgnoreCase("gif")) {
                                 mPreviewerProgressBar.setVisibility(View.VISIBLE);
-                                GlideApp
-                                        .asGif()
+                                GlideApp.asGif()
                                         .load(item.getUrl())
                                         .into(mHoverImagePreviewLarge);
-                            } else {
+                            }
+                            // media has been fetched before and/or is ready to be played
+                            else {
                                 initializePreviewExoPlayer(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl());
                             }
                         }
                         // submission is of unknown type (i.e. submission from /r/todayilearned)
+                        // TODO: or imgur album!!
                         else {
                             mPreviewerProgressBar.setVisibility(View.GONE);
                             GlideApp.load(Constants.URI_404)

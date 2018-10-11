@@ -69,6 +69,8 @@ import com.sometimestwo.moxie.EventListeners.OnVRedditTaskCompletedListener;
 import com.sometimestwo.moxie.EventListeners.RedditHeartbeatListener;
 import com.sometimestwo.moxie.Model.CommentObj;
 import com.sometimestwo.moxie.Model.ExpandableCommentGroup;
+import com.sometimestwo.moxie.Model.GfyItem;
+import com.sometimestwo.moxie.Model.GfycatWrapper;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.DownloadBinder;
@@ -85,9 +87,11 @@ import net.dean.jraw.tree.RootCommentNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static android.content.Context.BIND_AUTO_CREATE;
 
@@ -384,10 +388,10 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             // imgur links need to be checked for indirect links such as imgur.com/AktjAWe
             if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.IMGUR
                     && !Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
-                    .contains(Utils.getFileExtensionFromUrl(mCurrSubmission.getUrl()))) {
+                    .contains(Utils.getFileExtensionFromUrl(imageUrl))) {
                 mProgressBar.setVisibility(View.VISIBLE);
                 // fixes indirect imgur url and uses Glide to load image on success
-                Utils.fixIndirectImgurUrl(mCurrSubmission, Utils.getImgurHash(mCurrSubmission.getUrl()),
+                Utils.fixIndirectImgurUrl(mCurrSubmission, Utils.getImgurHash(imageUrl),
                         new OnTaskCompletedListener() {
                             @Override
                             public void downloadSuccess() {
@@ -431,10 +435,10 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             // gif might have a .gifv (imgur) extension
             // ...need to fetch corresponding .mp4
             if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.IMGUR
-                    && Utils.getFileExtensionFromUrl(mCurrSubmission.getUrl())
+                    && Utils.getFileExtensionFromUrl(imageUrl)
                     .equalsIgnoreCase("gifv")) {
                 Utils.getMp4LinkImgur(mCurrSubmission,
-                        Utils.getImgurHash(mCurrSubmission.getUrl()),
+                        Utils.getImgurHash(imageUrl),
                         new OnTaskCompletedListener() {
                             @Override
                             public void downloadSuccess() {
@@ -490,6 +494,51 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
                     }
                 });
+            }
+            else if(mCurrSubmission.getDomain() == Constants.SubmissionDomain.GFYCAT
+                    && mCurrSubmission.getCleanedUrl() == null){
+                // We're given a URL in this format: //https://gfycat.com/SpitefulGoldenAracari
+                // extract gfycat ID (looks like:SpitefulGoldenAracari)
+                String gfycatHash = Utils.getGfycatHash(mCurrSubmission.getUrl());
+                // get Gfycat .mp4 "clean url"
+                Call<GfycatWrapper> gfycatObj = Utils.getGyfCatObjToEnqueue(gfycatHash, mCurrSubmission);
+                gfycatObj.enqueue(new Callback<GfycatWrapper>() {
+                    @Override
+                    public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {
+                        //Log.d(TAG, "onResponse: feed: " + response.body().toString());
+                        Log.d("GFYCAT_RESPONSE",
+                                "getGyfCatObjToEnqueue onResponse: Server Response: " + response.toString());
+
+                        GfyItem gfyItem = new GfyItem();
+                        try {
+                            gfyItem = response.body().getGfyItem();
+                        } catch (Exception e) {
+                            Log.e("GFYCAT_RESPONSE_ERROR",
+                                    "Failed in attempt to retrieve gfycat object for hash "
+                                            + gfycatHash + ". "
+                                            + e.getMessage());
+                            call.cancel();
+                        }
+                        if (gfyItem != null) {
+                            mCurrSubmission.setCleanedUrl(gfyItem.getMobileUrl() != null ? gfyItem.getMobileUrl() : gfyItem.getMp4Url());
+                            mCurrSubmission.setMp4Url(gfyItem.getMp4Url());
+
+                            // Display gfycat
+                            mProgressBar.setVisibility(View.GONE);
+                            focusView(mExoplayer, mExoplayerContainer);
+                            initializeExoPlayer(mCurrSubmission.getCleanedUrl());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<GfycatWrapper> call, Throwable t) {
+                        call.cancel();
+                        Log.e("GETGFYCAT_ERROR",
+                                "getGyfCatObjToEnqueue onFailure: Unable to retrieve Gfycat: " + t.getMessage());
+                    }
+
+                });
+
             }
             // VREDDIT submissions require a video view
             else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.VREDDIT) {

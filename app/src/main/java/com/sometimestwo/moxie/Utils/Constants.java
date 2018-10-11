@@ -101,6 +101,7 @@ public class Constants {
     // Need to add root padding so that children comments align with parent's start
     public final static int COMMENTS_INDENTATION_PADDING = 50 + COMMENTS_INDENTATION_PADDING_ROOT;
     public final static int COMMENTS_MIN_SCORE = 1;
+    public final static String REQUEST_SAVED = "REQUEST_SAVED";
 
     // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
 

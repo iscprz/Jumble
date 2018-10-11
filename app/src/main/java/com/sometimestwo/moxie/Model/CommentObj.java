@@ -60,14 +60,14 @@ public class CommentObj extends Item implements ExpandableItem {
         // Check if Author of this comment is OP
         commentAuthorTextView.setTextColor(getAuthorTextColor(comment.getSubject().getAuthor()));
         // Score
-        commentScoreTextView.setText(getScoreText(comment.getSubject().getScore()));
+        commentScoreTextView.setText(getScoreText(comment.getSubject().getScore(),comment.getSubject().isScoreHidden()));
         // Time submitted
         commentTimeSubmittedTextView.setText(getTimeSubmitted(comment.getSubject().getCreated().getTime()));
         // Num replies (displayed when item is collapsed)
         commentNumRepliesTextView.setText(getNumRepliesText(comment.getReplies().size()));
         // Gold star if gilded
         commentGoldStarImageView.setBackground(comment.getSubject().getGilded() > 0
-                ? App.getAppResources().getDrawable(R.drawable.ic_yellow_star_filled_2,null) : null);
+                ? App.getAppResources().getDrawable(R.drawable.ic_yellow_star_filled_2_big,null) : null);
         // Gilded counter
         commentGoldCount.setText(getGoldCountText(comment.getSubject().getGilded()));
         // Comment text body
@@ -132,9 +132,10 @@ public class CommentObj extends Item implements ExpandableItem {
         else return sb.append(numReplies).append(" replies").toString();
     }
 
-    private String getScoreText(int score) {
+    private String getScoreText(int score, boolean isScoreHidden) {
         StringBuilder sb = new StringBuilder();
-        if (score == 1) return sb.append("1point").toString();
+        if(isScoreHidden) return sb.append("score hidden").toString();
+        else if (score == 1) return sb.append("1point").toString();
         else return sb.append(score).append("points").toString();
     }
 

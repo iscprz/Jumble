@@ -357,7 +357,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         // Author
         mAuthorTextView.setText(mCurrSubmission.getAuthor());
         // Subreddit
-        mSubredditTextView.setText("/r/" + mCurrSubmission.getSubreddit());
+        mSubredditTextView.setText("/r/" + Utils.truncateString(mCurrSubmission.getSubreddit(),15));
 
         // Container
         mHeaderContainer.setOnClickListener(new View.OnClickListener() {

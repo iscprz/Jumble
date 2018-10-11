@@ -26,14 +26,14 @@ import java.util.List;
 public class SubmissionsDataSource extends ItemKeyedDataSource<String, SubmissionObj> {
 
     private final String TAG = SubmissionsDataSource.class.getSimpleName();
-
+    // Info object that stores important browsing info such as current sortby and subreddit
+    private MoxieInfoObj mMoxieInfoObj;
     // For paging through Reddit submission Listings
-    DefaultPaginator<Submission> mPaginator;
-    MoxieInfoObj mMoxieInfoObj;
+    private DefaultPaginator<Submission> mPaginator;
     private boolean mIs404 = false;
     private boolean mEndOfSubreddit = false;
 
-    public SubmissionsDataSource( ) {
+    public SubmissionsDataSource() {
         mMoxieInfoObj = App.getMoxieInfoObj();
     }
 
@@ -48,27 +48,57 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                     doLoadInitial(params, callback);
                 }
             }).execute();
-        }else{
+        } else {
             doLoadInitial(params, callback);
         }
     }
 
     private void doLoadInitial(@NonNull LoadInitialParams<String> params,
                                @NonNull final LoadInitialCallback<SubmissionObj> callback) {
-        SubredditSort sortBy = App.getMoxieInfoObj().getmSortBy();
-        TimePeriod timePeriod = App.getMoxieInfoObj().getmTimePeriod();
+        mPaginator = buildPaginator();
+        new FetchInitialSubmissionsTask(callback).execute();
+    }
 
-        mPaginator = getSubredditSortBuilder()
+    private DefaultPaginator<Submission> buildPaginator() {
+        RedditClient redditClient = App.getAccountHelper().getReddit();
+        SubredditSort sortBy = mMoxieInfoObj.getmSortBy();
+        TimePeriod timePeriod = mMoxieInfoObj.getmTimePeriod();
+
+        DefaultPaginator.Builder<Submission, SubredditSort> builder;
+        String subredditRequested = null;
+
+        // Get the requested subreddit(s), if any
+        if (!mMoxieInfoObj.getmSubredditStack().isEmpty()) {
+            subredditRequested = mMoxieInfoObj.getmSubredditStack().peek();
+        }
+        // We have a subreddit request - does not matter if logged in or not
+        if (subredditRequested != null) {
+            builder = redditClient.subreddit(subredditRequested).posts();
+        }
+        // Logged in with no subreddit request - display user's front page
+        else if (!redditClient.getAuthMethod().isUserless()) {
+            builder = redditClient.frontPage();
+        }
+        // USERLESS and no subreddit request - display default
+        else {
+            StringBuilder sb = new StringBuilder();
+            for (String subreddit : App.getMoxieInfoObj().getDefaultSubreddits()) {
+                sb.append(subreddit).append("+");
+            }
+            // remove trailing +
+            String defaultSubreddits = sb.toString().substring(0, sb.toString().length() - 1);
+            builder = redditClient.subreddit(defaultSubreddits).posts();
+        }
+
+
+        return builder
                 .limit(Constants.QUERY_PAGE_SIZE)
                 .sorting(sortBy == null ? SubredditSort.BEST : sortBy)
                 .timePeriod(timePeriod == null ? TimePeriod.DAY : timePeriod)
                 .build();
-
-        new FetchInitialSubmissionsTask(callback).execute();
-
     }
 
-    private DefaultPaginator.Builder<Submission, SubredditSort> getSubredditSortBuilder() {
+ /*   private DefaultPaginator.Builder<Submission, SubredditSort> getSubredditSortBuilder() {
         RedditClient redditClient = App.getAccountHelper().getReddit();
         String subredditRequested = null;
 
@@ -94,7 +124,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             String defaultSubreddits = sb.toString().substring(0, sb.toString().length() - 1);
             return redditClient.subreddit(defaultSubreddits).posts();
         }
-    }
+    }*/
 
     // Shouldnt be needing this for now since we only ever append to our feed
     @Override
@@ -113,7 +143,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                         new FetchSubmissionsTask(callback).execute();
                     }
                 }).execute();
-            }else{
+            } else {
                 new FetchSubmissionsTask(callback).execute();
             }
         }
@@ -142,9 +172,9 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             List<SubmissionObj> submissionObjs = null;
 
             try {
-
                 submissions = mPaginator.next();
-                /* If we've retrieved an amount of pages less than our page size limit,
+                //currPageNum++;
+                /*  If we've retrieved an amount of pages less than our page size limit,
                  *  it's because the subreddit(s) in question are out of submissions to return.
                  *
                  *  There exists a condition that will break this: subreddit has exactly
@@ -154,6 +184,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 if (submissions.size() < Constants.QUERY_PAGE_SIZE) {
                     mEndOfSubreddit = true;
                 }
+
                 submissionObjs = mapSubmissions(submissions);
             } catch (Exception e) {
                 // network issue
@@ -199,8 +230,19 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             Listing<Submission> submissions = null;
             List<SubmissionObj> submissionObjs = null;
             try {
+                if (mPaginator.getReddit() != App.getAccountHelper().getReddit()) {
+                    Log.e(TAG, "+++++++++++++++++++++++++++++++++++++++++++++Reddits mismatched! Will attempt to get new paginator!");
+                    int leftOffAtPage = mPaginator.getPageNumber();
+                    mPaginator = buildPaginator();
+                    for (int i = 1; i < leftOffAtPage; i++) {
+                        mPaginator.next();
+                        Log.e(TAG, "Old paginator page: " + leftOffAtPage + ". Curr paginator: " + i);
+                    }
+                }
                 // get the next few submissions
                 submissions = mPaginator.next();
+                Log.e(TAG, "Current page: " + mPaginator.getPageNumber());
+                //currPageNum++;
                 submissionObjs = mapSubmissions(submissions);
             } catch (Exception e) {
                 // todo: catch network error such as timeout using similar techniques as above

@@ -101,16 +101,19 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
 
     @Override
     protected void onResume() {
+        super.onResume();
         // Need to make sure user is authenticated
         if (!App.getAccountHelper().isAuthenticated()) {
             new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
                 @Override
                 public void redditUserAuthenticated() {
-
+                   // ActivityHome.super.onResume();
                 }
             }).execute();
         }
-        super.onResume();
+        /*else{
+            super.onResume();
+        }*/
     }
 
     @Override

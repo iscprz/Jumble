@@ -29,6 +29,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
@@ -103,7 +104,6 @@ import static android.app.Activity.RESULT_OK;
 public class FragmentHome extends Fragment {
     public final static String TAG = Constants.TAG_FRAG_HOME;
 
-
     private int mScreenWidth;
     private int mScreenHeight;
     private RequestManager GlideApp = App.getGlideApp();
@@ -124,11 +124,11 @@ public class FragmentHome extends Fragment {
     private boolean mInvalidateDataSource = false;
     private boolean is404 = false;
 
-    // User's preferences. Initialize with default values for safety
+    // User's preferences. Initialized just in case <:^)
     SharedPreferences prefs_settings;
     private boolean mHideNSFW = true;
     private boolean mAllowImagePreview = false;
-    private boolean mAllowBigDisplayClickClose = true;
+    private boolean mAllowClickClose = true;
     private boolean mDisplayDomainIcon = false;
     private boolean mHideNSFWThumbs = false;
     private boolean mDisplayFiletypeIcons = false;
@@ -159,16 +159,16 @@ public class FragmentHome extends Fragment {
     ExpandableListView expandableListView;
     List<ExpandableMenuModel> headerList = new ArrayList<>();
     HashMap<ExpandableMenuModel, List<ExpandableMenuModel>> childList = new HashMap<>();
+    private TextView mButtonLogout;
 
     /* Right navigation view*/
-    private RecyclerView mExploreRecyclerView;
+    private RecyclerView mRightNavRecycleView;
+    private ProgressBar mRightNavProgressBar;
     // maps an explore category to a background image uri
     private Map<String, Explore> mExploreCatagoriesMap;
     // holds a list of the "Explore" catagories
     private List<String> mExploreCatagoriesList;
 
-    // log out button
-    private TextView mButtonLogout;
 
     //exo player stuff
     private BandwidthMeter bandwidthMeter;
@@ -181,14 +181,17 @@ public class FragmentHome extends Fragment {
     private int currentWindow;
     private long playbackPosition;
     private Timeline.Window window;
-    //private FrameLayout mExoplayerContainerLarge;
     private PlayerView mExoplayerLarge;
+
     // Videoview is used to play downloaded(as opposed to streaming) .mp4 files.
     // VReddit links will be downloaded and played using VideoView.
     private VideoView mPreviewerVideoViewLarge;
     // event listeners
     private HomeEventListener mHomeEventListener;
 
+    // Async tasks that may need cancelling
+    private AsyncTask<Void, Void, Void> FetchUserSubscriptionsTask;
+    private AsyncTask<Void, Void, Void> SubscribeSubredditTask;
 
     public static FragmentHome newInstance() {
         return new FragmentHome();
@@ -294,6 +297,9 @@ public class FragmentHome extends Fragment {
         mExoplayerLarge = (PlayerView) v.findViewById(R.id.large_previewer_exoplayer);
         mPreviewerVideoViewLarge = (VideoView) v.findViewById(R.id.large_previewer_video_view);
 
+        /* Rightnav recycler view */
+        mRightNavRecycleView = (RecyclerView) v.findViewById(R.id.navview_right_recycler);
+
         bandwidthMeter = new DefaultBandwidthMeter();
         mediaDataSourceFactory = new DefaultDataSourceFactory(getContext(), Util.getUserAgent(getContext(), "Moxie"), (TransferListener<? super DataSource>) bandwidthMeter);
         window = new Timeline.Window();
@@ -347,6 +353,8 @@ public class FragmentHome extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         mToolbar.setAlpha(0);
+        cancelRunning();
+
     }
 
     @Override
@@ -374,7 +382,7 @@ public class FragmentHome extends Fragment {
         // Sub/Unsub menu option only if we're not in guest mode and viewing a subreddit exists
         if(!Utils.isUserlessSafe() && mCurrSubreddit != null && !is404){
             // User is subbed to this subreddit, display "Unsubscribe" option
-            if(Utils.getCurrUserLocalSubscriptions().contains(mCurrSubreddit)){
+            if(Utils.getCurrUserLocalSubscriptions(false).contains(mCurrSubreddit)){
                 menu.findItem(R.id.menu_submissions_overflow_sub).setVisible(false);
                 menu.findItem(R.id.menu_submissions_overflow_unsub).setVisible(true);
                 String unsubString = getString(R.string.unsub_from, mCurrSubreddit);
@@ -410,7 +418,8 @@ public class FragmentHome extends Fragment {
                 refresh(true);
                 return true;
             case R.id.menu_submissions_overflow_sub:
-                new Utils.SubscribeSubredditTask(mCurrSubreddit, new OnRedditTaskListener(){
+                SubscribeSubredditTask =
+                        new Utils.SubscribeSubredditTask(mCurrSubreddit, new OnRedditTaskListener() {
                     @Override
                     public void onSuccess() {
                         Utils.addToLocalUserSubscriptions(mCurrSubreddit);
@@ -564,6 +573,12 @@ public class FragmentHome extends Fragment {
         }
     }
 
+    public void cancelRunning(){
+        if(FetchUserSubscriptionsTask != null){
+            FetchUserSubscriptionsTask.cancel(true);
+        }
+    }
+
     private void setupToolbar() {
         if (isAdded()) {
             mToolbar.setVisibility(View.VISIBLE);
@@ -660,7 +675,7 @@ public class FragmentHome extends Fragment {
 
         /* Navigation menu header*/
         View navViewHeader = mNavigationViewLeft.getHeaderView(0);
-        setupNavViewHeader(navViewHeader);
+        setupLeftNavViewHeader(navViewHeader);
 
         /* Log out button */
         mButtonLogout = (TextView) v.findViewById(R.id.navbar_button_logout);
@@ -679,6 +694,7 @@ public class FragmentHome extends Fragment {
 
     private void setupRightNavView(View v) {
         mNavigationViewRight = (NavigationView) v.findViewById(R.id.nav_view_right);
+        mRightNavProgressBar = (ProgressBar)v.findViewById(R.id.navview_right_progress);
 
         // set up spinner(header)
         Spinner spinner = (Spinner) mNavigationViewRight.getHeaderView(0).findViewById(R.id.navview_right_spinner);
@@ -686,25 +702,85 @@ public class FragmentHome extends Fragment {
                 R.array.navview_right_dropdown_array, R.layout.spinner_item);
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
         // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
 
-        // set up all the "Explore" options.
-        mExploreRecyclerView = (RecyclerView) v.findViewById(R.id.navview_right_explore_recycler);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-        mExploreRecyclerView.setLayoutManager(gridLayoutManager);
-        mExploreRecyclerView.setHasFixedSize(true);
-        initExploreCatagories();
-        if (isAdded()) {
-            mExploreRecyclerView.setAdapter(new ExploreGridRecyclerAdapter());
-        }
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long l) {
+                String clickedItem = (String) adapterView.getItemAtPosition(pos);
+                FrameLayout mRightNavErrorMessageContainer = v.findViewById(R.id.navview_right_error_container);
+                switch(clickedItem){
+                    // This should happen on app launch
+                    case "Explore":
+                        mRightNavErrorMessageContainer.setVisibility(View.GONE);
+                        mRightNavRecycleView.setVisibility(View.VISIBLE);
+                        // set up all the "Explore" options.
+                        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
+                        mRightNavRecycleView.setLayoutManager(gridLayoutManager);
+                        mRightNavRecycleView.setHasFixedSize(true);
+                        initExploreCatagories();
+                        mRightNavRecycleView.setAdapter(new ExploreGridRecyclerAdapter());
+                        return;
+                    case "My subreddits":
+                        String currUsername = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,null);
+
+                        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+                        mRightNavRecycleView.setLayoutManager(linearLayoutManager);
+
+                        // No subreddits to display if in Guest mode
+                        if(currUsername == null ||Constants.USERNAME_USERLESS.equalsIgnoreCase(currUsername)){
+                            mRightNavRecycleView.setVisibility(View.GONE);
+                            mRightNavErrorMessageContainer.setVisibility(View.VISIBLE);
+                        }
+                        // Currently stored(in shared prefs) subscriptions list
+                        // does not belong to current user. Re-fetch
+                        else if(Utils.getCurrUserLocalSubscriptions(true).size() < 1
+                                || !Utils.getCurrUserLocalSubscriptions(true).get(0).equalsIgnoreCase(currUsername)){
+                            mRightNavRecycleView.setVisibility(View.GONE);
+                            mRightNavProgressBar.setVisibility(View.VISIBLE);
+
+                            FetchUserSubscriptionsTask =
+                                    new Utils.FetchUserSubscriptionsAndStoreLocally(currUsername, new OnRedditTaskListener() {
+                                        @Override
+                                        public void onSuccess() {
+                                            mRightNavRecycleView.setAdapter(new MySubredditsRecyclerAdapter());
+                                            mRightNavRecycleView.setVisibility(View.VISIBLE);
+                                            mRightNavProgressBar.setVisibility(View.GONE);
+                                            mRightNavErrorMessageContainer.setVisibility(View.GONE);
+                                        }
+
+                                        @Override
+                                        public void onFailure(String exceptionMessage) {
+                                            mRightNavRecycleView.setVisibility(View.GONE);
+                                            mRightNavErrorMessageContainer.setVisibility(View.VISIBLE);
+                                        }
+                                    }).execute();
+                        }
+                        // list of stored subreddit subscriptions matches this username
+                        else {
+                            mRightNavErrorMessageContainer.setVisibility(View.GONE);
+                            mRightNavRecycleView.setAdapter(new MySubredditsRecyclerAdapter());
+                        }
+                        return;
+                    default:
+                        return;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
 
-    private class ExploreItemHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    private class ExploreItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private RoundedImageView mExploreImage;
         private TextView mExploreTitle;
 
-        public ExploreItemHolder(View itemView) {
+        public ExploreItemViewHolder(View itemView) {
             super(itemView);
             mExploreImage = (RoundedImageView) itemView.findViewById(R.id.explore_image);
             mExploreTitle = (TextView) itemView.findViewById(R.id.explore_title);
@@ -717,21 +793,21 @@ public class FragmentHome extends Fragment {
         }
     }
 
-    private class ExploreGridRecyclerAdapter extends RecyclerView.Adapter<ExploreItemHolder> {
+    private class ExploreGridRecyclerAdapter extends RecyclerView.Adapter<ExploreItemViewHolder> {
         public ExploreGridRecyclerAdapter() {
         }
 
         @NonNull
         @Override
-        public ExploreItemHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
+        public ExploreItemViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(getActivity());
             View view = inflater.inflate(R.layout.explore_grid_item, viewGroup, false);
-            return new ExploreItemHolder(view);
+            return new ExploreItemViewHolder(view);
         }
 
         @NonNull
         @Override
-        public void onBindViewHolder(@NonNull final ExploreItemHolder exploreItemGridItem, int position) {
+        public void onBindViewHolder(@NonNull final ExploreItemViewHolder exploreItemGridItem, int position) {
             String category = mExploreCatagoriesList.get(position);
 
             exploreItemGridItem.mExploreTitle.setText(category);
@@ -960,8 +1036,8 @@ public class FragmentHome extends Fragment {
                         }
                         // user selected a non-guest switch to
                         else {
-                            new Utils.FetchUserSubscriptionsAndStoreLocally(clickedMenuItemName).execute();
-                            App.getAccountHelper().switchToUser(clickedMenuItemName);
+                            FetchUserSubscriptionsTask =
+                                    new Utils.FetchUserSubscriptionsAndStoreLocally(clickedMenuItemName,null).execute();
                             switchOrLogoutCleanup(clickedMenuItemName);
                         }
                     }
@@ -997,7 +1073,50 @@ public class FragmentHome extends Fragment {
         });
     }
 
-    private void setupNavViewHeader(View navViewHeader) {
+    // "My Subreddits" option in right nav view
+    private class MySubredditsRecyclerAdapter extends RecyclerView.Adapter<MySubredditsViewHolder>{
+
+        ArrayListStringIgnoreCase listMySubreddits;
+
+        public MySubredditsRecyclerAdapter() {
+            this.listMySubreddits = Utils.getCurrUserLocalSubscriptions(false);
+        }
+
+        @NonNull
+        @Override
+        public MySubredditsViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+            LayoutInflater inflater = LayoutInflater.from(getActivity());
+            View view = inflater.inflate(R.layout.my_subreddits_recycler_item, viewGroup, false);
+            return new MySubredditsViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull MySubredditsViewHolder holder, int position) {
+            String subreddit = listMySubreddits.get(position);
+            holder.mMySubredditText.setText(subreddit);
+        }
+
+        @Override
+        public int getItemCount() {
+            return listMySubreddits.size();
+        }
+    }
+
+
+    private class MySubredditsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        private TextView mMySubredditText;
+
+        public MySubredditsViewHolder(View itemView) {
+            super(itemView);
+            mMySubredditText = (TextView) itemView.findViewById(R.id.my_subreddits_text);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+        }
+    }
+    private void setupLeftNavViewHeader(View navViewHeader) {
         mNavViewHeaderTitle = (TextView) navViewHeader.findViewById(R.id.navview_header_text_title);
         String mostRecentUser = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,Constants.USERNAME_USERLESS);
         if (Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
@@ -1047,24 +1166,24 @@ public class FragmentHome extends Fragment {
                 if (item.getSubmissionType() == Constants.SubmissionType.IMAGE
                         || item.getSubmissionType() == Constants.SubmissionType.ALBUM
                         || item.getSubmissionType() == null) {
-                    focusView(mHoverImagePreviewLarge);
+                    focusMediaView(mHoverImagePreviewLarge);
                 }
                 if (item.getSubmissionType() == Constants.SubmissionType.GIF) {
                     //IREDDIT Gifs to be played in ImageView via Glide
                     if (item.getDomain() == Constants.SubmissionDomain.IREDDIT) {
-                        focusView(mHoverImagePreviewLarge);
+                        focusMediaView(mHoverImagePreviewLarge);
                     }
                     // All other gifs to be played using Exoplayer
                     else {
-                        focusView(mExoplayerLarge);
+                        focusMediaView(mExoplayerLarge);
                     }
                 }
             }
         }
     }
 
-    /* Focuses a view depending on which one needs to be displayed*/
-    private void focusView(View focused) {
+    /* Shows one view, hides two. Used during switching between three different types of media viewers*/
+    private void focusMediaView(View focused) {
         mPreviewerVideoViewLarge.setVisibility(focused == mPreviewerVideoViewLarge ? View.VISIBLE : View.GONE);
         mHoverImagePreviewLarge.setVisibility(focused == mHoverImagePreviewLarge ? View.VISIBLE : View.GONE);
         mExoplayerLarge.setVisibility(focused == mExoplayerLarge ? View.VISIBLE : View.GONE);
@@ -1074,7 +1193,7 @@ public class FragmentHome extends Fragment {
         if (prefs_settings != null) {
             mHideNSFW = prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW, true);
             mAllowImagePreview = prefs_settings.getBoolean(Constants.PREFS_ALLOW_HOVER_PREVIEW, true);
-            mAllowBigDisplayClickClose = prefs_settings.getBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, true);
+            mAllowClickClose = prefs_settings.getBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, true);
             mPreviewSize = prefs_settings.getString(Constants.PREFS_PREVIEW_SIZE, Constants.PREFS_PREVIEW_SIZE_LARGE)
                     .equalsIgnoreCase(Constants.PREFS_PREVIEW_SIZE_LARGE)
                     ? Constants.HoverPreviewSize.LARGE : Constants.HoverPreviewSize.SMALL;
@@ -1359,7 +1478,7 @@ public class FragmentHome extends Fragment {
                                         @Override
                                         public void onVRedditMuxTaskCompleted(Uri uriToLoad) {
                                             mPreviewerVideoViewLarge.setVideoURI(uriToLoad);
-                                            focusView(mPreviewerVideoViewLarge);
+                                            focusMediaView(mPreviewerVideoViewLarge);
                                             mPreviewerVideoViewLarge.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                                                 @Override
                                                 public void onPrepared(MediaPlayer mp) {
@@ -1539,17 +1658,17 @@ public class FragmentHome extends Fragment {
             switch (item.getSubmissionType()) {
                 case IMAGE:
                     thumbnailHolder.thumbnailIconFiletype.setBackground(
-                            getResources().getDrawable(R.drawable.ic_filetype_image));
+                            getResources().getDrawable(R.drawable.ic_filetype_image,null));
                     thumbnailHolder.thumbnailIconFiletype.setVisibility(View.VISIBLE);
                     break;
                 case GIF:
                     thumbnailHolder.thumbnailIconFiletype.setBackground(
-                            getResources().getDrawable(R.drawable.ic_filetype_gif));
+                            getResources().getDrawable(R.drawable.ic_filetype_gif,null));
                     thumbnailHolder.thumbnailIconFiletype.setVisibility(View.VISIBLE);
                     break;
                 case VIDEO:
                     thumbnailHolder.thumbnailIconFiletype.setBackground(
-                            getResources().getDrawable(R.drawable.ic_filetype_video));
+                            getResources().getDrawable(R.drawable.ic_filetype_video,null));
                     thumbnailHolder.thumbnailIconFiletype.setVisibility(View.VISIBLE);
                     break;
                 default:

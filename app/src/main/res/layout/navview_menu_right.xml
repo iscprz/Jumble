@@ -11,14 +11,39 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/navview_right_header_height">
+        android:paddingTop="50dp">
 
         <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:id="@+id/navview_right_explore_recycler"
+            android:id="@+id/navview_right_recycler"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:context=".ActivityGallery" />
+            android:layout_height="match_parent"/>
     </FrameLayout>
 
+    <ProgressBar
+        android:id="@+id/navview_right_progress"
+        android:layout_width="@dimen/progress_bar_medium"
+        android:layout_height="@dimen/progress_bar_medium"
+        android:paddingTop="@dimen/navview_right_header_height"
+        android:layout_gravity="top"
+        android:visibility="gone"/>
+    <!-- Displays error message if needed-->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="@dimen/navview_right_header_height"
+        android:visibility="gone"
+        android:id="@+id/navview_right_error_container">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:id="@+id/navview_right_error_text"
+            android:gravity="center"
+            android:textColor="@color/colorWhite"
+            android:text="@string/error_navview_right"
+            android:textSize="18sp"
+            android:textStyle="normal"
+            android:visibility="visible"/>
+    </FrameLayout>
 </android.support.design.widget.NavigationView>

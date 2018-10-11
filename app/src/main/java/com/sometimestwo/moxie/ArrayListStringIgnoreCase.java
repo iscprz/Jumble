@@ -2,7 +2,7 @@ package com.sometimestwo.moxie;
 
 import java.util.ArrayList;
 
-public class StringListIgnoreCase extends ArrayList<String> {
+public class ArrayListStringIgnoreCase extends ArrayList<String> {
 
     @Override
     public boolean contains(Object o) {

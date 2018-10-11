@@ -9,12 +9,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.widget.ProgressBar;
 
 import com.coremedia.iso.boxes.Container;
 import com.google.gson.reflect.TypeToken;
@@ -33,7 +31,7 @@ import com.sometimestwo.moxie.EventListeners.OnRedditTaskListener;
 import com.sometimestwo.moxie.EventListeners.RedditHeartbeatListener;
 import com.sometimestwo.moxie.EventListeners.OnTaskCompletedListener;
 import com.sometimestwo.moxie.EventListeners.OnVRedditTaskCompletedListener;
-import com.sometimestwo.moxie.StringListIgnoreCase;
+import com.sometimestwo.moxie.ArrayListStringIgnoreCase;
 
 
 import net.dean.jraw.RedditClient;
@@ -57,7 +55,7 @@ import java.net.URL;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,6 +91,14 @@ public class Utils {
         return String.valueOf(count);
     }
 
+    // Truncates a string to the given limit:
+    // limit = 5,
+    // s = "UNBGBBIIVCHIDCTIICBG"
+    // result = "UNBGBB..."
+    public static String truncateString(String s, int limit){
+        if(s != null && (s.length() > limit)) return s.substring(0,limit) + "...";
+        else return s;
+    }
     /*
        imgur links will be given in the following format :
        https://i.imgur.com/CtyvHl6.gifv
@@ -445,33 +451,50 @@ public class Utils {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    // stores the current user's subscriptions in shared preferences
-    public static void storeLocalUserSubscriptions(StringListIgnoreCase subs) {
+    // Stores the current user's subscriptions in shared preferences
+    public static void storeLocalUserSubscriptions(ArrayListStringIgnoreCase subs) {
+        // Alphabetize
+        Collections.sort(subs,String.CASE_INSENSITIVE_ORDER);
+        // Add current user's username as the first element. This will be useful when
+        // verifying that the list of stored subscriptions matches with the current user
+        subs.add(0,App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,null));
         String subsStr = App.getGsonApp().toJson(subs);
         App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS, subsStr).commit();
     }
 
     public static void addToLocalUserSubscriptions(String newSub) {
-        StringListIgnoreCase currSubs = getCurrUserLocalSubscriptions();
+        ArrayListStringIgnoreCase currSubs = getCurrUserLocalSubscriptions(true);
         if (!currSubs.contains(newSub)) {
             currSubs.add(newSub);
             storeLocalUserSubscriptions(currSubs);
         }
     }
 
-    public static StringListIgnoreCase getCurrUserLocalSubscriptions() {
-        StringListIgnoreCase userSubs = new StringListIgnoreCase();
+    // withUsername = true: will return the list with username of list prepended as element 0
+    // withUsername = false: returns only the list of the localsubscriptions
+    public static ArrayListStringIgnoreCase getCurrUserLocalSubscriptions(boolean withUsername) {
+        ArrayListStringIgnoreCase subscriptions = new ArrayListStringIgnoreCase();
 
         String subsStr = App.getSharedPrefs().getString(Constants.PREFS_CURR_USER_SUBS, null);
-        userSubs.addAll(App.getGsonApp().fromJson(subsStr, new TypeToken<StringListIgnoreCase>() {
+        if(subsStr == null) return subscriptions;
+
+        subscriptions.addAll(App.getGsonApp().fromJson(subsStr, new TypeToken<ArrayListStringIgnoreCase>() {
         }.getType()));
 
-        return userSubs;
+        if(!withUsername) {
+            ArrayListStringIgnoreCase noUsernamePrepended = new ArrayListStringIgnoreCase();
+            for(int i = 1; i < subscriptions.size(); i++){
+                noUsernamePrepended.add(subscriptions.get(i));
+            }
+            return noUsernamePrepended;
+        }else{
+            return subscriptions;
+        }
     }
 
 
     public static void removeFromLocalUserSubscriptions(String subToRemove) {
-        StringListIgnoreCase currSubs = getCurrUserLocalSubscriptions();
+        ArrayListStringIgnoreCase currSubs = getCurrUserLocalSubscriptions(true);
         if (currSubs.contains(subToRemove)) {
             currSubs.remove(subToRemove);
             storeLocalUserSubscriptions(currSubs);
@@ -480,39 +503,49 @@ public class Utils {
 
     // removes all subscriptions info from shared prefs
     public static void removeLocalSubscriptionsList() {
-        App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS, "").commit();
+        App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS, null).commit();
     }
 
     // Updates our shared preferences with a list of logged in user's subreddit subscriptions
     public static class FetchUserSubscriptionsAndStoreLocally extends AsyncTask<Void, Void, Void> {
-        String username;
+        private String username;
+        private OnRedditTaskListener listener;
 
-        public FetchUserSubscriptionsAndStoreLocally(String username) {
+        public FetchUserSubscriptionsAndStoreLocally(String username, OnRedditTaskListener listener) {
             this.username = username;
+            this.listener = listener;
         }
 
         @Override
         protected Void doInBackground(Void... voids) {
-            RedditClient redditClient = App.getAccountHelper().switchToUser(username);
-            // get the list of the new user's subscriptions
-            BarebonesPaginator<Subreddit> paginator = redditClient.me()
-                    .subreddits("subscriber")
-                    .limit(Paginator.RECOMMENDED_MAX_LIMIT)
-                    .build();
+            try {
+                RedditClient redditClient = App.getAccountHelper().switchToUser(username);
+                // get the list of the new user's subscriptions
+                BarebonesPaginator<Subreddit> paginator = redditClient.me()
+                        .subreddits("subscriber")
+                        .limit(Paginator.RECOMMENDED_MAX_LIMIT)
+                        .build();
 
-            StringListIgnoreCase listOfSubredditNames = new StringListIgnoreCase();
-            // Paginator implements Iterable
-            for (Listing<Subreddit> page : paginator) {
-                for (Subreddit s : page) {
-                    listOfSubredditNames.add(s.getName());
+                ArrayListStringIgnoreCase listOfSubredditNames = new ArrayListStringIgnoreCase();
+                // Paginator implements Iterable
+                for (Listing<Subreddit> page : paginator) {
+                    for (Subreddit s : page) {
+                        listOfSubredditNames.add(s.getName());
+                    }
                 }
+                storeLocalUserSubscriptions(listOfSubredditNames);
+            }catch (Exception e){
+                listener.onFailure(e.getMessage());
+                return null;
             }
-            storeLocalUserSubscriptions(listOfSubredditNames);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
+            if(listener!=null){
+                listener.onSuccess();
+            }
             super.onPostExecute(aVoid);
         }
     }

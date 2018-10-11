@@ -539,14 +539,14 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mVoteDirection = mCurrSubmission.getVote();
         mIsSaved = mCurrSubmission.isSaved();
         mUpvoteCount = mCurrSubmission.getScore();
-        Drawable yellowStar = getResources().getDrawable(R.drawable.ic_yellow_star_filled_2,null);
-        Drawable whiteStar = getResources().getDrawable(R.drawable.ic_white_star_unfilled_2,null);
-        Drawable upVoteWhite = getResources().getDrawable(R.drawable.ic_white_upvote_medium,null);
-        Drawable downVoteWhite = getResources().getDrawable(R.drawable.ic_white_downvote_medium,null);
-        Drawable upVoteOrange = getResources().getDrawable(R.drawable.ic_upvote_orange,null);
-        Drawable downVoteBlue = getResources().getDrawable(R.drawable.ic_downvote_blue,null);
-        int colorUpvoteOrange = getResources().getColor(R.color.upvote_orange,null);
-        int colorWhite = getResources().getColor(R.color.colorWhite,null);
+        Drawable yellowStar = getResources().getDrawable(R.drawable.ic_yellow_star_filled_2);
+        Drawable whiteStar = getResources().getDrawable(R.drawable.ic_white_star_unfilled_2);
+        Drawable upVoteWhite = getResources().getDrawable(R.drawable.ic_white_upvote_medium);
+        Drawable downVoteWhite = getResources().getDrawable(R.drawable.ic_white_downvote_medium);
+        Drawable upVoteOrange = getResources().getDrawable(R.drawable.ic_upvote_orange);
+        Drawable downVoteBlue = getResources().getDrawable(R.drawable.ic_downvote_blue);
+        int colorUpvoteOrange = getResources().getColor(R.color.upvote_orange);
+        int colorWhite = getResources().getColor(R.color.colorWhite);
 
         mCommentCountTextView.setText(Utils.truncateCount(mCurrSubmission.getCommentCount()));
         mUpvoteCountTextView.setTextColor(mCurrSubmission.getVote() == VoteDirection.UP ? colorUpvoteOrange : colorWhite);

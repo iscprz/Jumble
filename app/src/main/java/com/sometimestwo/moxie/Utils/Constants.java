@@ -66,7 +66,7 @@ public class Constants {
     public final static String PREFS_ALLOW_FILETYPE_ICON = "PREFS_ALLOW_FILETYPE_ICON";
     public final static String PREFS_HIDE_NSFW_THUMBS = "PREFS_HIDE_NSFW_THUMBS";
     public final static String PREFS_SHOW_NSFW_ICON = "PREFS_SHOW_NSFW_ICON";
-    public final static String PREFS_CURR_USER_SUBS = "PREFS_CURR_USER_SUBS";
+    public final static String PREFS_USER_SUBS_ = "PREFS_USER_SUBS_";
     public final static String SETTINGS_PREVIEW_SIZE_SMALL = "SETTINGS_PREVIEW_SIZE_SMALL";
     public final static String PREFS_PREVIEW_SIZE_LARGE = "PREFS_PREVIEW_SIZE_LARGE";
     public final static String MOST_RECENT_USER = "MOST_RECENT_USER";
@@ -84,7 +84,6 @@ public class Constants {
             = {"jpg", "jpeg", "png",/*maybe remove */"gifv", "gif", "mp4"};
     public final static String[] VALID_IMAGE_EXTENSION = {"jpg", "jpeg", "png"};
     public final static String[] VALID_GIF_EXTENSION = {"gifv", "gif"};
-    public final static String THUMBNAIL_NOT_FOUND = "THUMBNAIL_NOT_FOUND";
     public final static String USERNAME_USERLESS = "<userless>";
     public final static String USERNAME_USERLESS_PRETTY = "Guest";
     public final static int MAX_TITLE_LENGTH = 120;

@@ -129,23 +129,23 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
 
         if (convertView.getResources().getString(R.string.menu_accounts).equalsIgnoreCase(headerTitle)) {
-            return convertView.getResources().getDrawable(R.drawable.ic_white_accounts,null);
+            return convertView.getResources().getDrawable(R.drawable.ic_white_accounts);
         } else if (convertView.getResources().getString(R.string.menu_goto_subreddit).equalsIgnoreCase(headerTitle)) {
-            return convertView.getResources().getDrawable(R.drawable.ic_send_it,null);
+            return convertView.getResources().getDrawable(R.drawable.ic_send_it);
         } else if (convertView.getResources().getString(R.string.menu_settings).equalsIgnoreCase(headerTitle)) {
-            return convertView.getResources().getDrawable(R.drawable.ic_white_settings,null);
+            return convertView.getResources().getDrawable(R.drawable.ic_white_settings);
         } else if (convertView.getResources().getString(R.string.menu_add_account).equalsIgnoreCase(headerTitle)) {
-            return convertView.getResources().getDrawable(R.drawable.ic_white_add_account,null);
+            return convertView.getResources().getDrawable(R.drawable.ic_white_add_account);
         } else if ((Constants.USERNAME_USERLESS_PRETTY).equalsIgnoreCase(headerTitle)) {
             if ((Constants.USERNAME_USERLESS).equalsIgnoreCase(mCurrLoggedInUser)) {
-                return convertView.getResources().getDrawable(R.drawable.ic_blue_person_filled,null);
+                return convertView.getResources().getDrawable(R.drawable.ic_blue_person_filled);
             }
-            return convertView.getResources().getDrawable(R.drawable.ic_white_person_unfilled,null);
+            return convertView.getResources().getDrawable(R.drawable.ic_white_person_unfilled);
         } else if (App.getTokenStore().getUsernames().contains(headerTitle)) {
             if (headerTitle.equalsIgnoreCase(mCurrLoggedInUser)) {
-                return convertView.getResources().getDrawable(R.drawable.ic_blue_person_filled,null);
+                return convertView.getResources().getDrawable(R.drawable.ic_blue_person_filled);
             }
-            return convertView.getResources().getDrawable(R.drawable.ic_white_person_filled,null);
+            return convertView.getResources().getDrawable(R.drawable.ic_white_person_filled);
         } else {
             return null;
         }
@@ -162,9 +162,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
             currLoggedInUser = Constants.USERNAME_USERLESS_PRETTY;
         }
         if (currLoggedInUser.equalsIgnoreCase(headerTitle)) {
-            return convertView.getResources().getColor(R.color.colorAccentBlue,null);
+            return convertView.getResources().getColor(R.color.colorAccentBlue);
         } else {
-            return convertView.getResources().getColor(R.color.colorWhite,null);
+            return convertView.getResources().getColor(R.color.colorWhite);
         }
     }
 

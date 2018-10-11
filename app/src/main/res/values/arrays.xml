@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="navview_right_dropdown_array">
-        <item>Explore</item>
-        <item>My subreddits</item>
+        <item>@string/navview_right_dropdown_explore</item>
+        <item>@string/navview_right_dropdown_my_subreddits</item>
     </string-array>
 
 </resources>

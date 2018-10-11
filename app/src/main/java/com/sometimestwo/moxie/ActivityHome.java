@@ -150,7 +150,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
                 ((FragmentFullDisplay) fragment).closeComments();
             }
         }
-        // Back arrow should open left nav menu drawer if we're not currently in any fragments
+        // Top left back arrow should open left nav menu drawer if we're not currently in any fragments
         else if ((getSupportFragmentManager().getBackStackEntryCount() == 0)
                 && !navViewDrawer.isDrawerOpen(GravityCompat.START)) {
             navViewDrawer.openDrawer(GravityCompat.START);

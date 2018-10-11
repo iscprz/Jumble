@@ -18,7 +18,9 @@
     <string name="unsub_from">Unsubscribe from /r/%1$s</string>
     <string name="sub_to">Subscribe to /r/%1$s</string>
     <string name="goto_web_url">Go to %1$s...</string>
+    <string name="navview_right_dropdown_explore">Explore</string>
 
+    <string name="navview_right_dropdown_my_subreddits">My Subreddits</string>
     <!-- Toasts-->
     <string name="toast_settings_saved">Settings saved</string>
     <string name="toast_settings_saved_refresh">Settings saved. Refresh to update.</string>

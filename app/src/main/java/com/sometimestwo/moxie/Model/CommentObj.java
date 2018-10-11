@@ -54,7 +54,7 @@ public class CommentObj extends Item implements ExpandableItem {
 
         /* Init comment*/
         // Collapse button color
-        commentCollapseButton.setBackgroundColor(App.getAppResources().getColor(getCommentColor(comment.getDepth()), null));
+        commentCollapseButton.setBackgroundColor(App.getAppResources().getColor(getCommentColor(comment.getDepth())));
         // Author
         commentAuthorTextView.setText(comment.getSubject().getAuthor() /*+ "{" + comment.getDepth() + "}"*/);
         // Check if Author of this comment is OP
@@ -67,7 +67,7 @@ public class CommentObj extends Item implements ExpandableItem {
         commentNumRepliesTextView.setText(getNumRepliesText(comment.getReplies().size()));
         // Gold star if gilded
         commentGoldStarImageView.setBackground(comment.getSubject().getGilded() > 0
-                ? App.getAppResources().getDrawable(R.drawable.ic_yellow_star_filled_2_big,null) : null);
+                ? App.getAppResources().getDrawable(R.drawable.ic_yellow_star_filled_2_big) : null);
         // Gilded counter
         commentGoldCount.setText(getGoldCountText(comment.getSubject().getGilded()));
         // Comment text body
@@ -180,8 +180,8 @@ public class CommentObj extends Item implements ExpandableItem {
 
     private int getAuthorTextColor(String commentAuthor){
         if(commentAuthor.equalsIgnoreCase(currSubmission.getAuthor()))
-            return App.getAppResources().getColor(R.color.comments_OP,null);
+            return App.getAppResources().getColor(R.color.comments_OP);
         else
-            return App.getAppResources().getColor(R.color.colorWhite,null);
+            return App.getAppResources().getColor(R.color.colorWhite);
     }
 }

@@ -95,10 +95,11 @@ public class Utils {
     // limit = 5,
     // s = "UNBGBBIIVCHIDCTIICBG"
     // result = "UNBGBB..."
-    public static String truncateString(String s, int limit){
-        if(s != null && (s.length() > limit)) return s.substring(0,limit) + "...";
+    public static String truncateString(String s, int limit) {
+        if (s != null && (s.length() > limit)) return s.substring(0, limit) + "...";
         else return s;
     }
+
     /*
        imgur links will be given in the following format :
        https://i.imgur.com/CtyvHl6.gifv
@@ -112,12 +113,12 @@ public class Utils {
     }
 
     /* Alternative to using redditClient.getAuthMethod().isUserless()
-    *  This way relies on keeping sharedPrefs up-to-date with most recently
-    *  logged in user but allows us to avoid "No current authenticated client" JRAW errors
-    */
-    public static boolean isUserlessSafe(){
+     *  This way relies on keeping sharedPrefs up-to-date with most recently
+     *  logged in user but allows us to avoid "No current authenticated client" JRAW errors
+     */
+    public static boolean isUserlessSafe() {
         return App.getSharedPrefs()
-                .getString(Constants.MOST_RECENT_USER,Constants.USERNAME_USERLESS)
+                .getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS)
                 .equalsIgnoreCase(Constants.USERNAME_USERLESS);
     }
 
@@ -451,59 +452,49 @@ public class Utils {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    // Stores the current user's subscriptions in shared preferences
-    public static void storeLocalUserSubscriptions(ArrayListStringIgnoreCase subs) {
-        // Alphabetize
-        Collections.sort(subs,String.CASE_INSENSITIVE_ORDER);
-        // Add current user's username as the first element. This will be useful when
-        // verifying that the list of stored subscriptions matches with the current user
-        subs.add(0,App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,null));
-        String subsStr = App.getGsonApp().toJson(subs);
-        App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS, subsStr).commit();
+    public static boolean isUserSubscriptionsStored(String username) {
+        return (null != App.getSharedPrefs().getString(Constants.PREFS_USER_SUBS_ + username, null));
     }
 
-    public static void addToLocalUserSubscriptions(String newSub) {
-        ArrayListStringIgnoreCase currSubs = getCurrUserLocalSubscriptions(true);
+    // Stores the current user's subscriptions in shared preferences
+    public static void storeLocalUserSubscriptions(String username, ArrayListStringIgnoreCase subs) {
+        // Alphabetize
+        Collections.sort(subs, String.CASE_INSENSITIVE_ORDER);
+        String subsStr = App.getGsonApp().toJson(subs);
+        App.getSharedPrefs().edit().putString(Constants.PREFS_USER_SUBS_ + username, subsStr).commit();
+    }
+
+    public static void addToLocalUserSubscriptions(String username, String newSub) {
+        ArrayListStringIgnoreCase currSubs = getSubscriptionsFromSharedPrefs(username);
         if (!currSubs.contains(newSub)) {
             currSubs.add(newSub);
-            storeLocalUserSubscriptions(currSubs);
+            storeLocalUserSubscriptions(username, currSubs);
         }
     }
 
-    // withUsername = true: will return the list with username of list prepended as element 0
-    // withUsername = false: returns only the list of the localsubscriptions
-    public static ArrayListStringIgnoreCase getCurrUserLocalSubscriptions(boolean withUsername) {
+    public static ArrayListStringIgnoreCase getSubscriptionsFromSharedPrefs(String username) {
         ArrayListStringIgnoreCase subscriptions = new ArrayListStringIgnoreCase();
 
-        String subsStr = App.getSharedPrefs().getString(Constants.PREFS_CURR_USER_SUBS, null);
-        if(subsStr == null) return subscriptions;
+        String subsStr = App.getSharedPrefs().getString(Constants.PREFS_USER_SUBS_ + username, null);
+        if (subsStr == null) return subscriptions;
 
         subscriptions.addAll(App.getGsonApp().fromJson(subsStr, new TypeToken<ArrayListStringIgnoreCase>() {
         }.getType()));
-
-        if(!withUsername) {
-            ArrayListStringIgnoreCase noUsernamePrepended = new ArrayListStringIgnoreCase();
-            for(int i = 1; i < subscriptions.size(); i++){
-                noUsernamePrepended.add(subscriptions.get(i));
-            }
-            return noUsernamePrepended;
-        }else{
-            return subscriptions;
-        }
+        return subscriptions;
     }
 
 
-    public static void removeFromLocalUserSubscriptions(String subToRemove) {
-        ArrayListStringIgnoreCase currSubs = getCurrUserLocalSubscriptions(true);
+    public static void removeFromLocalUserSubscriptions(String username, String subToRemove) {
+        ArrayListStringIgnoreCase currSubs = getSubscriptionsFromSharedPrefs(username);
         if (currSubs.contains(subToRemove)) {
             currSubs.remove(subToRemove);
-            storeLocalUserSubscriptions(currSubs);
+            storeLocalUserSubscriptions(username, currSubs);
         }
     }
 
-    // removes all subscriptions info from shared prefs
-    public static void removeLocalSubscriptionsList() {
-        App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS, null).commit();
+    // removes all subscriptions info from shared prefs for username
+    public static void removeLocalSubscriptionsList(String username) {
+        App.getSharedPrefs().edit().putString(Constants.PREFS_USER_SUBS_ + username, null).commit();
     }
 
     // Updates our shared preferences with a list of logged in user's subreddit subscriptions
@@ -533,8 +524,9 @@ public class Utils {
                         listOfSubredditNames.add(s.getName());
                     }
                 }
-                storeLocalUserSubscriptions(listOfSubredditNames);
-            }catch (Exception e){
+
+                storeLocalUserSubscriptions(username, listOfSubredditNames);
+            } catch (Exception e) {
                 listener.onFailure(e.getMessage());
                 return null;
             }
@@ -543,7 +535,7 @@ public class Utils {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            if(listener!=null){
+            if (listener != null) {
                 listener.onSuccess();
             }
             super.onPostExecute(aVoid);

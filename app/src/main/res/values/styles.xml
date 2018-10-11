@@ -6,30 +6,15 @@
         <item name="colorPrimary">@color/colorThemeDarkPrimary</item>
         <item name="colorPrimaryDark">@color/colorThemeDarkPrimaryDark</item>
         <item name="colorAccent">@color/colorWhite</item>
-    </style>
+        <!--item name="android:windowBackground">@drawable/ic_white_person_filled</item-->
 
-
-
-    <style name="AppThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorThemeDarkPrimary</item>
-        <item name="colorPrimaryDark">@color/colorThemeDarkPrimaryDark</item>
-        <item name="colorAccent">@color/colorDarkThemeAccent</item>
     </style>
 
     <style name="TransparentDialog" parent="android:Theme.Dialog">
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@color/colorBgBlackTintDarkest</item>
+        <item name="android:windowBackground">@color/colorDarkerGray</item>
         <item name="android:windowNoTitle">true</item>
     </style>
-
-    <style name="SolidDialog" parent="android:Theme.Dialog">
-        <item name="android:windowIsTranslucent">false</item>
-        <item name="android:windowBackground">@color/colorBgBlackTint</item>
-        <item name="android:windowNoTitle">true</item>
-    </style>
-
-    <style name="DialogAsActivityTheme" parent="@android:style/Theme.Holo.Dialog"></style>
 
     <style name="ThemeNavViewHeader">
         <item name="android:textSize">20sp</item>
@@ -57,19 +42,11 @@
         <item name="android:textStyle">normal</item>
     </style>
 
-    <style name="Theme.AppCompat.Translucent" parent="Theme.AppCompat.NoActionBar">
-        <item name="android:background">#33000000</item> <!-- Or any transparency or color you need -->
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:colorBackgroundCacheHint">@null</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowAnimationStyle">@android:style/Animation</item>
+    <style name="PopupTheme" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:itemBackground">@color/colorDarkerGray</item>
     </style>
 
-       <style name="PopupTheme" parent="Widget.AppCompat.PopupMenu">
-            <item name="android:textColor">@android:color/white</item>
-            <item name="android:itemBackground">@color/colorBlack</item>
-        </style>
     <style name="Theme.Settings.Checkbox" parent="Theme.AppCompat.Light">
         <item name="colorControlNormal">@color/colorWhite</item>
         <item name="colorControlActivated">@color/colorWhite</item>

@@ -380,22 +380,23 @@ public class FragmentHome extends Fragment {
         menu.findItem(R.id.menu_explore).setVisible(true);
 
         // Sub/Unsub menu option only if we're not in guest mode and viewing a subreddit exists
-        if(!Utils.isUserlessSafe() && mCurrSubreddit != null && !is404){
+        if (!Utils.isUserlessSafe() && mCurrSubreddit != null && !is404) {
+            String currUsername = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,null);
             // User is subbed to this subreddit, display "Unsubscribe" option
-            if(Utils.getCurrUserLocalSubscriptions(false).contains(mCurrSubreddit)){
+            if (Utils.getSubscriptionsFromSharedPrefs(currUsername).contains(mCurrSubreddit)) {
                 menu.findItem(R.id.menu_submissions_overflow_sub).setVisible(false);
                 menu.findItem(R.id.menu_submissions_overflow_unsub).setVisible(true);
                 String unsubString = getString(R.string.unsub_from, mCurrSubreddit);
                 menu.findItem(R.id.menu_submissions_overflow_unsub).setTitle(unsubString);
             }
             // User is not subscribed to this subreddit, display "Subscribe" option
-            else{
+            else {
                 menu.findItem(R.id.menu_submissions_overflow_unsub).setVisible(false);
                 menu.findItem(R.id.menu_submissions_overflow_sub).setVisible(true);
                 String subString = getString(R.string.sub_to, mCurrSubreddit);
                 menu.findItem(R.id.menu_submissions_overflow_sub).setTitle(subString);
             }
-        }else{
+        } else {
             menu.findItem(R.id.menu_submissions_overflow_sub).setVisible(false);
             menu.findItem(R.id.menu_submissions_overflow_unsub).setVisible(false);
         }
@@ -405,8 +406,8 @@ public class FragmentHome extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        SubredditSort sortBy;
-        TimePeriod timePeriod;
+        String currUser = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,null);
+
         switch (item.getItemId()) {
             case android.R.id.home:
                 mHomeEventListener.menuGoBack();
@@ -420,34 +421,36 @@ public class FragmentHome extends Fragment {
             case R.id.menu_submissions_overflow_sub:
                 SubscribeSubredditTask =
                         new Utils.SubscribeSubredditTask(mCurrSubreddit, new OnRedditTaskListener() {
-                    @Override
-                    public void onSuccess() {
-                        Utils.addToLocalUserSubscriptions(mCurrSubreddit);
-                        Toast.makeText(FragmentHome.this.getContext(),
-                                "Subscribed",
-                                Toast.LENGTH_SHORT)
-                                .show();
-                    }
+                            @Override
+                            public void onSuccess() {
+                               String currUser = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,null);
+                                Utils.addToLocalUserSubscriptions(currUser, mCurrSubreddit);
+                                Toast.makeText(FragmentHome.this.getContext(),
+                                        "Subscribed",
+                                        Toast.LENGTH_SHORT)
+                                        .show();
+                            }
 
-                    @Override
-                    public void onFailure(String exceptionMessage) {
-                        Toast.makeText(FragmentHome.this.getContext(),
-                                getResources().getString(R.string.toast_subscribe_failed),
-                                Toast.LENGTH_LONG)
-                                .show();
-                    }
-                }).execute();
+                            @Override
+                            public void onFailure(String exceptionMessage) {
+                                Toast.makeText(FragmentHome.this.getContext(),
+                                        getResources().getString(R.string.toast_subscribe_failed),
+                                        Toast.LENGTH_LONG)
+                                        .show();
+                            }
+                        }).execute();
                 return true;
             case R.id.menu_submissions_overflow_unsub:
-                new Utils.UnsubscribeSubredditTask(mCurrSubreddit, new OnRedditTaskListener(){
+                new Utils.UnsubscribeSubredditTask(mCurrSubreddit, new OnRedditTaskListener() {
                     @Override
                     public void onSuccess() {
-                        Utils.removeFromLocalUserSubscriptions(mCurrSubreddit);
+                        Utils.removeFromLocalUserSubscriptions(currUser,mCurrSubreddit);
                         Toast.makeText(FragmentHome.this.getContext(),
                                 "Unsubscribed",
                                 Toast.LENGTH_SHORT)
                                 .show();
                     }
+
                     @Override
                     public void onFailure(String exceptionMessage) {
                         Toast.makeText(FragmentHome.this.getContext(),
@@ -563,18 +566,42 @@ public class FragmentHome extends Fragment {
         } else if (requestCode == Constants.REQUESTCODE_GOTO_LOG_IN) {
             if (resultCode == RESULT_OK) {
                 // User successfully logged in. Update the current user.
-                updateCurrentUser(App.getTokenStore().getUsernames().size() - 1);
+                // New username will be last element of our usernames list within tokenStore
+                String newUsername =
+                        App.getTokenStore().getUsernames().get(App.getTokenStore().getUsernames().size() - 1);
+                updateCurrentUser(newUsername);
                 // empty the subreddit stack since we're starting over with new user
                 while (!App.getMoxieInfoObj().getmSubredditStack().isEmpty()) {
                     App.getMoxieInfoObj().getmSubredditStack().pop();
                 }
-                refresh(true);
+
+                // update shared prefernces with a list of this user's subscriptions
+                if(!Utils.isUserSubscriptionsStored(newUsername)){
+                    FetchUserSubscriptionsTask =
+                            new Utils.FetchUserSubscriptionsAndStoreLocally(
+                                    newUsername,
+                                    new OnRedditTaskListener() {
+                                        @Override
+                                        public void onSuccess() {
+                                            refresh(true);
+                                        }
+
+                                        @Override
+                                        public void onFailure(String exceptionMessage) {
+                                            //todo
+                                        }
+                                    }).execute();
+                }
+                // this shouldn't ever be the case since a new user will never have their subscriptions stored
+                else{
+                    refresh(true);
+                }
             }
         }
     }
 
-    public void cancelRunning(){
-        if(FetchUserSubscriptionsTask != null){
+    public void cancelRunning() {
+        if (FetchUserSubscriptionsTask != null) {
             FetchUserSubscriptionsTask.cancel(true);
         }
     }
@@ -694,7 +721,7 @@ public class FragmentHome extends Fragment {
 
     private void setupRightNavView(View v) {
         mNavigationViewRight = (NavigationView) v.findViewById(R.id.nav_view_right);
-        mRightNavProgressBar = (ProgressBar)v.findViewById(R.id.navview_right_progress);
+        mRightNavProgressBar = (ProgressBar) v.findViewById(R.id.navview_right_progress);
 
         // set up spinner(header)
         Spinner spinner = (Spinner) mNavigationViewRight.getHeaderView(0).findViewById(R.id.navview_right_spinner);
@@ -711,7 +738,8 @@ public class FragmentHome extends Fragment {
             public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long l) {
                 String clickedItem = (String) adapterView.getItemAtPosition(pos);
                 FrameLayout mRightNavErrorMessageContainer = v.findViewById(R.id.navview_right_error_container);
-                switch(clickedItem){
+
+                switch (clickedItem) {
                     // This should happen on app launch
                     case "Explore":
                         mRightNavErrorMessageContainer.setVisibility(View.GONE);
@@ -723,21 +751,20 @@ public class FragmentHome extends Fragment {
                         initExploreCatagories();
                         mRightNavRecycleView.setAdapter(new ExploreGridRecyclerAdapter());
                         return;
-                    case "My subreddits":
-                        String currUsername = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,null);
+                    case "My Subreddits":
+                        String currUsername = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER, null);
 
                         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
                         mRightNavRecycleView.setLayoutManager(linearLayoutManager);
 
                         // No subreddits to display if in Guest mode
-                        if(currUsername == null ||Constants.USERNAME_USERLESS.equalsIgnoreCase(currUsername)){
+                        if (currUsername == null || Constants.USERNAME_USERLESS.equalsIgnoreCase(currUsername)) {
                             mRightNavRecycleView.setVisibility(View.GONE);
                             mRightNavErrorMessageContainer.setVisibility(View.VISIBLE);
                         }
-                        // Currently stored(in shared prefs) subscriptions list
-                        // does not belong to current user. Re-fetch
-                        else if(Utils.getCurrUserLocalSubscriptions(true).size() < 1
-                                || !Utils.getCurrUserLocalSubscriptions(true).get(0).equalsIgnoreCase(currUsername)){
+                        // Subscriptions aren't stored in shared preferences, go fetch (shouldn't
+                        // happen since we always fetch and store subscriptions at log in or on user switch)
+                        else if (!Utils.isUserSubscriptionsStored(currUsername)) {
                             mRightNavRecycleView.setVisibility(View.GONE);
                             mRightNavProgressBar.setVisibility(View.VISIBLE);
 
@@ -758,7 +785,7 @@ public class FragmentHome extends Fragment {
                                         }
                                     }).execute();
                         }
-                        // list of stored subreddit subscriptions matches this username
+                        // Subscriptions already stored, no need to do anything but display
                         else {
                             mRightNavErrorMessageContainer.setVisibility(View.GONE);
                             mRightNavRecycleView.setAdapter(new MySubredditsRecyclerAdapter());
@@ -873,7 +900,7 @@ public class FragmentHome extends Fragment {
     private void initExploreCatagories() {
         //store these values in a list for convenience
         mExploreCatagoriesList = new ArrayList<String>();
-        for(String category : Arrays.asList(getResources().getStringArray(R.array.explore_catagories))){
+        for (String category : Arrays.asList(getResources().getStringArray(R.array.explore_catagories))) {
             mExploreCatagoriesList.add(category);
         }
         // maps an explore category to an image file that will follow the following naming
@@ -894,8 +921,8 @@ public class FragmentHome extends Fragment {
         mExploreCatagoriesMap.put("Nature", new Explore(R.drawable.explore_bg_nature, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nature))));
 
 
-        if(!mHideNSFW){
-            for(String nsfwCategory : Arrays.asList(getResources().getStringArray(R.array.explore_categories_NSFW))){
+        if (!mHideNSFW) {
+            for (String nsfwCategory : Arrays.asList(getResources().getStringArray(R.array.explore_categories_NSFW))) {
                 mExploreCatagoriesList.add(nsfwCategory);
             }
             mExploreCatagoriesMap.put("NSFW", new Explore(R.drawable.explore_bg_nsfw, Arrays.asList(getResources().getStringArray(R.array.explore_subreddits_nsfw))));
@@ -969,6 +996,7 @@ public class FragmentHome extends Fragment {
                         // go to subreddit
                         if (getResources().getString(R.string.menu_goto_subreddit)
                                 .equalsIgnoreCase(clickedItemTitle)) {
+
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.TransparentDialog);
                             builder.setTitle("Enter subreddit:");
 
@@ -1017,7 +1045,11 @@ public class FragmentHome extends Fragment {
 
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
-            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+            public boolean onChildClick(ExpandableListView parent,
+                                        View v,
+                                        int groupPosition,
+                                        int childPosition,
+                                        long id) {
                 if (childList.get(headerList.get(groupPosition)) != null) {
                     ExpandableMenuModel model = childList.get(headerList.get(groupPosition)).get(childPosition);
                     String clickedMenuItemName = model.menuName;
@@ -1030,9 +1062,27 @@ public class FragmentHome extends Fragment {
                         }
                         // user selected a non-guest switch to
                         else {
-                            FetchUserSubscriptionsTask =
-                                    new Utils.FetchUserSubscriptionsAndStoreLocally(clickedMenuItemName,null).execute();
-                            switchOrLogoutCleanup(clickedMenuItemName);
+                            // make sure we have a list of user subscriptions, else go fetch now
+                            if (Utils.isUserSubscriptionsStored(clickedMenuItemName)) {
+                                App.getAccountHelper().switchToUser(clickedMenuItemName);
+                                switchOrLogoutCleanup(clickedMenuItemName);
+                            } else {
+                                FetchUserSubscriptionsTask =
+                                        new Utils.FetchUserSubscriptionsAndStoreLocally(
+                                                clickedMenuItemName,
+                                                new OnRedditTaskListener() {
+                                            @Override
+                                            public void onSuccess() {
+                                                App.getAccountHelper().switchToUser(clickedMenuItemName);
+                                                switchOrLogoutCleanup(clickedMenuItemName);
+                                            }
+
+                                            @Override
+                                            public void onFailure(String exceptionMessage) {
+                                                //todo
+                                            }
+                                        }).execute();
+                            }
                         }
                     }
                     // clicked "Add account" to add a new acc
@@ -1068,12 +1118,15 @@ public class FragmentHome extends Fragment {
     }
 
     // "My Subreddits" option in right nav view
-    private class MySubredditsRecyclerAdapter extends RecyclerView.Adapter<MySubredditsViewHolder>{
+    private class MySubredditsRecyclerAdapter extends RecyclerView.Adapter<MySubredditsViewHolder> {
 
         ArrayListStringIgnoreCase listMySubreddits;
 
         public MySubredditsRecyclerAdapter() {
-            this.listMySubreddits = Utils.getCurrUserLocalSubscriptions(false);
+            this.listMySubreddits =
+                    Utils.getSubscriptionsFromSharedPrefs(App.getSharedPrefs().getString(
+                            Constants.MOST_RECENT_USER,
+                            Constants.USERNAME_USERLESS));
         }
 
         @NonNull
@@ -1117,9 +1170,10 @@ public class FragmentHome extends Fragment {
         public void onClick(View view) {
         }
     }
+
     private void setupLeftNavViewHeader(View navViewHeader) {
         mNavViewHeaderTitle = (TextView) navViewHeader.findViewById(R.id.navview_header_text_title);
-        String mostRecentUser = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,Constants.USERNAME_USERLESS);
+        String mostRecentUser = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
         if (Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
             mNavViewHeaderTitle.setText(Constants.USERNAME_USERLESS_PRETTY);
         } else {
@@ -1408,7 +1462,7 @@ public class FragmentHome extends Fragment {
                                         new OnTaskCompletedListener() {
                                             @Override
                                             public void downloadSuccess() {
-                                                if(getActivity() != null) {
+                                                if (getActivity() != null) {
                                                     getActivity().runOnUiThread(new Runnable() {
                                                         @Override
                                                         public void run() {
@@ -1419,12 +1473,13 @@ public class FragmentHome extends Fragment {
                                                                     .into(mHoverImagePreviewLarge);
                                                         }
                                                     });
-                                                }else{
+                                                } else {
                                                     Log.e(TAG,
                                                             "getActivity() null when trying to fixIndirectImgurUrl for url "
                                                                     + item.getUrl());
                                                 }
                                             }
+
                                             @Override
                                             public void downloadFailure() {
                                                 super.downloadFailure();
@@ -1457,10 +1512,10 @@ public class FragmentHome extends Fragment {
                                                     initializePreviewExoPlayer(item.getCleanedUrl());
                                                 }
                                             });
-                                        } else{
-                                          Log.e(TAG,
-                                                  "getActivity() null when trying getMp4LinkImgur for url "
-                                                          + item.getUrl());
+                                        } else {
+                                            Log.e(TAG,
+                                                    "getActivity() null when trying getMp4LinkImgur for url "
+                                                            + item.getUrl());
                                         }
                                     }
 
@@ -1627,7 +1682,7 @@ public class FragmentHome extends Fragment {
         }
     }
 
-    private void gotoSubreddit(String subreddit){
+    private void gotoSubreddit(String subreddit) {
         App.getMoxieInfoObj().getmSubredditStack().push(subreddit);
 
         Intent visitSubredditIntent = new Intent(getContext(), ActivitySubredditViewer.class);
@@ -1667,17 +1722,17 @@ public class FragmentHome extends Fragment {
             switch (item.getSubmissionType()) {
                 case IMAGE:
                     thumbnailHolder.thumbnailIconFiletype.setBackground(
-                            getResources().getDrawable(R.drawable.ic_filetype_image,null));
+                            getResources().getDrawable(R.drawable.ic_filetype_image));
                     thumbnailHolder.thumbnailIconFiletype.setVisibility(View.VISIBLE);
                     break;
                 case GIF:
                     thumbnailHolder.thumbnailIconFiletype.setBackground(
-                            getResources().getDrawable(R.drawable.ic_filetype_gif,null));
+                            getResources().getDrawable(R.drawable.ic_filetype_gif));
                     thumbnailHolder.thumbnailIconFiletype.setVisibility(View.VISIBLE);
                     break;
                 case VIDEO:
                     thumbnailHolder.thumbnailIconFiletype.setBackground(
-                            getResources().getDrawable(R.drawable.ic_filetype_video,null));
+                            getResources().getDrawable(R.drawable.ic_filetype_video));
                     thumbnailHolder.thumbnailIconFiletype.setVisibility(View.VISIBLE);
                     break;
                 default:
@@ -1705,7 +1760,7 @@ public class FragmentHome extends Fragment {
 
 
         int parentContainerId = ((ViewGroup) getView().getParent()).getId();
-        ft.add(parentContainerId, bigDisplayFragment,Constants.TAG_FRAG_FULL_DISPLAYER);
+        ft.add(parentContainerId, bigDisplayFragment, Constants.TAG_FRAG_FULL_DISPLAYER);
         ft.addToBackStack(null);
         ft.commit();
     }
@@ -1732,6 +1787,8 @@ public class FragmentHome extends Fragment {
                 App.getTokenStore().deleteLatest(username);
                 App.getTokenStore().deleteRefreshToken(username);
                 new FetchUserlessAccountTask().execute();
+                // remove this user's subscriptions from shared prefs
+                Utils.removeLocalSubscriptionsList(username);
             }
         });
         builder.setNegativeButton(android.R.string.no, null);
@@ -1742,9 +1799,9 @@ public class FragmentHome extends Fragment {
             @Override
             public void onShow(DialogInterface dialogInterface) {
                 alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                        .setTextColor(getResources().getColor(R.color.colorWhite,null));
+                        .setTextColor(getResources().getColor(R.color.colorWhite));
                 alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-                        .setTextColor(getResources().getColor(R.color.colorWhite, null));
+                        .setTextColor(getResources().getColor(R.color.colorWhite));
             }
         });
 
@@ -1770,26 +1827,15 @@ public class FragmentHome extends Fragment {
         mHomeEventListener.startOver();
     }
 
-    /* Updates SharedPreferences's current logged-in user.
-     *  App.getTokenStore.getUsernames() contains the list of users in the order in which they were added.
-     *  The user's index within this aforementioned list should be the same as the index in whatever
-     *  list we end up displaying the logged in users (plus 1 because the getUsernames() list has
-     *  "userless" at index 0).
-     *
-     * */
-    private void updateCurrentUser(int userIndex) {
-        if (userIndex >= App.getTokenStore().getUsernames().size()) {
-            Log.e("ACCOUNT LOGIN EXCEPTION",
-                    "Tried switching to user which is out of index. Swithcing to Userless mode");
-            userIndex = 0;
+    /* Updates SharedPreferences's current logged-in user. */
+    private void updateCurrentUser(String newUsername) {
+        try {
+            App.getAccountHelper().switchToUser(newUsername);
+        }catch (Exception e){
+            Log.e(TAG,"Failed to switch to user while in updateCurrentUser() for username: " + newUsername);
         }
-
-        // This is where we assume the 0th username is USERLESS.....
-        String username = App.getTokenStore().getUsernames().get(userIndex);
-        App.getAccountHelper().switchToUser(username);
-
         // update the most recent logged in user in sharedprefs
-        prefs_settings.edit().putString(Constants.MOST_RECENT_USER, username).commit();
+        prefs_settings.edit().putString(Constants.MOST_RECENT_USER, newUsername).commit();
     }
 
     /*
@@ -1899,8 +1945,6 @@ public class FragmentHome extends Fragment {
         protected Void doInBackground(Void... voids) {
             App.getAccountHelper().switchToUserless();
 
-            // remove the list of user's subscriptions from shared prefs
-            Utils.removeLocalSubscriptionsList();
             return null;
         }
 

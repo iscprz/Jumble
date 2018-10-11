@@ -14,7 +14,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.sometimestwo.moxie.Utils.Constants;
-import com.sometimestwo.moxie.Utils.Utils;
 
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Subreddit;
@@ -115,32 +114,11 @@ public class ActivityNewUserLogin extends AppCompatActivity {
         protected Boolean doInBackground(String... urls) {
             try {
                 helper.onUserChallenge(urls[0]);
-
-                BarebonesPaginator<Subreddit> paginator = App.getAccountHelper().getReddit().me()
-                        .subreddits("subscriber")
-                        .limit(Paginator.RECOMMENDED_MAX_LIMIT)
-                        .build();
-
-                ArrayList<String> listOfSubredditNames = new ArrayList<String>();
-
-                for (Listing<Subreddit> page : paginator) {
-                    for(Subreddit s : page){
-                        listOfSubredditNames.add(s.getName());
-                    }
-                }
-
-                storeUserSubscriptions(listOfSubredditNames);
                 return true;
             } catch (OAuthException e) {
                 // Report failure if an OAuthException occurs
                 return false;
             }
-        }
-
-        // stores the current user's subscriptions in shared preferences
-        private void storeUserSubscriptions(ArrayList<String> subs){
-            String subsStr = App.getGsonApp().toJson(subs);
-            App.getSharedPrefs().edit().putString(Constants.PREFS_CURR_USER_SUBS,subsStr).commit();
         }
 
         @Override

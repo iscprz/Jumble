@@ -26,14 +26,16 @@
             android:value="https://github.com/izikperz" />
 
         <activity
-            android:name=".ActivityMain"
-            android:noHistory="true">
+            android:name=".ActivitySplash"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".ActivityMain" android:noHistory="true"></activity>
         <activity android:name=".ActivityHome"></activity>
         <activity android:name=".ActivitySettings"></activity>
         <activity android:name=".ActivityNewUserLogin"></activity>

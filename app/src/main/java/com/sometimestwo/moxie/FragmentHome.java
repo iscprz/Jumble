@@ -392,6 +392,7 @@ public class FragmentHome extends Fragment {
         if (!Utils.isUserlessSafe()
                 && mCurrSubreddit != null
                 && !is404
+                && !mCurrSubreddit.contains("+") // don't allow multi subreddit subscribe
                 && !Constants.REQUEST_SAVED.equalsIgnoreCase(mCurrSubreddit)) {
             String currUsername = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER, null);
             // User is subbed to this subreddit, display "Unsubscribe" option

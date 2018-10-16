@@ -74,6 +74,7 @@ import com.google.android.exoplayer2.util.Util;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
+import com.sometimestwo.moxie.EventListeners.OnRedditTaskListener;
 import com.sometimestwo.moxie.EventListeners.OnTaskCompletedListener;
 import com.sometimestwo.moxie.EventListeners.OnVRedditTaskCompletedListener;
 import com.sometimestwo.moxie.Model.CommentObj;
@@ -127,7 +128,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     private TextView mCommentCountTextView;
     private ImageView mButtonUpvote;
     private TextView mUpvoteCountTextView;
+    private FrameLayout mDownvoteContainer;
     private ImageView mButtonDownvote;
+    FrameLayout mSaveButtonContainer;
     private ImageView mButtonSave;
     private ImageView mButtonOverflow;
     private LinearLayout mSnackbarContainer;
@@ -179,6 +182,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
     /* Async tasks which might need cancelling */
     AsyncTask<Void, Void, Void> FetchCommentsTask;
+    AsyncTask<Void,Void,Boolean> ReauthUserTask;
 
 
     public interface OnCommentsEventListener {
@@ -221,7 +225,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mCommentCountTextView = (TextView) v.findViewById(R.id.full_display_comments_counter);
         mButtonUpvote = (ImageView) v.findViewById(R.id.full_display_snack_bar_upvote);
         mUpvoteCountTextView = (TextView) v.findViewById(R.id.full_display_upvote_counter);
+        mDownvoteContainer = (FrameLayout) v.findViewById(R.id.full_display_downvote_container);
         mButtonDownvote = (ImageView) v.findViewById(R.id.full_display_snack_bar_downvote);
+        mSaveButtonContainer = (FrameLayout) v.findViewById(R.id.full_display_save_container);
         mButtonSave = (ImageView) v.findViewById(R.id.full_display_snack_bar_save);
         mButtonOverflow = (ImageView) v.findViewById(R.id.full_display_snack_bar_overflow);
         mSnackbarContainer = (LinearLayout) v.findViewById(R.id.full_display_snack_bar_container);
@@ -368,9 +374,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     }
 
     private void cancelRunning() {
-        if (FetchCommentsTask != null) {
-            FetchCommentsTask.cancel(true);
-        }
+        if(FetchCommentsTask != null) FetchCommentsTask.cancel(true);
+        if(ReauthUserTask != null) ReauthUserTask.cancel(true);
+
     }
 
     private void setupHeader() {
@@ -767,6 +773,12 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             }
         });
 
+        mDownvoteContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mButtonDownvote.callOnClick();
+            }
+        });
         mButtonDownvote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -789,6 +801,12 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             }
         });
         // Save button
+        mSaveButtonContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mButtonSave.callOnClick();
+            }
+        });
         mButtonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -956,7 +974,22 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     }
 
     private void initComments() {
-        FetchCommentsTask = new FetchCommentsTask().execute();
+        if(App.getAccountHelper().isAuthenticated()){
+            FetchCommentsTask = new FetchCommentsTask().execute();
+        }
+        else{
+            ReauthUserTask = new Utils.RedditReauthTask(new OnRedditTaskListener() {
+                @Override
+                public void onSuccess() {
+                    FetchCommentsTask = new FetchCommentsTask().execute();
+                }
+
+                @Override
+                public void onFailure(String exceptionMessage) {
+                    //todo
+                }
+            }).execute();
+        }
     }
 
 
@@ -1144,7 +1177,6 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         @Override
         protected void onPostExecute(Void aVoid) {
             setupCommentsAdapter();
-            Log.e("NUM_ROOT_COMMENTS: ", String.valueOf(comments.size()));
             mCommentsProgressBar.setVisibility(View.GONE);
             mCommentsInitialized = true;
         }

@@ -198,6 +198,7 @@ public class FragmentHome extends Fragment {
     // Async tasks that may need cancelling
     private AsyncTask<Void, Void, Void> FetchUserSubscriptionsTask;
     private AsyncTask<Void, Void, Void> SubscribeSubredditTask;
+    private AsyncTask<Void,Void,Boolean> UnsubscribeSubredditTask;
 
     public static FragmentHome newInstance() {
         return new FragmentHome();
@@ -391,7 +392,7 @@ public class FragmentHome extends Fragment {
         if (!Utils.isUserlessSafe()
                 && mCurrSubreddit != null
                 && !is404
-                && Constants.REQUEST_SAVED.equalsIgnoreCase(mCurrSubreddit)) {
+                && !Constants.REQUEST_SAVED.equalsIgnoreCase(mCurrSubreddit)) {
             String currUsername = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER, null);
             // User is subbed to this subreddit, display "Unsubscribe" option
             if (Utils.getSubscriptionsFromSharedPrefs(currUsername).contains(mCurrSubreddit)) {
@@ -461,7 +462,8 @@ public class FragmentHome extends Fragment {
                         }).execute();
                 return true;
             case R.id.menu_submissions_overflow_unsub:
-                new Utils.UnsubscribeSubredditTask(mCurrSubreddit, new OnRedditTaskListener() {
+                UnsubscribeSubredditTask =
+                        new Utils.UnsubscribeSubredditTask(mCurrSubreddit, new OnRedditTaskListener() {
                     @Override
                     public void onSuccess() {
                         Utils.removeFromLocalUserSubscriptions(currUser, mCurrSubreddit);
@@ -621,9 +623,9 @@ public class FragmentHome extends Fragment {
     }
 
     public void cancelRunning() {
-        if (FetchUserSubscriptionsTask != null) {
-            FetchUserSubscriptionsTask.cancel(true);
-        }
+        if(FetchUserSubscriptionsTask != null) FetchUserSubscriptionsTask.cancel(true);
+        if(UnsubscribeSubredditTask != null) UnsubscribeSubredditTask.cancel(true);
+        if(SubscribeSubredditTask != null) SubscribeSubredditTask.cancel(true);
     }
 
     private void setupToolbar() {

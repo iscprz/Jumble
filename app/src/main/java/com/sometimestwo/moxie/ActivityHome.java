@@ -1,9 +1,7 @@
 package com.sometimestwo.moxie;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -17,29 +15,9 @@ import android.view.Menu;
 
 import com.sometimestwo.moxie.EventListeners.HomeEventListener;
 import com.sometimestwo.moxie.EventListeners.OnCloseClickEventListener;
-import com.sometimestwo.moxie.EventListeners.RedditHeartbeatListener;
 import com.sometimestwo.moxie.Utils.Constants;
-import com.sometimestwo.moxie.Utils.Utils;
 
 
-/*
-        TODOS:
-            - toolbar random button
-            - animated gifs
-            - pinch zoomies
-            - double tap to upvote
-            - long press to show title of post
-            - media viewer image options (download, etc)
-            - view pager
-            - invalid subreddit
-            settings options:
-            - browse mode (no comments, upvoting , etc) for lurkers
-            - hide progress bar on exoplayer
-
-            layout issues:
-            - centering very tall image in large hover
-            - hide toolbar on large hover preview
- */
 public class ActivityHome extends AppCompatActivity implements HomeEventListener,
         OnCloseClickEventListener,
         Fragment404.Fragment404EventListener,

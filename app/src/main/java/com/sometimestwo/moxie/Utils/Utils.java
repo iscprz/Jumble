@@ -24,11 +24,9 @@ import com.sometimestwo.moxie.App;
 import com.sometimestwo.moxie.Imgur.client.ImgurClient;
 import com.sometimestwo.moxie.Imgur.response.images.ImgurSubmission;
 import com.sometimestwo.moxie.Imgur.response.images.SubmissionRoot;
-import com.sometimestwo.moxie.Model.GfyItem;
 import com.sometimestwo.moxie.Model.GfycatWrapper;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.EventListeners.OnRedditTaskListener;
-import com.sometimestwo.moxie.EventListeners.RedditHeartbeatListener;
 import com.sometimestwo.moxie.EventListeners.OnTaskCompletedListener;
 import com.sometimestwo.moxie.EventListeners.OnVRedditTaskCompletedListener;
 import com.sometimestwo.moxie.ArrayListStringIgnoreCase;
@@ -62,8 +60,6 @@ import java.util.regex.Pattern;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -750,6 +746,41 @@ public class Utils {
         }
     }
 
+    public static class RedditReauthTask extends AsyncTask<Void,Void, Boolean>{
+        OnRedditTaskListener listener;
+        String errorMessage;
+        boolean didsomething;
+        public RedditReauthTask(OnRedditTaskListener listener){
+            this.listener = listener;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            try {
+                didsomething = true;
+                if (isUserlessSafe()) {
+                    App.getAccountHelper().switchToUserless();
+                } else {
+                    App.getAccountHelper().switchToUser(App.getSharedPrefs().getString(
+                            Constants.MOST_RECENT_USER,
+                            Constants.USERNAME_USERLESS));
+                }
+            }catch (Exception e){
+                errorMessage = e.getMessage();
+                listener.onFailure(errorMessage);
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            if(aBoolean) listener.onSuccess();
+            if(didsomething) Log.e("REAUTH TASK", " 99999999999999999999999999999999 REAUTH SUCCESS!!!!");
+            super.onPostExecute(aBoolean);
+        }
+    }
+
     public static class SaveSubmissionTask extends AsyncTask<Void, Void, Void> {
         SubmissionObj currSubmission;
         OnVRedditTaskCompletedListener listener;
@@ -809,38 +840,6 @@ public class Utils {
             super.onPostExecute(aVoid);
         }
 
-    }
-
-    public static class RedditHeartbeatTask extends AsyncTask<Void, Void, Void> {
-        String mostRecentUser;
-        RedditHeartbeatListener listener;
-        boolean didSomething = false;
-
-        public RedditHeartbeatTask(RedditHeartbeatListener listener) {
-            this.mostRecentUser = App.getSharedPrefs()
-                    .getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
-            this.listener = listener;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            didSomething = true;
-            Log.e("FETCH_AUTH_USER", "Attempting to reauthenticate: " + mostRecentUser);
-            if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
-                App.getAccountHelper().switchToUser(mostRecentUser);
-            } else {
-                App.getAccountHelper().switchToUserless();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            if (didSomething)
-                Log.e("FETCH_AUTH_USER", "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Authenticated success! ");
-            listener.redditUserAuthenticated();
-        }
     }
 
     /* Check for internet connection*/

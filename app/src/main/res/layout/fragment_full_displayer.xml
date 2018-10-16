@@ -245,8 +245,10 @@
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight=".20">
-
+            android:layout_weight=".20"
+            android:id="@+id/full_display_downvote_container">
+          <!--  android:background="@drawable/ripple_effect"
+            android:theme="@style/RippleTheme"-->
             <ImageView
                 android:id="@+id/full_display_snack_bar_downvote"
                 android:layout_width="@dimen/snackbar_icon_size"
@@ -260,7 +262,8 @@
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight=".15">
+            android:layout_weight=".15"
+            android:id="@+id/full_display_save_container">
 
             <ImageView
                 android:id="@+id/full_display_snack_bar_save"

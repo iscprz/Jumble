@@ -157,7 +157,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private int getMenuItemTextColor(View convertView, String headerTitle) {
         String currLoggedInUser =  App.getSharedPrefs().getString(
                 Constants.MOST_RECENT_USER,
-                Constants.USERNAME_USERLESS);//App.getAccountHelper().getReddit().getAuthManager().currentUsername();
+                Constants.USERNAME_USERLESS);
 
         // swap username ugly to pretty for sake of comparing sharedpref details and menu item
         if (Constants.USERNAME_USERLESS.equalsIgnoreCase(currLoggedInUser)) {

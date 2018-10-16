@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/colorSoftBlue">     <!-- ripple color -->
+
+<!--    &lt;!&ndash; for Button &ndash;&gt;
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="3dp" />
+            <solid android:color="@color/colorSoftBlue"/>
+        </shape>
+    </item>-->
+
+</ripple>

@@ -13,9 +13,7 @@ import android.view.Menu;
 
 import com.sometimestwo.moxie.EventListeners.HomeEventListener;
 import com.sometimestwo.moxie.EventListeners.OnCloseClickEventListener;
-import com.sometimestwo.moxie.EventListeners.RedditHeartbeatListener;
 import com.sometimestwo.moxie.Utils.Constants;
-import com.sometimestwo.moxie.Utils.Utils;
 
 public class ActivitySubredditViewer extends AppCompatActivity implements HomeEventListener,
         Fragment404.Fragment404EventListener,

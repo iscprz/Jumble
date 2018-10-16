@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.sometimestwo.moxie.EventListeners.OnRedditTaskListener;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
@@ -38,8 +39,24 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     @Override
     public void loadInitial(@NonNull LoadInitialParams<String> params,
                             @NonNull final LoadInitialCallback<SubmissionObj> callback) {
-        App.setPaginator(buildNewPaginator());
-        new FetchInitialSubmissionsTask(callback).execute();
+        if(App.getAccountHelper().isAuthenticated()){
+            App.setPaginator(buildNewPaginator());
+            new FetchInitialSubmissionsTask(callback).execute();
+        }
+        else{
+            new Utils.RedditReauthTask(new OnRedditTaskListener(){
+                @Override
+                public void onSuccess() {
+                    App.setPaginator(buildNewPaginator());
+                    new FetchInitialSubmissionsTask(callback).execute();
+                }
+
+                @Override
+                public void onFailure(String exceptionMessage) {
+                    //todo
+                }
+            }).execute();
+        }
     }
 
     // Shouldnt be needing this since we only ever append to our feed

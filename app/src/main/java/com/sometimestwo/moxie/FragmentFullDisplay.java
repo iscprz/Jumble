@@ -47,7 +47,11 @@ import com.ablanco.zoomy.TapListener;
 import com.ablanco.zoomy.Zoomy;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.load.resource.gif.GifDrawable;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.github.chrisbanes.photoview.PhotoView;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -455,8 +459,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                             }
                         });
             } else {
-                //qqq
-                mProgressBar.setVisibility(View.GONE);
+                mProgressBar.setVisibility(View.VISIBLE);
                 focusView(mZoomView, null);
                 Zoomy.Builder builder = new Zoomy.Builder(getActivity())
                         .target(mZoomView)
@@ -481,6 +484,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                         });
                 builder.register();
                 GlideApp.load(imageUrl)
+                        .listener(new GlideProgressListener(mProgressBar))
                         .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
                         .into(mZoomView);
             }
@@ -613,6 +617,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.IREDDIT
                     || Utils.getFileExtensionFromUrl(imageUrl).equalsIgnoreCase("gif")) {
                 focusView(mZoomView, null);
+                mProgressBar.setVisibility(View.VISIBLE);
                 Zoomy.Builder builder = new Zoomy.Builder(getActivity())
                         .target(mZoomView)
                         .interpolator(new OvershootInterpolator())
@@ -636,13 +641,29 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
                 builder.register();
                 //TODO Progress bar
-                mProgressBar.setVisibility(View.GONE);
                 GlideApp.asGif()
                         .load(imageUrl)
+                        .listener(new RequestListener<GifDrawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e,
+                                                        Object model,
+                                                        Target<GifDrawable> target,
+                                                        boolean isFirstResource) {
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(GifDrawable resource,
+                                                           Object model,
+                                                           Target<GifDrawable> target,
+                                                           com.bumptech.glide.load.DataSource dataSource,
+                                                           boolean isFirstResource) {
+                                mProgressBar.setVisibility(View.GONE);
+                                return false;
+                            }
+                        })
                         .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
                         .into(mZoomView);
-
-
             }
             // Every other domain for GIF
             else {

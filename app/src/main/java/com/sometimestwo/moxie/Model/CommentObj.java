@@ -57,7 +57,7 @@ public class CommentObj extends Item implements ExpandableItem {
         // Collapse button color
         commentCollapseButton.setBackgroundColor(App.getAppResources().getColor(getCommentColor(comment.getDepth())));
         // Author
-        commentAuthorTextView.setText(comment.getSubject().getAuthor() /*+ "{" + comment.getDepth() + "}"*/);
+        commentAuthorTextView.setText(comment.getSubject().getAuthor());
         // Check if Author of this comment is OP
         commentAuthorTextView.setTextColor(getAuthorTextColor(comment.getSubject().getAuthor()));
         // Score
@@ -159,19 +159,6 @@ public class CommentObj extends Item implements ExpandableItem {
         }
     }
 
-  /*  private String getTimeCommentSubmitted(long created){
-        StringBuilder sb = new StringBuilder();
-
-        long now = System.currentTimeMillis();
-        long elapsed = now - created;
-
-        int hours   = (int) ((elapsed / (1000*60*60)) / 24);
-        int minutes = (int) ((elapsed / (1000*60)) / 60);
-
-        if(hours > 1) return sb.append(hours).append("hrs").toString();
-        if(hours == 1) return sb.append(hours).append("hr").toString();
-        else return sb.append(minutes).append("mins").toString();
-    }*/
 
     private String getGoldCountText(short goldCount){
         StringBuilder sb = new StringBuilder();

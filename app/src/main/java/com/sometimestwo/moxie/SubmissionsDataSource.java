@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.sometimestwo.moxie.EventListeners.RedditHeartbeatListener;
 import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
@@ -18,7 +17,6 @@ import net.dean.jraw.models.SubredditSort;
 import net.dean.jraw.models.TimePeriod;
 import net.dean.jraw.pagination.DefaultPaginator;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,7 +27,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     // Info object that stores important browsing info such as current sortby and subreddit
     private MoxieInfoObj mMoxieInfoObj;
     // For paging through Reddit submission Listings
-    private DefaultPaginator<?> mPaginator;
+    //private DefaultPaginator<?> mPaginator;
     private boolean mIs404 = false;
     private boolean mEndOfSubreddit = false;
 
@@ -40,26 +38,37 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     @Override
     public void loadInitial(@NonNull LoadInitialParams<String> params,
                             @NonNull final LoadInitialCallback<SubmissionObj> callback) {
-        // gotta make sure we're authenticated before making calls to reddit api
-        if (!App.getAccountHelper().isAuthenticated()) {
-            new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
-                @Override
-                public void redditUserAuthenticated() {
-                    doLoadInitial(params, callback);
-                }
-            }).execute();
-        } else {
-            doLoadInitial(params, callback);
-        }
-    }
-
-    private void doLoadInitial(@NonNull LoadInitialParams<String> params,
-                               @NonNull final LoadInitialCallback<SubmissionObj> callback) {
-        mPaginator = buildPaginator();
+        App.setPaginator(buildNewPaginator());
         new FetchInitialSubmissionsTask(callback).execute();
     }
 
-    private DefaultPaginator<?> buildPaginator() {
+    // Shouldnt be needing this since we only ever append to our feed
+    @Override
+    public void loadBefore(@NonNull final LoadParams<String> params, @NonNull final LoadCallback<SubmissionObj> callback) {
+    }
+
+    // Loads the next page
+    @Override
+    public void loadAfter(@NonNull final LoadParams<String> params, @NonNull final LoadCallback<SubmissionObj> callback) {
+        if (!mIs404 && !mEndOfSubreddit) {
+            // make sure we're authenticated
+            if (!App.getAccountHelper().isAuthenticated()) {
+                mEndOfSubreddit = true;
+                Log.e("LOAD_AFTER_TEST", "----------Client not authenticated! Marked end of subreddit!");
+            } else {
+                new FetchSubmissionsTask(callback).execute();
+            }
+        }
+    }
+
+    @NonNull
+    @Override
+    public String getKey(@NonNull SubmissionObj item) {
+        return item.getId();
+    }
+
+
+    private DefaultPaginator<?> buildNewPaginator() {
         RedditClient redditClient = App.getAccountHelper().getReddit();
         SubredditSort sortBy = mMoxieInfoObj.getmSortBy();
         TimePeriod timePeriod = mMoxieInfoObj.getmTimePeriod();
@@ -73,15 +82,15 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         }
         // Requested subreddit can be either a name of a subreddit
         // or a special string indicating request for saved items
-        if(subredditRequested != null){
-            if(subredditRequested.equalsIgnoreCase(Constants.REQUEST_SAVED)){
+        if (subredditRequested != null) {
+            if (subredditRequested.equalsIgnoreCase(Constants.REQUEST_SAVED)) {
                 return redditClient.me()
                         .history("saved")
                         .limit(Constants.QUERY_PAGE_SIZE)
                         .build();
             }
             // We have a subreddit request - does not matter if logged in or not
-            else{
+            else {
                 builder = redditClient.subreddit(subredditRequested).posts();
             }
         }
@@ -108,63 +117,6 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 .build();
     }
 
- /*   private DefaultPaginator.Builder<Submission, SubredditSort> getSubredditSortBuilder() {
-        RedditClient redditClient = App.getAccountHelper().getReddit();
-        String subredditRequested = null;
-
-        // Get the requested subreddit(s), if any
-        if (!mMoxieInfoObj.getmSubredditStack().isEmpty()) {
-            subredditRequested = mMoxieInfoObj.getmSubredditStack().peek();
-        }
-        // We have a subreddit request - does not matter if logged in or not
-        if (subredditRequested != null) {
-            return redditClient.subreddit(subredditRequested).posts();
-        }
-        // Logged in with no subreddit request - display user's front page
-        else if (!redditClient.getAuthMethod().isUserless()) {
-            return redditClient.frontPage();
-        }
-        // USERLESS and no subreddit request - display default
-        else {
-            StringBuilder sb = new StringBuilder();
-            for (String subreddit : App.getMoxieInfoObj().getDefaultSubreddits()) {
-                sb.append(subreddit).append("+");
-            }
-            // remove trailing +
-            String defaultSubreddits = sb.toString().substring(0, sb.toString().length() - 1);
-            return redditClient.subreddit(defaultSubreddits).posts();
-        }
-    }*/
-
-    // Shouldnt be needing this for now since we only ever append to our feed
-    @Override
-    public void loadBefore(@NonNull final LoadParams<String> params, @NonNull final LoadCallback<SubmissionObj> callback) {
-    }
-
-    // Loads the next page
-    @Override
-    public void loadAfter(@NonNull final LoadParams<String> params, @NonNull final LoadCallback<SubmissionObj> callback) {
-        if (!mIs404 && !mEndOfSubreddit) {
-            // make sure we're authenticated
-            if (!App.getAccountHelper().isAuthenticated()) {
-                new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
-                    @Override
-                    public void redditUserAuthenticated() {
-                        new FetchSubmissionsTask(callback).execute();
-                    }
-                }).execute();
-            } else {
-                new FetchSubmissionsTask(callback).execute();
-            }
-        }
-    }
-
-    @NonNull
-    @Override
-    public String getKey(@NonNull SubmissionObj item) {
-        return item.getId();
-    }
-
     /*
         Initial submissions loading. Uses callback to return result if success
      */
@@ -178,11 +130,10 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
         @Override
         protected List<SubmissionObj> doInBackground(Void... voids) {
-            Listing<?> submissions = null;
-            List<SubmissionObj> submissionObjs = null;
-
+            Listing<?> submissions;
+            List<SubmissionObj> submissionObjs;
             try {
-                submissions = mPaginator.next();
+                submissions = App.getRedditPaginator().next();
                 //currPageNum++;
                 /*  If we've retrieved an amount of pages less than our page size limit,
                  *  it's because the subreddit(s) in question are out of submissions to return.
@@ -237,22 +188,11 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
         @Override
         protected List<SubmissionObj> doInBackground(Void... voids) {
-            Listing<?> submissions = null;
+            Listing<?> submissions;
             List<SubmissionObj> submissionObjs = null;
             try {
-                if (mPaginator.getReddit() != App.getAccountHelper().getReddit()) {
-                    Log.e(TAG, "+++++++++++++++++++++++++++++++++++++++++++++Reddits mismatched! Will attempt to get new paginator!");
-                    int leftOffAtPage = mPaginator.getPageNumber();
-                    mPaginator = buildPaginator();
-                    for (int i = 1; i < leftOffAtPage; i++) {
-                        mPaginator.next();
-                        Log.e(TAG, "Old paginator page: " + leftOffAtPage + ". Curr paginator: " + i);
-                    }
-                }
                 // get the next few submissions
-                submissions = mPaginator.next();
-                Log.e(TAG, "Current page: " + mPaginator.getPageNumber());
-                //currPageNum++;
+                submissions = App.getRedditPaginator().next();
                 submissionObjs = mapSubmissions(submissions);
             } catch (Exception e) {
                 // todo: catch network error such as timeout using similar techniques as above
@@ -276,7 +216,8 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
         // If the requested subreddit has 0 posts (non-existant)
         if (submissionsList == null || submissionsList.size() < 1) {
-            res.add(new SubmissionObj(true));
+            res.add(new SubmissionObj(Constants.FetchSubmissionsFlag.NOT_FOUND_404));
+            //res.add(new SubmissionObj(true));
             mIs404 = true;
             return res;
         }
@@ -288,7 +229,6 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 continue;
             }
             SubmissionObj s = new SubmissionObj();
-            s.setSubredditEmpty(false);
             s.setAuthor(submission.getAuthor());
             s.setUrl(submission.getUrl());
             s.setId(submission.getId());
@@ -390,10 +330,11 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
 
     // JRAW will give us a Listing that can be different things. We only care about submissions.
     // Note: This was added to filter saved comments in particular
-    private List<Submission> filterNonSubmissions(Listing<?> listing){
+    private List<Submission> filterNonSubmissions(Listing<?> listing) {
+        if (listing == null) return null;
         List<Submission> submissionsOnly = new ArrayList<Submission>();
 
-        for(int i = 0; i < listing.size(); i++) {
+        for (int i = 0; i < listing.size(); i++) {
             Object listingObj = listing.get(i);
             if (listingObj instanceof net.dean.jraw.models.Submission) {
                 submissionsOnly.add((Submission) listingObj);

@@ -65,20 +65,14 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
     @Override
     protected void onResume() {
         super.onResume();
+        if (!App.getAccountHelper().isAuthenticated()) {
+            startOver();
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        // Need to make sure user is authenticated
-        if (!App.getAccountHelper().isAuthenticated()) {
-            new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
-                @Override
-                public void redditUserAuthenticated() {
-                    // do nothing
-                }
-            }).execute();
-        }
     }
 
     @Override

@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.sometimestwo.moxie.App;
 import com.sometimestwo.moxie.R;
 import com.sometimestwo.moxie.Utils.Constants;
+import com.sometimestwo.moxie.Utils.Utils;
 import com.xwray.groupie.ExpandableGroup;
 import com.xwray.groupie.ExpandableItem;
 import com.xwray.groupie.Item;
@@ -62,7 +63,7 @@ public class CommentObj extends Item implements ExpandableItem {
         // Score
         commentScoreTextView.setText(getScoreText(comment.getSubject().getScore(),comment.getSubject().isScoreHidden()));
         // Time submitted
-        commentTimeSubmittedTextView.setText(getTimeSubmitted(comment.getSubject().getCreated().getTime()));
+        commentTimeSubmittedTextView.setText(Utils.getStringTimestamp(comment.getSubject().getCreated().getTime()));
         // Num replies (displayed when item is collapsed)
         commentNumRepliesTextView.setText(getNumRepliesText(comment.getReplies().size()));
         // Gold star if gilded
@@ -158,19 +159,19 @@ public class CommentObj extends Item implements ExpandableItem {
         }
     }
 
-    private String getTimeSubmitted(long created){
+  /*  private String getTimeCommentSubmitted(long created){
         StringBuilder sb = new StringBuilder();
 
         long now = System.currentTimeMillis();
         long elapsed = now - created;
 
-        int hours   = (int) ((elapsed / (1000*60*60)) % 24);
-        int minutes = (int) ((elapsed / (1000*60)) % 60);
+        int hours   = (int) ((elapsed / (1000*60*60)) / 24);
+        int minutes = (int) ((elapsed / (1000*60)) / 60);
 
         if(hours > 1) return sb.append(hours).append("hrs").toString();
         if(hours == 1) return sb.append(hours).append("hr").toString();
         else return sb.append(minutes).append("mins").toString();
-    }
+    }*/
 
     private String getGoldCountText(short goldCount){
         StringBuilder sb = new StringBuilder();

@@ -22,6 +22,7 @@ import net.dean.jraw.android.SimpleAndroidLogAdapter;
 import net.dean.jraw.http.LogAdapter;
 import net.dean.jraw.http.SimpleHttpLogger;
 import net.dean.jraw.oauth.AccountHelper;
+import net.dean.jraw.pagination.DefaultPaginator;
 
 import java.util.UUID;
 
@@ -35,6 +36,11 @@ public final class App extends Application {
     private static Gson GsonApp;
     private static Resources AppResources;
 
+    // Reference to the submissions paginator we'll be using to fetch submissions.
+    // We need this here so that we can access it from everywhere to verify its
+    // authentication status.
+    private static DefaultPaginator<?> RedditPaginator;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -44,10 +50,6 @@ public final class App extends Application {
 
         // Ideally, this should be unique to every device
         UUID deviceUuid = UUID.randomUUID();
-
-        // represents info about a subreddit we're currently exploring
-        currSubredditObj = new MoxieInfoObj();
-
         // Store our access tokens and refresh tokens in shared preferences
         tokenStore = new SharedPreferencesTokenStore(getApplicationContext());
         // Load stored tokens into memory
@@ -75,17 +77,16 @@ public final class App extends Application {
 
             return null;
         });
-
+        // Video cacher
         proxy = new HttpProxyCacheServer.Builder(this).maxCacheSize(5 * 1024)
                 .maxCacheFilesCount(20)
                 .build();
-
         // Glide
         GlideApp = Glide.with(this);
-
         // Gson
         GsonApp = new Gson();
-
+        // represents info about a subreddit we're currently exploring
+        currSubredditObj = new MoxieInfoObj();
         Shared_prefs = this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
 
         AppResources = this.getResources();
@@ -98,6 +99,13 @@ public final class App extends Application {
     public static RequestManager getGlideApp() { return GlideApp; }
     public static Gson getGsonApp() {return GsonApp;}
     public static Resources getAppResources() {return AppResources;}
+
+    public static DefaultPaginator<?> getRedditPaginator() {
+        return RedditPaginator;
+    }
+    public static void setPaginator(DefaultPaginator<?> paginator) {
+        RedditPaginator = paginator;
+    }
 
     // Video cache
     public static HttpProxyCacheServer getProxy(Context context) {

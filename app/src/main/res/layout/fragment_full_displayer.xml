@@ -1,8 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/full_displayer_master_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBgBlackTintDarkest"
-    android:id="@+id/full_displayer_master_container"
     android:orientation="vertical">
 
     <!-- Failed to load text-->
@@ -105,22 +105,13 @@
             android:visibility="visible" />
     </FrameLayout>
 
-    <!-- Images  NOTE: This needs to be at the bottom here -->
-    <com.sometimestwo.moxie.ZoomieView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/full_displayer_image_zoomie_view"
+
+    <com.github.chrisbanes.photoview.PhotoView
+        android:id="@+id/full_displayer_zoomie_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
-
-        app:zoomage_animateOnReset="true"
-        app:zoomage_autoCenter="true"
-        app:zoomage_autoResetMode="UNDER"
-        app:zoomage_maxScale="8"
-        app:zoomage_minScale="0.6"
-        app:zoomage_restrictBounds="false"
-        app:zoomage_translatable="true"
-        app:zoomage_zoomable="true" />
+        android:layout_above="@id/full_display_snack_bar_container"
+        android:layout_below="@id/big_display_title_container" />
 
     <!-- Loading progress bar-->
     <ProgressBar
@@ -131,76 +122,64 @@
         android:visibility="visible" />
 
     <!-- Submission header -->
-    <LinearLayout
+
+
+    <RelativeLayout
         android:id="@+id/big_display_title_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:background="@color/colorBgBlackTint"
         android:orientation="vertical"
-        android:paddingTop="20dp"
+        android:paddingTop="10dp"
         android:visibility="visible">
 
         <!--Title-->
         <TextView
-            android:id="@+id/big_display_title"
+            android:id="@+id/full_display_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight=".75"
-            android:gravity="center_horizontal"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="5dp"
             android:textColor="@color/colorWhite"
-            android:textSize="18sp" />
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <!-- Submission info-->
+        <TextView
+            android:id="@+id/full_display_submission_info"
+            android:layout_width="wrap_content"
             android:layout_height="30dp"
-            android:layout_marginBottom="5dp"
-            android:layout_weight=".25"
-            android:orientation="horizontal"
-            android:paddingEnd="10dp"
-            android:paddingStart="10dp"
-            android:paddingTop="10dp">
+            android:layout_below="@id/full_display_title"
+            android:layout_marginStart="5dp"
+            android:gravity="center_vertical"
+            android:textColor="@color/colorLightGray"
+            android:textSize="@dimen/full_display_header_info_text_size"
+            android:textStyle="normal" />
 
-            <!-- Author-->
-            <RelativeLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_weight=".5">
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:id="@+id/full_display_gold_star"
+            android:layout_marginTop="5dp"
+            android:background="@drawable/ic_yellow_star_filled_2"
+            android:visibility="gone"
+            android:layout_toEndOf="@id/full_display_submission_info"
+            android:layout_below="@id/full_display_title" />
+        <TextView
+            android:id="@+id/full_display_gold_text"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginEnd="5dp"
+            android:layout_toEndOf="@id/full_display_gold_star"
+            android:layout_below="@id/full_display_title"
+            android:gravity="center_vertical"
+            android:textColor="@color/colorLightGray"
+            android:textSize="@dimen/full_display_header_info_text_size"
+            android:textStyle="normal" />
 
-                <ImageView
-                    android:id="@+id/full_display_header_author_icon"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:background="@drawable/ic_white_person_filled" />
-
-                <TextView
-                    android:id="@+id/full_display_author_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_toEndOf="@id/full_display_header_author_icon"
-                    android:paddingStart="5dp"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-            </RelativeLayout>
-
-
-            <!--Subreddit name-->
-            <TextView
-                android:id="@+id/big_display_subreddit"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_weight=".5"
-                android:gravity="end"
-                android:textColor="@color/colorWhite"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-    </LinearLayout>
+    </RelativeLayout>
     <!-- Snack bar-->
     <LinearLayout
         android:id="@+id/full_display_snack_bar_container"
@@ -221,17 +200,17 @@
                 android:id="@+id/full_display_snack_bar_comments"
                 android:layout_width="45dp"
                 android:layout_height="45dp"
-                android:layout_gravity="center"
                 android:layout_centerVertical="true"
+                android:layout_gravity="center"
                 android:background="@drawable/ic_white_chat" />
 
             <TextView
                 android:id="@+id/full_display_comments_counter"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_gravity="center"
                 android:layout_toEndOf="@id/full_display_snack_bar_comments"
                 android:gravity="center_vertical"
-                android:layout_gravity="center"
                 android:textColor="@color/colorWhite"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -247,17 +226,17 @@
                 android:id="@+id/full_display_snack_bar_upvote"
                 android:layout_width="@dimen/snackbar_icon_size"
                 android:layout_height="@dimen/snackbar_icon_size"
-                android:layout_gravity="center"
                 android:layout_centerVertical="true"
+                android:layout_gravity="center"
                 android:background="@drawable/ic_white_upvote" />
 
             <TextView
                 android:id="@+id/full_display_upvote_counter"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_gravity="center"
                 android:layout_toEndOf="@id/full_display_snack_bar_upvote"
                 android:gravity="center_vertical"
-                android:layout_gravity="center"
                 android:textColor="@color/colorWhite"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -273,7 +252,7 @@
                 android:layout_width="@dimen/snackbar_icon_size"
                 android:layout_height="@dimen/snackbar_icon_size"
                 android:layout_gravity="start"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="10dp"
                 android:background="@drawable/ic_white_downvote" />
         </FrameLayout>
 
@@ -287,7 +266,8 @@
                 android:id="@+id/full_display_snack_bar_save"
                 android:layout_width="@dimen/snackbar_icon_size"
                 android:layout_height="@dimen/snackbar_icon_size"
-                android:layout_gravity="center"
+                android:layout_gravity="start"
+                android:layout_marginTop="10dp"
                 android:background="@drawable/ic_white_star_outline" />
         </FrameLayout>
 
@@ -309,6 +289,6 @@
     </LinearLayout>
 
     <!-- Comments secion that slides up -->
-    <include layout="@layout/layout_comments"/>
+    <include layout="@layout/layout_comments" />
 
 </RelativeLayout>

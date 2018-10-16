@@ -100,6 +100,50 @@ public class Utils {
         else return s;
     }
 
+    /* Converts a long timestamp into a "time ago" timestamp. Used for
+    *  displaying how long ago a submission/comment was submitted.*/
+    public static String getStringTimestamp(long created) {
+        long now = System.currentTimeMillis();
+        long elapsed = now - created;
+
+        long secondsInMilli = 1000;
+        long minutesInMilli = secondsInMilli * 60;
+        long hoursInMilli = minutesInMilli * 60;
+        long daysInMilli = hoursInMilli * 24;
+        long weeksInMilli = daysInMilli * 7;
+        long monthsInMilli = weeksInMilli * 4;
+        long yearsInMilli = monthsInMilli * 12;
+
+        long elapsedYears = elapsed / yearsInMilli;
+        if(elapsedYears > 0) elapsed = elapsed % elapsedYears;
+
+        long elapsedMonths = elapsed / monthsInMilli;
+        if(elapsedMonths > 0) elapsed = elapsed % monthsInMilli;
+
+        long elapsedWeeks = elapsed / weeksInMilli;
+        if(elapsedWeeks > 0) elapsed = elapsed % weeksInMilli;
+
+        long elapsedDays = elapsed / daysInMilli;
+        if(elapsedDays > 0) elapsed = elapsed % daysInMilli;
+
+        long elapsedHours = elapsed / hoursInMilli;
+        if(elapsedHours > 0) elapsed = elapsed % hoursInMilli;
+
+        long elapsedMinutes = elapsed / minutesInMilli;
+        if(elapsedMinutes > 0) elapsed = elapsed % minutesInMilli;
+
+
+
+        StringBuilder sb = new StringBuilder();
+
+        if (elapsedYears >= 1) return sb.append(elapsedYears).append("y").toString();
+        else if (elapsedMonths >= 1) return sb.append(elapsedMonths).append("mo").toString();
+        else if (elapsedDays >= 1) return sb.append(elapsedDays).append("d").toString();
+        else if (elapsedHours >= 1) return sb.append(elapsedHours).append("h").toString();
+        else if(elapsedMinutes >= 1) return sb.append(elapsedMinutes).append("mins").toString();
+        else return sb.append("just now").toString();
+    }
+
     /*
        imgur links will be given in the following format :
        https://i.imgur.com/CtyvHl6.gifv
@@ -489,7 +533,7 @@ public class Utils {
                         .build();
 
                 ArrayListStringIgnoreCase listOfSubredditNames = new ArrayListStringIgnoreCase();
-                // Paginator implements Iterable
+                // getRedditPaginator implements Iterable
                 for (Listing<Subreddit> page : paginator) {
                     for (Subreddit s : page) {
                         listOfSubredditNames.add(s.getName());

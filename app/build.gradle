@@ -95,13 +95,17 @@ dependencies {
     // Logger
     implementation 'org.slf4j:slf4j-android:1.7.21'
 
-    //zoomieview
-    implementation 'com.jsibbold:zoomage:1.2.0'
-
     //youtube
     implementation files('libs/YouTubeAndroidPlayerApi.jar')
 
     //Groupie
     implementation 'com.xwray:groupie:2.1.0'
+
+    //image zoomie view
+    implementation 'com.ablanco.zoomy:zoomy:1.1.0'
+
+    // photo view
+    implementation 'com.github.chrisbanes:PhotoView:2.1.4'
+
 
 }

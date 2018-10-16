@@ -13,8 +13,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
 
-import retrofit2.Call;
-
 /*
  *  This class is a customized version of the Model class provided by JRAW.
  *  See net.dean.jraw.models.Submission for field details
@@ -23,14 +21,11 @@ public class SubmissionObj implements Serializable {
     public SubmissionObj() {
     }
 
-    // For quick instantiation of submission list when we encounter empty subreddit
-    public SubmissionObj(Boolean isSubredditEmpty) {
-        this.isSubredditEmpty = isSubredditEmpty;
+    public SubmissionObj(Constants.FetchSubmissionsFlag flag){
+        this.fetchSubmissionsFlag = flag;
     }
 
-    //Notifies us when we've tried requesting data from a non-existant subreddit (0 submissions)
-    private boolean isSubredditEmpty = false;
-
+    private Constants.FetchSubmissionsFlag fetchSubmissionsFlag;
     private String author;
     private Date dateCreated;
     private Constants.SubmissionDomain domain;
@@ -78,15 +73,10 @@ public class SubmissionObj implements Serializable {
     private String fileExtension;
     // What we will name the file if user downloads it (if media is downloadable)
     private String filenameIfDownloaded;
-    // Stores a reference to a gfycat async call in case we need to cancel it
 
 
     public boolean isSubredditEmpty() {
-        return isSubredditEmpty;
-    }
-
-    public void setSubredditEmpty(boolean subredditEmpty) {
-        isSubredditEmpty = subredditEmpty;
+        return fetchSubmissionsFlag == Constants.FetchSubmissionsFlag.NOT_FOUND_404;
     }
 
     public String getAuthor() {
@@ -424,4 +414,11 @@ public class SubmissionObj implements Serializable {
         this.filenameIfDownloaded = filenameIfDownloaded;
     }
 
+    public Constants.FetchSubmissionsFlag getFetchSubmissionsFlag() {
+        return fetchSubmissionsFlag;
+    }
+
+    public void setFetchSubmissionsFlag(Constants.FetchSubmissionsFlag fetchSubmissionsFlag) {
+        this.fetchSubmissionsFlag = fetchSubmissionsFlag;
+    }
 }

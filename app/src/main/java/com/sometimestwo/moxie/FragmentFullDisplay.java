@@ -30,6 +30,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.OvershootInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -40,9 +41,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.ablanco.zoomy.DoubleTapListener;
+import com.ablanco.zoomy.LongPressListener;
+import com.ablanco.zoomy.TapListener;
+import com.ablanco.zoomy.Zoomy;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.github.chrisbanes.photoview.PhotoView;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -66,7 +72,6 @@ import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
 import com.sometimestwo.moxie.EventListeners.OnTaskCompletedListener;
 import com.sometimestwo.moxie.EventListeners.OnVRedditTaskCompletedListener;
-import com.sometimestwo.moxie.EventListeners.RedditHeartbeatListener;
 import com.sometimestwo.moxie.Model.CommentObj;
 import com.sometimestwo.moxie.Model.ExpandableCommentGroup;
 import com.sometimestwo.moxie.Model.GfyItem;
@@ -108,9 +113,10 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
     /* Titles */
     TextView mTitleTextView;
-    TextView mAuthorTextView;
-    TextView mSubredditTextView;
-    LinearLayout mHeaderContainer;
+    TextView mSubmissionInfoTextView;
+    ImageView mGoldStar;
+    TextView mGoldTextView;
+    RelativeLayout mHeaderContainer;
 
     /* Snackbar */
     private ImageView mButtonComments;
@@ -138,9 +144,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     public ArrayList<CommentObj> comments;
     public HashMap<String, String> commentOPs = new HashMap<>();
 
-    /* Big zoomie view*/
-    //private FrameLayout mZoomieImageViewContainer;
-    private ZoomieView mZoomieImageView;
+    /* Zoomable image view*/
+    PhotoView mZoomView;
 
     /* Video view for VREDDIT videos*/
     private FrameLayout mVideoviewContainer;
@@ -167,6 +172,10 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
     /* Download utils*/
     private DownloadBinder downloadBinder = null;
+
+    /* Async tasks which might need cancelling */
+    AsyncTask<Void, Void, Void> FetchCommentsTask;
+
 
     public interface OnCommentsEventListener {
         public void isCommentsOpen(boolean commentsOpen);
@@ -197,10 +206,11 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mIsUserless = Utils.isUserlessSafe();
 
         /* Header */
-        mHeaderContainer = (LinearLayout) v.findViewById(R.id.big_display_title_container);
-        mTitleTextView = (TextView) v.findViewById(R.id.big_display_title);
-        mAuthorTextView = (TextView) v.findViewById(R.id.full_display_author_text);
-        mSubredditTextView = (TextView) v.findViewById(R.id.big_display_subreddit);
+        mHeaderContainer = (RelativeLayout) v.findViewById(R.id.big_display_title_container);
+        mTitleTextView = (TextView) v.findViewById(R.id.full_display_title);
+        mSubmissionInfoTextView = (TextView) v.findViewById(R.id.full_display_submission_info);
+        mGoldStar = (ImageView) v.findViewById(R.id.full_display_gold_star);
+        mGoldTextView = (TextView) v.findViewById(R.id.full_display_gold_text);
 
         /* Snackbar */
         mButtonComments = (ImageView) v.findViewById(R.id.full_display_snack_bar_comments);
@@ -221,8 +231,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mCommentsButtonClose = (ImageView) v.findViewById(R.id.comments_button_close);
 
         /* Main zoomie image view*/
-        // mZoomieImageViewContainer = (FrameLayout) v.findViewById(R.id.full_displayer_big_image_container);
-        mZoomieImageView = (ZoomieView) v.findViewById(R.id.full_displayer_image_zoomie_view);
+        mZoomView = (PhotoView) v.findViewById(R.id.full_displayer_zoomie_view);
 
         /* Video view*/
         mVideoviewContainer = (FrameLayout) v.findViewById(R.id.full_displayer_videoview_container);
@@ -340,6 +349,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             getContext().unregisterReceiver(mDLCompleteReceiver);
         }
 
+        // stop any async tasks that might still be running
+        cancelRunning();
     }
 
     private void unpackArgs() {
@@ -352,16 +363,22 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         }
     }
 
+    private void cancelRunning() {
+        if (FetchCommentsTask != null) {
+            FetchCommentsTask.cancel(true);
+        }
+    }
+
     private void setupHeader() {
         // Title
-      /*  mTitleTextView.setText(mCurrSubmission.getCompactTitle() != null
-                ? mCurrSubmission.getCompactTitle() : mCurrSubmission.getTitle());*/
         mTitleTextView.setText(mCurrSubmission.getTitle());
 
-        // Author
-        mAuthorTextView.setText(mCurrSubmission.getAuthor());
-        // Subreddit
-        mSubredditTextView.setText("/r/" + Utils.truncateString(mCurrSubmission.getSubreddit(),15));
+        // Submission info
+        mSubmissionInfoTextView.setText(submissionInfoTextBuilder());
+        if (mCurrSubmission.getGilded() > 0) {
+            mGoldStar.setVisibility(View.VISIBLE);
+            mGoldTextView.setText(mCurrSubmission.getGilded() > 1 ? "x" + mCurrSubmission.getGilded() : "");
+        }
 
         // Container
         mHeaderContainer.setOnClickListener(new View.OnClickListener() {
@@ -374,6 +391,21 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                 }
             }
         });
+    }
+
+    private String submissionInfoTextBuilder() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("/r/").append(mCurrSubmission.getSubreddit())
+                .append("  \u2022  ")
+                .append(mCurrSubmission.getAuthor())
+                .append("  \u2022  ")
+                .append(Utils.getStringTimestamp(mCurrSubmission.getDateCreated().getTime()));
+
+        // need another separator if gilded
+        if (mCurrSubmission.getGilded() > 0)
+            sb.append("  \u2022  ");
+
+        return sb.toString();
     }
 
     private void setupMedia() {
@@ -399,11 +431,15 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                                     getActivity().runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            focusView(mZoomieImageView, null);
                                             mProgressBar.setVisibility(View.GONE);
+                                            focusView(mZoomView, null);
+                                            Zoomy.Builder builder = new Zoomy.Builder(getActivity())
+                                                    .target(mZoomView)
+                                                    .interpolator(new OvershootInterpolator());
+                                            builder.register();
                                             GlideApp.load(mCurrSubmission.getCleanedUrl())
                                                     .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
-                                                    .into(mZoomieImageView);
+                                                    .into(mZoomView);
                                         }
                                     });
                                 } else {
@@ -419,12 +455,34 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                             }
                         });
             } else {
-                focusView(mZoomieImageView, null);
+                //qqq
                 mProgressBar.setVisibility(View.GONE);
+                focusView(mZoomView, null);
+                Zoomy.Builder builder = new Zoomy.Builder(getActivity())
+                        .target(mZoomView)
+                        .interpolator(new OvershootInterpolator())
+                        .tapListener(new TapListener() {
+                            @Override
+                            public void onTap(View v) {
+                                if (mAllowCloseOnClick) {
+                                    closeFullDisplay();
+                                }
+                            }
+                        })
+                        .longPressListener(new LongPressListener() {
+                            @Override
+                            public void onLongPress(View v) {
+
+                            }
+                        }).doubleTapListener(new DoubleTapListener() {
+                            @Override
+                            public void onDoubleTap(View v) {
+                            }
+                        });
+                builder.register();
                 GlideApp.load(imageUrl)
-                        .listener(new GlideProgressListener(mProgressBar))
                         .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
-                        .into(mZoomieImageView);
+                        .into(mZoomView);
             }
 
             //TODO: handle invalid URL
@@ -494,9 +552,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
                     }
                 });
-            }
-            else if(mCurrSubmission.getDomain() == Constants.SubmissionDomain.GFYCAT
-                    && mCurrSubmission.getCleanedUrl() == null){
+            } else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.GFYCAT
+                    && mCurrSubmission.getCleanedUrl() == null) {
                 // We're given a URL in this format: //https://gfycat.com/SpitefulGoldenAracari
                 // extract gfycat ID (looks like:SpitefulGoldenAracari)
                 String gfycatHash = Utils.getGfycatHash(mCurrSubmission.getUrl());
@@ -555,14 +612,37 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             // Also play anything else that may be a .gif file here
             else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.IREDDIT
                     || Utils.getFileExtensionFromUrl(imageUrl).equalsIgnoreCase("gif")) {
-                focusView(mZoomieImageView, null);
+                focusView(mZoomView, null);
+                Zoomy.Builder builder = new Zoomy.Builder(getActivity())
+                        .target(mZoomView)
+                        .interpolator(new OvershootInterpolator())
+                        .tapListener(new TapListener() {
+                            @Override
+                            public void onTap(View v) {
+                                if (mAllowCloseOnClick) {
+                                    closeFullDisplay();
+                                }
+                            }
+                        })
+                        .longPressListener(new LongPressListener() {
+                            @Override
+                            public void onLongPress(View v) {
+                            }
+                        }).doubleTapListener(new DoubleTapListener() {
+                            @Override
+                            public void onDoubleTap(View v) {
+                            }
+                        });
 
+                builder.register();
                 //TODO Progress bar
                 mProgressBar.setVisibility(View.GONE);
                 GlideApp.asGif()
                         .load(imageUrl)
                         .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
-                        .into(mZoomieImageView);
+                        .into(mZoomView);
+
+
             }
             // Every other domain for GIF
             else {
@@ -575,12 +655,35 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         }
         // Submission is of unknown type (i.e. /r/todayilearned submissions)
         else {
-            focusView(mZoomieImageView, null);
+            focusView(mZoomView, null);
             mProgressBar.setVisibility(View.VISIBLE);
+
+            Zoomy.Builder builder = new Zoomy.Builder(getActivity())
+                    .target(mZoomView)
+                    .interpolator(new OvershootInterpolator())
+                    .tapListener(new TapListener() {
+                        @Override
+                        public void onTap(View v) {
+                            if (mAllowCloseOnClick) {
+                                closeFullDisplay();
+                            }
+                        }
+                    })
+                    .longPressListener(new LongPressListener() {
+                        @Override
+                        public void onLongPress(View v) {
+                        }
+                    }).doubleTapListener(new DoubleTapListener() {
+                        @Override
+                        public void onDoubleTap(View v) {
+                        }
+                    });
+
+            builder.register();
             GlideApp.load(Constants.URI_404)
                     .listener(new GlideProgressListener(mProgressBar))
                     .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
-                    .into(mZoomieImageView);
+                    .into(mZoomView);
         }
     }
 
@@ -631,7 +734,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                     mButtonDownvote.setBackground(mVoteDirection == VoteDirection.DOWN ? downVoteBlue : downVoteWhite);
 
                     mUpvoteCountTextView.setTextColor(mVoteDirection == VoteDirection.UP ? colorUpvoteOrange : colorWhite);
-                    mUpvoteCountTextView.setText(mVoteDirection == VoteDirection.UP ? Utils.truncateCount(++mUpvoteCount):  Utils.truncateCount(--mUpvoteCount));
+                    mUpvoteCountTextView.setText(mVoteDirection == VoteDirection.UP ? Utils.truncateCount(++mUpvoteCount) : Utils.truncateCount(--mUpvoteCount));
                     new Utils.VoteSubmissionTask(mCurrSubmission, FragmentFullDisplay.this, mVoteDirection).execute();
                 }
             }
@@ -656,7 +759,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                         mUpvoteCountTextView.setTextColor(colorWhite);
                     }
                     mUpvoteCountTextView.setText(mVoteDirection == VoteDirection.UP
-                            ?  Utils.truncateCount(--mUpvoteCount):  Utils.truncateCount(mUpvoteCount));
+                            ? Utils.truncateCount(--mUpvoteCount) : Utils.truncateCount(mUpvoteCount));
                     mVoteDirection = (mVoteDirection != VoteDirection.DOWN) ? VoteDirection.DOWN : VoteDirection.NONE;
                     mButtonDownvote.setBackground(mVoteDirection == VoteDirection.DOWN ? downVoteBlue : downVoteWhite);
                     mButtonUpvote.setBackground(mVoteDirection == VoteDirection.UP ? upVoteOrange : upVoteWhite);
@@ -697,8 +800,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
 
                 // Display the submission's URL inside the option "go to {URL}..."
-                String truncatedURL = mCurrSubmission.getUrl().substring(0,Constants.MAX_LENGTH_URL_DISPLAY);
-                String gotoString = getResources().getString(R.string.goto_web_url,truncatedURL);
+                String truncatedURL = mCurrSubmission.getUrl().substring(0, Constants.MAX_LENGTH_URL_DISPLAY);
+                String gotoString = getResources().getString(R.string.goto_web_url, truncatedURL);
                 m.findItem(R.id.menu_full_display_overflow_open_web).setTitle(gotoString);
 
                 overflowPopup.show();
@@ -832,17 +935,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     }
 
     private void initComments() {
-        // ensure our reddit client is still authenticated
-        if (!App.getAccountHelper().isAuthenticated()) {
-            new Utils.RedditHeartbeatTask(new RedditHeartbeatListener() {
-                @Override
-                public void redditUserAuthenticated() {
-                    new FetchCommentsTask().execute();
-                }
-            }).execute();
-        }else{
-            new FetchCommentsTask().execute();
-        }
+        FetchCommentsTask = new FetchCommentsTask().execute();
     }
 
 
@@ -913,7 +1006,6 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
     /* Focuses up to two views. Pass null if only need 1 view focused*/
     private void focusView(View focused1, View focused2) {
-        mZoomieImageView.setVisibility(focused1 == mZoomieImageView || focused2 == mZoomieImageView ? View.VISIBLE : View.GONE);
         mExoplayer.setVisibility(focused1 == mExoplayer || focused2 == mExoplayer ? View.VISIBLE : View.GONE);
         mExoplayerContainer.setVisibility(focused1 == mExoplayerContainer || focused2 == mExoplayerContainer ? View.VISIBLE : View.GONE);
         mVideoView.setVisibility(focused1 == mVideoView || focused2 == mVideoView ? View.VISIBLE : View.GONE);
@@ -921,18 +1013,16 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mYouTubeThumbnail.setVisibility(focused1 == mYouTubeThumbnail || focused2 == mYouTubeThumbnail ? View.VISIBLE : View.GONE);
         mYoutubeIconsOverlay.setVisibility(focused1 == mYoutubeIconsOverlay || focused2 == mYoutubeIconsOverlay ? View.VISIBLE : View.GONE);
         mFailedLoadText.setVisibility(focused1 == mFailedLoadText || focused2 == mFailedLoadText ? View.VISIBLE : View.GONE);
-        //mPlayButton.setVisibility( focused1 == mPlayButton || focused2 == mPlayButton ? View.VISIBLE : View.GONE);
+        mZoomView.setVisibility(focused1 == mZoomView || focused2 == mZoomView ? View.VISIBLE : View.GONE);
     }
 
     // Pop this fragment off the stack, effectively closing the submission viewer.
     private void closeFullDisplay() {
-        //releaseExoPlayer();
-        try {
+        if (getActivity() != null) {
             getActivity().getSupportFragmentManager().popBackStack();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
+
 
     private void initializeExoPlayer(String url) {
 
@@ -1024,8 +1114,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             List<CommentNode<Comment>> rootComments =
                     baseComments.walkTree().iterator().next().getReplies();
 
-            for(CommentNode<Comment> rootComment : rootComments){
-                comments.add(new CommentObj(rootComment,mCurrSubmission));
+            for (CommentNode<Comment> rootComment : rootComments) {
+                comments.add(new CommentObj(rootComment, mCurrSubmission));
             }
             return null;
         }

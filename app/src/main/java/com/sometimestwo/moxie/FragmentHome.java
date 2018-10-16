@@ -339,13 +339,18 @@ public class FragmentHome extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        try {
-            // Check if user settings have been altered.
-            // i.e. User went to settings, opted in to NSFW posts then navigated back.
-            validatePreferences();
-            setupToolbar();
-        } catch (Exception e) {
-            e.printStackTrace();
+        // Need to make sure user is authenticated
+        if (!App.getAccountHelper().isAuthenticated()) {
+            mHomeEventListener.startOver();
+        } else {
+            try {
+                // Check if user settings have been altered.
+                // i.e. User went to settings, opted in to NSFW posts then navigated back.
+                validatePreferences();
+                setupToolbar();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -382,12 +387,12 @@ public class FragmentHome extends Fragment {
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.menu_submissions_sortby).setVisible(true);
-        menu.findItem(R.id.menu_explore).setVisible(true);
-
         // Sub/Unsub menu option only if we're not in guest mode and viewing a subreddit exists
-        if (!Utils.isUserlessSafe() && mCurrSubreddit != null && !is404) {
-            String currUsername = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,null);
+        if (!Utils.isUserlessSafe()
+                && mCurrSubreddit != null
+                && !is404
+                && Constants.REQUEST_SAVED.equalsIgnoreCase(mCurrSubreddit)) {
+            String currUsername = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER, null);
             // User is subbed to this subreddit, display "Unsubscribe" option
             if (Utils.getSubscriptionsFromSharedPrefs(currUsername).contains(mCurrSubreddit)) {
                 menu.findItem(R.id.menu_submissions_overflow_sub).setVisible(false);
@@ -407,12 +412,21 @@ public class FragmentHome extends Fragment {
             menu.findItem(R.id.menu_submissions_overflow_unsub).setVisible(false);
         }
 
+        // Don't display explore or sortby buttons if we're viewing Saved Submissions
+        if (Constants.REQUEST_SAVED.equalsIgnoreCase(mCurrSubreddit)) {
+            menu.findItem(R.id.menu_submissions_sortby).setVisible(false);
+            menu.findItem(R.id.menu_explore).setVisible(false);
+        } else {
+            menu.findItem(R.id.menu_submissions_sortby).setVisible(true);
+            menu.findItem(R.id.menu_explore).setVisible(true);
+        }
+
         super.onPrepareOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        String currUser = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,null);
+        String currUser = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER, null);
 
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -429,7 +443,7 @@ public class FragmentHome extends Fragment {
                         new Utils.SubscribeSubredditTask(mCurrSubreddit, new OnRedditTaskListener() {
                             @Override
                             public void onSuccess() {
-                               String currUser = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER,null);
+                                String currUser = App.getSharedPrefs().getString(Constants.MOST_RECENT_USER, null);
                                 Utils.addToLocalUserSubscriptions(currUser, mCurrSubreddit);
                                 Toast.makeText(FragmentHome.this.getContext(),
                                         "Subscribed",
@@ -450,7 +464,7 @@ public class FragmentHome extends Fragment {
                 new Utils.UnsubscribeSubredditTask(mCurrSubreddit, new OnRedditTaskListener() {
                     @Override
                     public void onSuccess() {
-                        Utils.removeFromLocalUserSubscriptions(currUser,mCurrSubreddit);
+                        Utils.removeFromLocalUserSubscriptions(currUser, mCurrSubreddit);
                         Toast.makeText(FragmentHome.this.getContext(),
                                 "Unsubscribed",
                                 Toast.LENGTH_SHORT)
@@ -582,7 +596,7 @@ public class FragmentHome extends Fragment {
                 }
 
                 // update shared prefernces with a list of this user's subscriptions
-                if(!Utils.isUserSubscriptionsStored(newUsername)){
+                if (!Utils.isUserSubscriptionsStored(newUsername)) {
                     FetchUserSubscriptionsTask =
                             new Utils.FetchUserSubscriptionsAndStoreLocally(
                                     newUsername,
@@ -599,7 +613,7 @@ public class FragmentHome extends Fragment {
                                     }).execute();
                 }
                 // this shouldn't ever be the case since a new user will never have their subscriptions stored
-                else{
+                else {
                     refresh(true);
                 }
             }
@@ -622,20 +636,27 @@ public class FragmentHome extends Fragment {
                 mToolbar.setTitle(mCurrExploreTitle);
                 //mToolbar.setTitleTextColor(getResources().getColor(R.color.colorAccentBlue));
                 mToolbar.setTitleTextAppearance(getContext(), R.style.toolbar_title_text_explore);
+                mToolbar.setSubtitle(Utils.makeTextCute(App.getMoxieInfoObj().getmSortBy().toString()));
             }
             // Displaying a subreddit
             else if (mCurrSubreddit != null) {
-                mToolbar.setTitle(getResources().getString(R.string.subreddit_prefix) + mCurrSubreddit);
                 mToolbar.setTitleTextAppearance(getContext(), R.style.toolbar_title_text_default);
+                // displaying saved submissions
+                if (Constants.REQUEST_SAVED.equalsIgnoreCase(mCurrSubreddit)) {
+                    mToolbar.setTitle(getResources().getString(R.string.saved));
+                }
+                // displaying a subreddit
+                else {
+                    mToolbar.setTitle(getResources().getString(R.string.subreddit_prefix) + mCurrSubreddit);
+                    mToolbar.setSubtitle(Utils.makeTextCute(App.getMoxieInfoObj().getmSortBy().toString()));
+                }
             }
             // Displaying user's frontpage
             else {
                 mToolbar.setTitle(getResources().getString(R.string.frontpage));
                 mToolbar.setTitleTextAppearance(getContext(), R.style.toolbar_title_text_default);
+                mToolbar.setSubtitle(Utils.makeTextCute(App.getMoxieInfoObj().getmSortBy().toString()));
             }
-
-            // Subtitle - if sort by is null, getter will default to HOT
-            mToolbar.setSubtitle(Utils.makeTextCute(App.getMoxieInfoObj().getmSortBy().toString()));
 
 
             // set hamburger menu icon if viewing a subreddit, back arrow if viewing submission
@@ -970,7 +991,7 @@ public class FragmentHome extends Fragment {
 
 
         // option to go to saved submissions if logged in
-        if(!Utils.isUserlessSafe()) {
+        if (!Utils.isUserlessSafe()) {
             expandableMenuModel = new ExpandableMenuModel(
                     getResources().getString(R.string.menu_saved_submissions),
                     true,
@@ -1051,9 +1072,8 @@ public class FragmentHome extends Fragment {
                         } else if (getResources().getString(R.string.menu_settings)
                                 .equalsIgnoreCase(clickedItemTitle)) {
                             mHomeEventListener.openSettings();
-                        }
-                        else if(getResources().getString(R.string.menu_saved_submissions)
-                                .equalsIgnoreCase(clickedItemTitle)){
+                        } else if (getResources().getString(R.string.menu_saved_submissions)
+                                .equalsIgnoreCase(clickedItemTitle)) {
                             gotoSubreddit(Constants.REQUEST_SAVED);
                         }
                     }
@@ -1090,17 +1110,17 @@ public class FragmentHome extends Fragment {
                                         new Utils.FetchUserSubscriptionsAndStoreLocally(
                                                 clickedMenuItemName,
                                                 new OnRedditTaskListener() {
-                                            @Override
-                                            public void onSuccess() {
-                                                App.getAccountHelper().switchToUser(clickedMenuItemName);
-                                                switchOrLogoutCleanup(clickedMenuItemName);
-                                            }
+                                                    @Override
+                                                    public void onSuccess() {
+                                                        App.getAccountHelper().switchToUser(clickedMenuItemName);
+                                                        switchOrLogoutCleanup(clickedMenuItemName);
+                                                    }
 
-                                            @Override
-                                            public void onFailure(String exceptionMessage) {
-                                                //todo
-                                            }
-                                        }).execute();
+                                                    @Override
+                                                    public void onFailure(String exceptionMessage) {
+                                                        //todo
+                                                    }
+                                                }).execute();
                             }
                         }
                     }
@@ -1228,8 +1248,6 @@ public class FragmentHome extends Fragment {
 
             mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
             mHoverPreviewContainerSmall.setVisibility(View.GONE);
-            // fade the toolbar while we're in large previewer
-            mToolbar.setAlpha(.1f);
             mHoverPreviewMediaContainerLarge.setVisibility(View.VISIBLE);
 
             //v.redd.it links will always be non-image. Display in video view.
@@ -1298,7 +1316,8 @@ public class FragmentHome extends Fragment {
             };
 
 
-    public class SubredditContentRecyclerAdapter extends PagedListAdapter<SubmissionObj, SubredditContentRecyclerAdapter.ItemViewHolder> {
+    public class SubredditContentRecyclerAdapter
+            extends PagedListAdapter<SubmissionObj, SubredditContentRecyclerAdapter.ItemViewHolder> {
         private Context mContext;
 
         SubredditContentRecyclerAdapter(Context mContext) {
@@ -1309,7 +1328,10 @@ public class FragmentHome extends Fragment {
         @NonNull
         @Override
         public ItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(mContext).inflate(R.layout.recycler_item_thumbnail, parent, false);
+            View view = LayoutInflater.from(mContext).inflate(
+                    R.layout.recycler_item_thumbnail,
+                    parent,
+                    false);
             return new ItemViewHolder(view);
         }
 
@@ -1322,7 +1344,8 @@ public class FragmentHome extends Fragment {
 
             // prevent null-ness from empty subreddit or any unexpected submission type errors
             SubmissionObj item = getItem(holder.getAdapterPosition()) == null
-                    ? new SubmissionObj(true) : getItem(holder.getAdapterPosition());
+                    ? new SubmissionObj(Constants.FetchSubmissionsFlag.NOT_FOUND_404)
+                    : getItem(holder.getAdapterPosition());
 
             // initialize anything that might overlay the thumbnail
             // to GONE to avoid conflicts when recycling
@@ -1332,8 +1355,6 @@ public class FragmentHome extends Fragment {
 
             // Workaround for checking if requested subreddit is empty (or invalid).
             // If invalid subreddit, there should exist only 1 element and this field will be true
-            // Note: The adapter continues calling onBindViewHolder for as many items as we
-            // usually display on one recyclerview fetch (50?).
             // is404 prevents more 404 pages from being added to the backstack
             if (item.isSubredditEmpty()) {
                 is404 = true;
@@ -1342,6 +1363,8 @@ public class FragmentHome extends Fragment {
                 // the requested subreddit was empty - Display 404 page
                 display404();
                 return;
+            } else if (item.getFetchSubmissionsFlag() == Constants.FetchSubmissionsFlag.START_OVER) {
+                mHomeEventListener.startOver();
             }
             // assume reddit has not provided a thumbnail to be safe
             String thumbnail = Constants.URI_404_thumbnail;
@@ -1471,7 +1494,8 @@ public class FragmentHome extends Fragment {
                             // Imgur Urls might be pointing to indirect image URLs
                             if (item.getDomain() == Constants.SubmissionDomain.IMGUR
                                     && !Arrays.asList(Constants.VALID_IMAGE_EXTENSION)
-                                    .contains(imgurUrl)) {
+                                    .contains(Utils.getFileExtensionFromUrl(imgurUrl))) {
+                                mHoverPreviewContainerLarge.setVisibility(View.GONE);
                                 mPreviewerProgressBar.setVisibility(View.VISIBLE);
                                 // fixes indirect imgur url and uses Glide to load image on success
                                 Utils.fixIndirectImgurUrl(item, Utils.getImgurHash(item.getUrl()),
@@ -1482,6 +1506,8 @@ public class FragmentHome extends Fragment {
                                                     getActivity().runOnUiThread(new Runnable() {
                                                         @Override
                                                         public void run() {
+                                                            mToolbar.setAlpha(.1f);
+                                                            mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
                                                             mPreviewerProgressBar.setVisibility(View.GONE);
                                                             GlideApp.load(item.getCleanedUrl())
                                                                     .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
@@ -1504,6 +1530,7 @@ public class FragmentHome extends Fragment {
                             }
                             // image should be ready to be displayed here
                             else {
+                                mToolbar.setAlpha(.1f);
                                 GlideApp.load(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl())
                                         .listener(new GlideProgressListener(mPreviewerProgressBar))
                                         .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
@@ -1527,6 +1554,7 @@ public class FragmentHome extends Fragment {
                                                 public void run() {
                                                     // cleaned url should contain .mp4 link
                                                     initializePreviewExoPlayer(item.getCleanedUrl());
+                                                    mToolbar.setAlpha(.1f);
                                                 }
                                             });
                                         } else {
@@ -1543,13 +1571,14 @@ public class FragmentHome extends Fragment {
                                 });
                             }
                             // gifv URL that we've already fetched before
-                            else if(item.getDomain() == Constants.SubmissionDomain.IMGUR
-                                    && item.getCleanedUrl() != null){
+                            else if (item.getDomain() == Constants.SubmissionDomain.IMGUR
+                                    && item.getCleanedUrl() != null) {
                                 initializePreviewExoPlayer(item.getCleanedUrl());
+                                mToolbar.setAlpha(.1f);
                             }
                             //GFYCAT
                             else if (item.getDomain() == Constants.SubmissionDomain.GFYCAT
-                                    && item.getCleanedUrl() == null){
+                                    && item.getCleanedUrl() == null) {
                                 // We're given a URL in this format: //https://gfycat.com/SpitefulGoldenAracari
                                 // extract gfycat ID (looks like:SpitefulGoldenAracari)
                                 String gfycatHash = Utils.getGfycatHash(item.getUrl());
@@ -1579,6 +1608,7 @@ public class FragmentHome extends Fragment {
 
                                             // Display gfycat
                                             initializePreviewExoPlayer(item.getCleanedUrl());
+                                            mToolbar.setAlpha(.1f);
                                         }
                                     }
 
@@ -1599,6 +1629,7 @@ public class FragmentHome extends Fragment {
                                     new Utils.FetchVRedditGifTask(getContext(), url, new OnVRedditTaskCompletedListener() {
                                         @Override
                                         public void onVRedditMuxTaskCompleted(Uri uriToLoad) {
+                                            mToolbar.setAlpha(.1f);
                                             mPreviewerVideoViewLarge.setVideoURI(uriToLoad);
                                             focusMediaView(mPreviewerVideoViewLarge);
                                             mPreviewerVideoViewLarge.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -1625,6 +1656,7 @@ public class FragmentHome extends Fragment {
                             // Also check for anything else that may be .gif here
                             else if (item.getDomain() == Constants.SubmissionDomain.IREDDIT
                                     || Utils.getFileExtensionFromUrl(item.getUrl()).equalsIgnoreCase("gif")) {
+                                mToolbar.setAlpha(.1f);
                                 mPreviewerProgressBar.setVisibility(View.VISIBLE);
                                 GlideApp.asGif()
                                         .load(item.getUrl())
@@ -1632,12 +1664,14 @@ public class FragmentHome extends Fragment {
                             }
                             // media has been fetched before and/or is ready to be played
                             else {
+                                mToolbar.setAlpha(.1f);
                                 initializePreviewExoPlayer(item.getCleanedUrl() != null ? item.getCleanedUrl() : item.getUrl());
                             }
                         }
                         // submission is of unknown type (i.e. submission from /r/todayilearned)
                         // TODO: or imgur album!!
                         else {
+                            mToolbar.setAlpha(.1f);
                             mPreviewerProgressBar.setVisibility(View.GONE);
                             GlideApp.load(Constants.URI_404)
                                     .listener(new GlideProgressListener(mPreviewerProgressBar))
@@ -1708,13 +1742,22 @@ public class FragmentHome extends Fragment {
             }
 
             @Override
-            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+            public boolean onLoadFailed(@Nullable GlideException e,
+                                        Object model,
+                                        Target<Drawable> target,
+                                        boolean isFirstResource) {
                 return false;
             }
 
             @Override
-            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, com.bumptech.glide.load.DataSource dataSource, boolean isFirstResource) {
-                configureRecyclerThumbOverlay(item, holder);
+            public boolean onResourceReady(Drawable resource,
+                                           Object model,
+                                           Target<Drawable> target,
+                                           com.bumptech.glide.load.DataSource dataSource,
+                                           boolean isFirstResource) {
+                if(getContext() !=null) {
+                    configureRecyclerThumbOverlay(item, holder);
+                }
                 return false;
             }
         }
@@ -1899,8 +1942,8 @@ public class FragmentHome extends Fragment {
     private void updateCurrentUser(String newUsername) {
         try {
             App.getAccountHelper().switchToUser(newUsername);
-        }catch (Exception e){
-            Log.e(TAG,"Failed to switch to user while in updateCurrentUser() for username: " + newUsername);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to switch to user while in updateCurrentUser() for username: " + newUsername);
         }
         // update the most recent logged in user in sharedprefs
         prefs_settings.edit().putString(Constants.MOST_RECENT_USER, newUsername).commit();

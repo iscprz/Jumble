@@ -127,4 +127,8 @@ public class Constants {
         YOUTUBE,
         OTHER
     }
+    public enum FetchSubmissionsFlag {
+        NOT_FOUND_404,
+        START_OVER
+    }
 }

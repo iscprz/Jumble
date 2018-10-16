@@ -68,6 +68,7 @@ public class ActivityWebView extends AppCompatActivity {
         });
         mWebView.setWebViewClient(new HelloWebViewClient());
         mWebView.getSettings().setJavaScriptEnabled(true);
+        mWebView.getSettings().setLoadWithOverviewMode(true);
         //mWebView.loadDataWithBaseURL(null,mUrl,"text/html","utf-8",null);
         //mWebView.setWebViewClient(new WebViewClient());
         mWebView.loadUrl(mUrl);

@@ -40,7 +40,10 @@
         <activity android:name=".ActivitySettings"></activity>
         <activity android:name=".ActivityNewUserLogin"></activity>
         <activity android:name=".ActivitySubredditViewer"></activity>
-        <activity android:name=".YouTubePlayerClass"></activity>
+        <activity android:name=".ActivityYouTubePlayer"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="sensor"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"></activity>
         <activity android:name=".ActivityWebView"></activity>
 
         <service

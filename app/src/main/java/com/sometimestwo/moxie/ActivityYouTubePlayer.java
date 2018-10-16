@@ -1,6 +1,11 @@
 package com.sometimestwo.moxie;
 
+import android.annotation.SuppressLint;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubeBaseActivity;
@@ -12,20 +17,34 @@ import com.sometimestwo.moxie.Model.SubmissionObj;
 import com.sometimestwo.moxie.Utils.Constants;
 import com.sometimestwo.moxie.Utils.Utils;
 
-public class YouTubePlayerClass extends YouTubeBaseActivity implements YouTubePlayer.OnInitializedListener {
+public class ActivityYouTubePlayer extends YouTubeBaseActivity
+        implements YouTubePlayer.OnInitializedListener, YouTubePlayer.OnFullscreenListener {
 
     private YouTubePlayerView mPlayerView;
     private YouTubePlayer mYouTubePlayer;
     private SubmissionObj mCurrSubmission;
     private String mYouTubeID;
 
-    public YouTubePlayerClass() {
+    @SuppressLint("InlinedApi")
+    private static final int PORTRAIT_ORIENTATION =  ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+
+    @SuppressLint("InlinedApi")
+    private static final int LANDSCAPE_ORIENTATION =  ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+
+    private YouTubePlayer mPlayer = null;
+    private boolean mAutoRotation = false;
+
+    public ActivityYouTubePlayer() {
         super();
     }
 
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+
+        mAutoRotation = Settings.System.getInt(getContentResolver(),
+                Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
+
         setContentView(R.layout.layout_youtube_player);
         mPlayerView = (YouTubePlayerView) findViewById(R.id.youtube_player_view);
         mPlayerView.getRootView().setBackgroundColor(getResources().getColor(R.color.colorBgBlackTintDarker));
@@ -103,6 +122,19 @@ public class YouTubePlayerClass extends YouTubeBaseActivity implements YouTubePl
         this.mYouTubePlayer = player;
         // TODO Auto-generated method stub
         player.loadVideo(mYouTubeID);
+        player.setOnFullscreenListener(this);
+
+        if (mAutoRotation) {
+            player.addFullscreenControlFlag(YouTubePlayer.FULLSCREEN_FLAG_CONTROL_ORIENTATION
+                    | YouTubePlayer.FULLSCREEN_FLAG_CONTROL_SYSTEM_UI
+                    | YouTubePlayer.FULLSCREEN_FLAG_ALWAYS_FULLSCREEN_IN_LANDSCAPE
+                    | YouTubePlayer.FULLSCREEN_FLAG_CUSTOM_LAYOUT);
+        } else {
+            player.addFullscreenControlFlag(YouTubePlayer.FULLSCREEN_FLAG_CONTROL_ORIENTATION
+                    | YouTubePlayer.FULLSCREEN_FLAG_CONTROL_SYSTEM_UI
+                    | YouTubePlayer.FULLSCREEN_FLAG_CUSTOM_LAYOUT);
+        }
+
         player.setPlaybackEventListener(new YouTubePlayer.PlaybackEventListener() {
             @Override
             public void onPlaying() {
@@ -127,6 +159,29 @@ public class YouTubePlayerClass extends YouTubeBaseActivity implements YouTubePl
 
             }
         });
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            if (mPlayer != null)
+                mPlayer.setFullscreen(true);
+        }
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            if (mPlayer != null)
+                mPlayer.setFullscreen(false);
+        }
+    }
+
+    @Override
+    public void onFullscreen(boolean fullsize) {
+        if (fullsize) {
+            setRequestedOrientation(LANDSCAPE_ORIENTATION);
+        } else {
+            setRequestedOrientation(PORTRAIT_ORIENTATION);
+        }
     }
 
 

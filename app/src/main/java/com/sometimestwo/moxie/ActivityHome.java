@@ -3,6 +3,7 @@ package com.sometimestwo.moxie;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -45,14 +46,18 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     }
 
     private void loadReddit(boolean invalidateData) {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        Fragment fragment = FragmentHome.newInstance();
-        Bundle args = new Bundle();
-        args.putBoolean(Constants.ARGS_INVALIDATE_DATASOURCE, invalidateData);
+        FragmentManager fm = getSupportFragmentManager();
+        Fragment homeFragment = (FragmentHome) fm.findFragmentByTag(Constants.TAG_FRAG_HOME);
 
-        fragment.setArguments(args);
-        ft.add(R.id.fragment_container_home, fragment, Constants.TAG_FRAG_HOME);
-        ft.commit();
+        // If the Fragment is non-null, then it is currently being
+        // retained across a configuration change.
+        if (homeFragment == null || invalidateData) {
+            homeFragment = FragmentHome.newInstance();
+            Bundle args = new Bundle();
+            args.putBoolean(Constants.ARGS_INVALIDATE_DATASOURCE, invalidateData);
+            homeFragment.setArguments(args);
+            fm.beginTransaction().add(R.id.fragment_container_home, homeFragment, Constants.TAG_FRAG_HOME).commit();
+        }
     }
 
     // Actually removes current fragment and creates new one
@@ -72,7 +77,6 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        //getMenuInflater().inflate(R.menu.navigation_menu, menu);
         getMenuInflater().inflate(R.menu.menu_default_header, menu);
         return true;
     }
@@ -204,8 +208,6 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
 
     @Override
     public void refreshFeed(boolean invalidateData) {
-        // ignore targetSubreddit. It's only here for the sake of ActivitySubredditViewer
-        // We'll always want to refresh home when we're in ActivityHome, no target needed
         refreshFragment(Constants.TAG_FRAG_HOME, invalidateData);
     }
 

@@ -196,7 +196,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+       // setRetainInstance(true);
         unpackArgs();
 
         // Read relevant permission settings
@@ -268,7 +268,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             @Override
             public void onClick(View view) {
                 if (!mCommentsOpen) {
-                    Intent youTubeIntent = new Intent(getContext(), YouTubePlayerClass.class);
+                    Intent youTubeIntent = new Intent(getContext(), ActivityYouTubePlayer.class);
                     Bundle args = new Bundle();
                     args.putSerializable(Constants.ARGS_SUBMISSION_OBJ, mCurrSubmission);
                     youTubeIntent.putExtras(args);

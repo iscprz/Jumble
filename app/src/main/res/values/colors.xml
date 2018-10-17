@@ -19,18 +19,20 @@
     <color name="colorGray">#979797</color>
     <color name="colorDarkGray">#404040</color>
     <color name="colorDarkerGray">#1d1d1d</color>
+    <color name="colorDarkestGray">#0e0e0e</color>
+
 
     <color name="colorSoftBlue">#5e93ed</color>
     <color name="downvote_blue">#6AA1FF</color>
     <color name="upvote_orange">#ff8500</color>
 
-    <color name="comments_red">#ff6f6f</color>
-    <color name="comments_yellow">#fff76d</color>
-    <color name="comments_green">#91ff63</color>
-    <color name="comments_orange">#ffa652</color>
-    <color name="comments_blue">#6d8aff</color>
-    <color name="comments_purple">#ac69ff</color>
-    <color name="comments_OP">#3ca4ff</color>
+    <color name="color_comments_red">#ff6f6f</color>
+    <color name="color_comments_yellow">#fff76d</color>
+    <color name="color_comments_green">#91ff63</color>
+    <color name="color_comments_orange">#ffa652</color>
+    <color name="color_comments_blue">#6d8aff</color>
+    <color name="color_comments_purple">#ac69ff</color>
+    <color name="color_comments_OP">#3ca4ff</color>
 
 
 

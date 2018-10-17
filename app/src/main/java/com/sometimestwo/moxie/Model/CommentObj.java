@@ -44,7 +44,7 @@ public class CommentObj extends Item implements ExpandableItem {
     public void bind(@NonNull ViewHolder viewHolder, int position) {
         RelativeLayout commentMasterContainer = (RelativeLayout) viewHolder.getRoot().findViewById(R.id.comment_item_master_container);
         RelativeLayout commentInfoContainer = (RelativeLayout) viewHolder.getRoot().findViewById(R.id.comment_info_container);
-        ImageView commentCollapseButton = (ImageView) viewHolder.getRoot().findViewById(R.id.comment_button_collapse);
+        //ImageView commentCollapseButton = (ImageView) viewHolder.getRoot().findViewById(R.id.comment_button_collapse);
         TextView commentAuthorTextView = (TextView) viewHolder.getRoot().findViewById(R.id.comment_item_author);
         TextView commentScoreTextView = (TextView) viewHolder.getRoot().findViewById(R.id.comment_item_score);
         TextView commentTimeSubmittedTextView = (TextView)viewHolder.getRoot().findViewById(R.id.comment_item_time_submitted);
@@ -55,7 +55,7 @@ public class CommentObj extends Item implements ExpandableItem {
 
         /* Init comment*/
         // Collapse button color
-        commentCollapseButton.setBackgroundColor(App.getAppResources().getColor(getCommentColor(comment.getDepth())));
+       // commentCollapseButton.setBackgroundColor(App.getAppResources().getColor(getCommentColor(comment.getDepth())));
         // Author
         commentAuthorTextView.setText(comment.getSubject().getAuthor());
         // Check if Author of this comment is OP
@@ -79,10 +79,11 @@ public class CommentObj extends Item implements ExpandableItem {
         if(comment.getDepth() == 1){
             // root comment only gets 5 left padding
             viewHolder.itemView.setPadding(
-                    Constants.COMMENTS_INDENTATION_PADDING_ROOT,
+                    0,
                     0,
                     20,
                     0);
+            viewHolder.itemView.findViewById(R.id.comment_container).setBackgroundColor(App.getAppResources().getColor(R.color.colorDarkerGray));
         }
         else{
             viewHolder.itemView.setPadding(
@@ -90,6 +91,7 @@ public class CommentObj extends Item implements ExpandableItem {
                     0,
                     20,
                     0);
+            viewHolder.itemView.findViewById(R.id.comment_container).setBackgroundColor(App.getAppResources().getColor(getCommentColor(comment.getDepth())));
         }
 
 
@@ -144,18 +146,18 @@ public class CommentObj extends Item implements ExpandableItem {
         depth %= 5;
         switch (depth) {
             case 0:
-                return R.color.comments_yellow;
+                return R.color.color_comments_yellow;
             case 1:
-                return R.color.comments_blue;
+                return R.color.color_comments_blue;
             case 2:
-                return R.color.comments_red;
+                return R.color.color_comments_red;
             case 3:
-                return R.color.comments_green;
+                return R.color.color_comments_green;
             case 4:
-                return R.color.comments_purple;
+                return R.color.color_comments_purple;
             default:
                 // should not happen
-                return R.color.comments_orange;
+                return R.color.color_comments_orange;
         }
     }
 
@@ -168,7 +170,7 @@ public class CommentObj extends Item implements ExpandableItem {
 
     private int getAuthorTextColor(String commentAuthor){
         if(commentAuthor.equalsIgnoreCase(currSubmission.getAuthor()))
-            return App.getAppResources().getColor(R.color.comments_OP);
+            return App.getAppResources().getColor(R.color.color_comments_OP);
         else
             return App.getAppResources().getColor(R.color.colorWhite);
     }

@@ -115,7 +115,6 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         } else if (mCommentsOpen) {
             Fragment fragment = getSupportFragmentManager()
                     .findFragmentByTag(Constants.TAG_FRAG_FULL_DISPLAYER);
-            // should never be null since comments cannot be open
             if (fragment != null) {
                 ((FragmentFullDisplay) fragment).closeComments();
             }

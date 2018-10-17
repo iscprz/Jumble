@@ -90,8 +90,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
 
     @Override
     public void finish() {
-        // Bookkeeping: We keep track of the subreddits we visit since using the backstack
-        //              is not sufficient
+        // Bookkeeping
         if (!App.getMoxieInfoObj().getmSubredditStack().isEmpty()) {
             App.getMoxieInfoObj().getmSubredditStack().pop();
         }
@@ -111,10 +110,15 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
             if (fragment != null) {
                 ((FragmentFullDisplay) fragment).closeComments();
             }
-        }
-        // If hosting a 404 page, we want to leave activity not just pop 404 page off backstack
-        else if (mIs404) {
+        } else if (mIs404) {
+            // If hosting a 404 page, we want to leave activity not just pop 404 page off backstack
             finish();
+        } else if (Constants.REQUEST_SAVED.equalsIgnoreCase(mCurrSubbredit)) {
+            // Start over since paginator might break
+            // This is to prevent the following:
+            // View Saved -> tab out for long time -> back in, need to reauthenticate reddit client
+            // -> press back -> frontpage now showing Saved items since old paginator
+            startOver();
         } else {
             super.onBackPressed();
         }

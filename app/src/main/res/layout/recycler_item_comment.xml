@@ -3,26 +3,27 @@
     android:id="@+id/comment_item_master_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="0dp"
     android:background="@color/colorDarkerGray">
 
+
+    <!-- This relative layout holds the color of the comment level. Color is added
+         at run time as it depends on the depth of the comment-->
     <RelativeLayout
         android:id="@+id/comment_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
         <!-- Collapse icon, Author, vote count container AKA comment info-->
         <RelativeLayout
             android:id="@+id/comment_info_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:paddingTop="5dp"
+            android:background="@color/colorDarkerGray"
             android:clickable="true">
             <!-- Collapse icon-->
-            <ImageView
-                android:id="@+id/comment_button_collapse"
-                android:layout_width="8dp"
-                android:layout_height="8dp"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true" />
+
 
             <!-- Author-->
             <TextView
@@ -30,8 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/comments_text_indent"
-                android:layout_toEndOf="@id/comment_button_collapse"
+                android:paddingStart="5dp"
                 android:textColor="@color/colorWhite"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -102,8 +102,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/comment_info_container"
-            android:layout_marginStart="13dp"
+            android:layout_marginStart="2dp"
+            android:background="@color/colorDarkerGray"
             android:paddingBottom="5dp"
+            android:paddingStart="5dp"
             android:textColor="@color/colorLightGray"
             android:textSize="14sp" />
 

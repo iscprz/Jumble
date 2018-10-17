@@ -238,7 +238,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mCommentsScrollViewContainer = (FrameLayout) v.findViewById(R.id.full_displayer_comments_scrollview_container);
         mCommentsRecyclerView = (RecyclerView) v.findViewById(R.id.full_displayer_comments_recycler);
         mCommentsProgressBar = (ProgressBar) v.findViewById(R.id.full_displayer_comments_progress_bar);
-        mCommentsButtonClose = (ImageView) v.findViewById(R.id.comments_button_close);
+        mCommentsButtonClose = (ImageView) v.findViewById(R.id.comments_drag_close);
 
         /* Main zoomie image view*/
         mZoomView = (PhotoView) v.findViewById(R.id.full_displayer_zoomie_view);

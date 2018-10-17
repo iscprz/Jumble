@@ -32,6 +32,9 @@
         <item>CanineCosplay</item>
         <item>babywildanimals</item>
         <item>eyebleach</item>
+        <item>animalgifs</item>
+        <item>animalsbeingbros</item>
+        <item>blop</item>
     </string-array>
 
     <string-array name="explore_subreddits_nature">
@@ -52,6 +55,9 @@
         <item>Instant_regret</item>
         <item>funnypics</item>
         <item>holdmybeer</item>
+        <item>wheredidthesodago</item>
+        <item>mildlyinfuriating</item>
+        <item>animalsbeingbros</item>
     </string-array>
 
     <string-array name="explore_subreddits_design">
@@ -79,6 +85,7 @@
         <item>ReverseAnimalRescue</item>
         <item>itookapicture</item>
         <item>oddlysatisfying</item>
+        <item>mildlyinfuriating</item>
     </string-array>
 
     <string-array name="explore_subreddits_travel">
@@ -93,7 +100,8 @@
         <item>Instant_regret</item>
         <item>gfycats</item>
         <item>holdmybeer</item>
-
+        <item>almostperfectloops</item>
+        <item>aww_gifs</item>
     </string-array>
 
     <string-array name="explore_subreddits_food">
@@ -115,6 +123,8 @@
         <item>lookscool</item>
         <item>mildlyinteresting</item>
         <item>oddlysatisfying</item>
+        <item>justiceporn</item>
+        <item>catastrophicfailure</item>
     </string-array>
 
     <string-array name="explore_subreddits_motivational">
@@ -131,6 +141,9 @@
         <item>ImaginaryCharacters</item>
         <item>Illustration</item>
         <item>minimalist_art</item>
+        <item>ImaginaryBestOf</item>
+        <item>Graffiti</item>
+        <item>streetart</item>
     </string-array>
     <string-array name="explore_subreddits_nsfw">
         <item>nsfw</item>
@@ -144,7 +157,6 @@
         <item>burstingout</item>
         <item>biggerthanyouthought</item>
         <item>collegesluts</item>
-
     </string-array>
 <!--    <string-array name="explore_subreddits_gaming">
         <item>gaming</item>

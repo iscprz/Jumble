@@ -25,14 +25,14 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/comments_collapse_bar"
             android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
+
             android:background="@color/colorDarkerGray">
 
             <ImageView
-                android:id="@+id/comments_button_close"
+                android:id="@+id/comments_drag_close"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_gravity="center_horizontal"
                 android:background="@drawable/ic_white_drag_handle"
                 android:scaleType="fitXY"
                 android:visibility="visible" />

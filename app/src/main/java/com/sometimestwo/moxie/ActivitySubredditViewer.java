@@ -19,7 +19,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
         Fragment404.Fragment404EventListener,
         OnCloseClickEventListener, FragmentFullDisplay.OnCommentsEventListener {
 
-    public final String TAG = this.getClass().getCanonicalName();
+    public final String TAG = this.getClass().getSimpleName();
     private SharedPreferences prefs_settings;
 
     private String mCurrSubbredit;
@@ -113,7 +113,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
         } else if (mIs404) {
             // If hosting a 404 page, we want to leave activity not just pop 404 page off backstack
             finish();
-        } else if (Constants.REQUEST_SAVED.equalsIgnoreCase(mCurrSubbredit)) {
+        } else if (Constants.REQUEST_SAVED.equalsIgnoreCase(mCurrSubbredit) && !isSubmissionOpen()) {
             // Start over since paginator might break
             // This is to prevent the following:
             // View Saved -> tab out for long time -> back in, need to reauthenticate reddit client
@@ -156,6 +156,10 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
                     + ". Could not refresh fragment! Probably provided incorrect fragment tag. " +
                     " Fragment tag provided: " + Constants.TAG_FRAG_404);
         }
+    }
+
+    private boolean isSubmissionOpen(){
+        return getSupportFragmentManager().findFragmentByTag(Constants.TAG_FRAG_FULL_DISPLAYER) != null;
     }
 
     /*

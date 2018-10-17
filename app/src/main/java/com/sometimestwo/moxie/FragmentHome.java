@@ -139,15 +139,12 @@ public class FragmentHome extends Fragment {
     private boolean mHideNSFWThumbs = false;
     private boolean mDisplayFiletypeIcons = false;
     private boolean mDisplayNSFWIcon = false;
-    // private boolean mAllowGifPreview = false;
     private Constants.HoverPreviewSize mPreviewSize;
 
     // hover preview small
     private RelativeLayout mHoverPreviewContainerSmall;
     private TextView mHoverPreviewTitleSmall;
     private ImageView mHoverImagePreviewSmall;
-    // private PopupWindow mPopupWindow;
-    // private View mPopupView;
 
     // hover view large
     private RelativeLayout mHoverPreviewContainerLarge;
@@ -288,9 +285,9 @@ public class FragmentHome extends Fragment {
         mPreviewerProgressBar = (ProgressBar) v.findViewById(R.id.hover_view_large_image_media_progress);
 
         /* hover view small*/
-        mHoverPreviewContainerSmall = (RelativeLayout) v.findViewById(R.id.hover_view_container_small);
+        /*mHoverPreviewContainerSmall = (RelativeLayout) v.findViewById(R.id.hover_view_container_small);
         mHoverPreviewTitleSmall = (TextView) v.findViewById(R.id.hover_view_title_small);
-        mHoverImagePreviewSmall = (ImageView) v.findViewById(R.id.hover_imageview_small);
+        mHoverImagePreviewSmall = (ImageView) v.findViewById(R.id.hover_imageview_small);*/
 
         /* hover view large*/
         mHoverPreviewContainerLarge = (RelativeLayout) v.findViewById(R.id.hover_view_container_large);

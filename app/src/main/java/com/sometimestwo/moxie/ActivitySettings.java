@@ -27,6 +27,10 @@ public class ActivitySettings extends Activity {
     // Back arrow
     private ImageView mBackButton;
 
+    // Optimize (exclude non-media)
+    private LinearLayout mLLOptimize;
+    private CheckBox mCheckboxOptimize;
+
     // NSFW settings
     private LinearLayout mLLNSFW;
     private CheckBox mCheckboxHideNSFW;
@@ -40,9 +44,6 @@ public class ActivitySettings extends Activity {
     // Image preview
     private LinearLayout mLLAllowPreviewer;
     private CheckBox mCheckboxPreviewImage;
-
-    // Radio buttons to select previewer size
-    private RadioGroup mRadioGroupPreviewSize;
 
     // Big display
     private LinearLayout mLLBigDisplayCloseClick;
@@ -78,12 +79,33 @@ public class ActivitySettings extends Activity {
         setContentView(R.layout.activity_settings);
         prefs_settings = this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
         prefs_settings_editor = prefs_settings.edit();
+        mHideNSFW = prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW, true);
         mColorWhite = getResources().getColor(R.color.colorWhite);
         mColorGrayout = getResources().getColor(R.color.colorGray);
 
+        // Optimize
+        mCheckboxOptimize = (CheckBox) findViewById(R.id.settings_optimize_checkbox);
+        boolean optimize = prefs_settings.getBoolean(Constants.PREFS_FILTER_OPTIMIZE, true);
+        mCheckboxOptimize.setChecked(optimize);
+        mCheckboxOptimize.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                //boolean newValue = mCheckboxAllowBigDisplayCloseClick.isChecked();
+                prefs_settings_editor.putBoolean(Constants.PREFS_FILTER_OPTIMIZE, b);
+                mModified = true;
+            }
+        });
+
+        mLLOptimize = (LinearLayout) findViewById(R.id.settings_LL_optimize);
+        mLLOptimize.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCheckboxOptimize.setChecked(!mCheckboxOptimize.isChecked());
+            }
+        });
+
         // NSFW
         mCheckboxHideNSFW = (CheckBox) findViewById(R.id.settings_hide_nsfw_checkbox);
-        mHideNSFW = prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW, true);
         mCheckboxHideNSFW.setChecked(mHideNSFW);
         mCheckboxHideNSFW.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

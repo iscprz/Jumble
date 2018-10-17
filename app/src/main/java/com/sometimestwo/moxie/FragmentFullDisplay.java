@@ -534,8 +534,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                             }
                         });
             } else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.YOUTUBE) {
-                //youtube has it's own progress bar
-                mProgressBar.setVisibility(View.GONE);
+                mProgressBar.setVisibility(View.VISIBLE);
                 focusView(mYouTubeThumbnail, null);
                 mYouTubeThumbnail.setTag(Utils.getYouTubeID(mCurrSubmission.getUrl()));
                 mYouTubeThumbnail.initialize(Constants.YOUTUBE_API_KEY, new YouTubeThumbnailView.OnInitializedListener() {
@@ -545,12 +544,15 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                         youTubeThumbnailLoader.setOnThumbnailLoadedListener(new YouTubeThumbnailLoader.OnThumbnailLoadedListener() {
                             @Override
                             public void onThumbnailLoaded(YouTubeThumbnailView youTubeThumbnailView, String s) {
+                                mProgressBar.setVisibility(View.GONE);
                                 mYoutubeIconsOverlay.setVisibility(View.VISIBLE);
                                 youTubeThumbnailLoader.release();
                             }
 
                             @Override
                             public void onThumbnailError(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader.ErrorReason errorReason) {
+                                mProgressBar.setVisibility(View.GONE);
+                                mFailedLoadText.setVisibility(View.VISIBLE);
                                 Log.e("YOUTUBE_THUMBNAIL", "Could not load Youtube thumbnail for url: " + mCurrSubmission.getUrl());
                                 youTubeThumbnailLoader.release();
                             }
@@ -559,7 +561,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
                     @Override
                     public void onInitializationFailure(YouTubeThumbnailView youTubeThumbnailView, YouTubeInitializationResult youTubeInitializationResult) {
-
+                        mProgressBar.setVisibility(View.GONE);
+                        mFailedLoadText.setVisibility(View.VISIBLE);
                     }
                 });
             } else if (mCurrSubmission.getDomain() == Constants.SubmissionDomain.GFYCAT

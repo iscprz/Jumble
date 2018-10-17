@@ -13,11 +13,11 @@ import java.util.Stack;
     currently-being-viewed subreddit, sort by option, and time period (today, this month, all time).
  */
 public class MoxieInfoObj {
-    Stack<String> mSubredditStack = new Stack<>();
-    SubredditSort mSortBy;
-    TimePeriod mTimePeriod;
-    boolean hideNSFW = true;
-    List<String> defaultSubreddits =
+    private Stack<String> mSubredditStack = new Stack<>();
+    private SubredditSort mSortBy;
+    private TimePeriod mTimePeriod;
+    private boolean hideNSFW = true;
+    private List<String> defaultSubreddits =
             new ArrayList<String>(Arrays.asList(
                     "funny",
                     "gifs",

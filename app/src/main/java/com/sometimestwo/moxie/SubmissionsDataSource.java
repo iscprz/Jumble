@@ -39,12 +39,11 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     @Override
     public void loadInitial(@NonNull LoadInitialParams<String> params,
                             @NonNull final LoadInitialCallback<SubmissionObj> callback) {
-        if(App.getAccountHelper().isAuthenticated()){
+        if (App.getAccountHelper().isAuthenticated()) {
             App.setPaginator(buildNewPaginator());
             new FetchInitialSubmissionsTask(callback).execute();
-        }
-        else{
-            new Utils.RedditReauthTask(new OnRedditTaskListener(){
+        } else {
+            new Utils.RedditReauthTask(new OnRedditTaskListener() {
                 @Override
                 public void onSuccess() {
                     App.setPaginator(buildNewPaginator());
@@ -151,7 +150,6 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             List<SubmissionObj> submissionObjs;
             try {
                 submissions = App.getRedditPaginator().next();
-                //currPageNum++;
                 /*  If we've retrieved an amount of pages less than our page size limit,
                  *  it's because the subreddit(s) in question are out of submissions to return.
                  *
@@ -231,20 +229,20 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         List<Submission> submissionsList = filterNonSubmissions(submissionsAsListing);
         List<SubmissionObj> res = new ArrayList<>();
 
-        // If the requested subreddit has 0 posts (non-existant)
         if (submissionsList == null || submissionsList.size() < 1) {
+            // The requested subreddit has 0(non-existant) posts
             res.add(new SubmissionObj(Constants.FetchSubmissionsFlag.NOT_FOUND_404));
-            //res.add(new SubmissionObj(true));
             mIs404 = true;
             return res;
         }
-        mIs404 = false;
+        //mIs404 = false;
         for (Submission submission : submissionsList) {
             // filter some submissions out here
-            if (submission.isSelfPost()
-                    || submission.isNsfw() && mMoxieInfoObj.isHideNSFW()) {
+            if (isFilteredSubmission(submission)) {
+                Log.e("FILTER_TEST", "filtering submission with url: " + submission.getUrl());
                 continue;
             }
+
             SubmissionObj s = new SubmissionObj();
             s.setAuthor(submission.getAuthor());
             s.setUrl(submission.getUrl());
@@ -317,28 +315,11 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 s.setDomain(Constants.SubmissionDomain.OTHER);
             }
 
-            // v.redd.it Videos/GIFS that are crossposted will not have EmbeddedMedia
-            // and instead have some sort of crosspost field that JRAW does handle.
-            // Since these aren't too common, let's skip support for them for now.
-            if (s.getDomain() == Constants.SubmissionDomain.VREDDIT && s.getEmbeddedMedia() == null) {
-                continue;
-            }
             // add shortened title for displaying purposes if needed
             if (submission.getTitle().length() > Constants.MAX_TITLE_LENGTH) {
                 s.setCompactTitle(submission.getTitle().substring(0,
                         Constants.MAX_TITLE_LENGTH) + "...");
             }
-
-           /* // Thumbnail will have value "nsfw" for Guest requests.
-            // Thumnail will have "spoiler" in spoiler requests.
-            // We're pretty much ignoring them for now.
-            if("nsfw".equalsIgnoreCase(submission.getThumbnail())
-                    || "spoiler".equalsIgnoreCase(submission.getThumbnail())){
-                // Videos
-                if(Utils.getSubmissionType(submission.getUrl()) == )
-                // Images
-            }*/
-
 
             res.add(s);
         }
@@ -358,5 +339,26 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             }
         }
         return submissionsOnly;
+    }
+
+    // Messy way of determining which submissions to filter out.
+    // Will return true if submissions needs to be filtered out, false otherwise
+    private boolean isFilteredSubmission(Submission submission) {
+        // self posts and NSFW (with NSFW filter enabled) always get filtered
+        if (submission.isSelfPost() || submission.isNsfw() && mMoxieInfoObj.isHideNSFW())
+            return true;
+
+        // These domains will never need to be filtered
+        if (submission.getDomain().contains("imgur")
+                || submission.getDomain().contains("gfycat")
+                || submission.getDomain().contains("youtube")
+                || submission.getDomain().contains("youtu.be")
+                || (submission.getDomain().contains("v.redd.it") && submission.getEmbeddedMedia() != null))
+            return false;
+
+        // "Optimize" filter (enabled through settings)
+        return (App.getSharedPrefs().getBoolean(Constants.PREFS_FILTER_OPTIMIZE, true)
+                && !Arrays.asList(Constants.VALID_MEDIA_EXTENSION).contains(Utils.getFileExtensionFromUrl(submission.getUrl())));
+        //https://cdna.artstation.com/p/assets/images/images/013/430/078/large/taras-susak-n.jpg?1539584659
     }
 }

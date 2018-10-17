@@ -54,6 +54,62 @@
             android:text="@string/title_filters"
             android:textColor="@color/colorWhite" />
 
+        <!--.........Settings LL: Optimize ..........................-->
+        <LinearLayout
+            android:id="@+id/settings_LL_optimize"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/settings_LL_max_height"
+            android:clickable="true">
+
+            <RelativeLayout
+                android:id="@+id/settings_optimize_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".9">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_title_optimize"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Exclude non-media submissions"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="16sp" />
+
+                    <!-- Subtitle-->
+                    <TextView
+                        android:id="@+id/settings_optimize_subtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/settings_title_optimize"
+                        android:paddingLeft="@dimen/settings_padding_left"
+                        android:text="Optimize app by excluding submissions that are not images, gifs, or videos"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="12sp" />
+                </RelativeLayout>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/settings_optimize_checkbox_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight=".1">
+
+                <CheckBox
+                    android:id="@+id/settings_optimize_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:buttonTint="@color/colorWhite" />
+            </RelativeLayout>
+        </LinearLayout>
+
         <!--......... Settings LinearLayout: Hide NSFW ..............-->
         <LinearLayout
             android:id="@+id/settings_LL_hide_nsfw"
@@ -111,8 +167,6 @@
         </LinearLayout>
 
 
-
-
         <!--......... Settings LL: Hide NSFW thumbnails ..............-->
         <LinearLayout
             android:id="@+id/settings_LL_nsfw_overlay"
@@ -138,8 +192,7 @@
                         android:layout_marginTop="10dp"
                         android:paddingLeft="@dimen/settings_padding_left"
                         android:text="Hide NSFW thumbnails"
-                        android:textSize="16sp"
-                        />
+                        android:textSize="16sp" />
 
                     <!-- Subtitle-->
                     <TextView
@@ -149,8 +202,7 @@
                         android:layout_below="@id/settings_title_nsfw_overlay"
                         android:paddingLeft="@dimen/settings_padding_left"
                         android:text="Cover NSFW submission thumbnails with safe overlay"
-                        android:textSize="12sp"
-                        />
+                        android:textSize="12sp" />
                 </RelativeLayout>
 
             </RelativeLayout>
@@ -165,7 +217,7 @@
                     android:id="@+id/settings_nsfw_overlay_checkbox"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:theme="@style/Theme.Settings.Checkbox"/>
+                    android:theme="@style/Theme.Settings.Checkbox" />
             </RelativeLayout>
 
 
@@ -302,29 +354,29 @@
 
         <!-- TODO: Removing this for now. Feature for later-->
         <!-- Previewer size Radio buttons-->
-<!--        <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/radio_group_preview_size"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center|end"
-            android:orientation="vertical">
+        <!--        <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/radio_group_preview_size"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center|end"
+                    android:orientation="vertical">
 
-            <RadioButton
-                android:id="@+id/radio_preview_size_option_large"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onRadioButtonClicked"
-                android:text="Large"
-                android:textColor="@color/colorWhite" />
+                    <RadioButton
+                        android:id="@+id/radio_preview_size_option_large"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="onRadioButtonClicked"
+                        android:text="Large"
+                        android:textColor="@color/colorWhite" />
 
-            <RadioButton
-                android:id="@+id/radio_preview_size_option_small"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="onRadioButtonClicked"
-                android:text="Small"
-                android:textColor="@color/colorWhite" />
-        </RadioGroup>-->
+                    <RadioButton
+                        android:id="@+id/radio_preview_size_option_small"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:onClick="onRadioButtonClicked"
+                        android:text="Small"
+                        android:textColor="@color/colorWhite" />
+                </RadioGroup>-->
 
         <!--^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Section Title: Click actions^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
         <TextView
@@ -502,7 +554,7 @@
                     android:id="@+id/settings_nsfw_icon_checkbox"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:theme="@style/Theme.Settings.Checkbox"/>
+                    android:theme="@style/Theme.Settings.Checkbox" />
             </RelativeLayout>
 
 

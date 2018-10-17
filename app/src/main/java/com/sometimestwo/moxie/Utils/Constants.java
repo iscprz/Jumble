@@ -67,6 +67,7 @@ public class Constants {
     public final static String PREFS_HIDE_NSFW_THUMBS = "PREFS_HIDE_NSFW_THUMBS";
     public final static String PREFS_SHOW_NSFW_ICON = "PREFS_SHOW_NSFW_ICON";
     public final static String PREFS_USER_SUBS_ = "PREFS_USER_SUBS_";
+    public final static String PREFS_FILTER_OPTIMIZE = "PREFS_FILTER_OPTIMIZE";
     public final static String SETTINGS_PREVIEW_SIZE_SMALL = "SETTINGS_PREVIEW_SIZE_SMALL";
     public final static String PREFS_PREVIEW_SIZE_LARGE = "PREFS_PREVIEW_SIZE_LARGE";
     public final static String MOST_RECENT_USER = "MOST_RECENT_USER";
@@ -81,7 +82,7 @@ public class Constants {
     public final static String URI_404_thumbnail = "android.resource://com.sometimestwo.moxie/"
             + R.drawable.reddit_404_thumb_black;
     public final static String[] VALID_MEDIA_EXTENSION
-            = {"jpg", "jpeg", "png",/*maybe remove */"gifv", "gif", "mp4"};
+            = {"jpg","JPG", "jpeg","JPEG", "png", "PNG","gifv", "GIFV", "gif","GIF", "mp4", "MP4"};
     public final static String[] VALID_IMAGE_EXTENSION = {"jpg", "jpeg", "png"};
     public final static String[] VALID_GIF_EXTENSION = {"gifv", "gif"};
     public final static String USERNAME_USERLESS = "<userless>";

@@ -16,33 +16,7 @@ import com.sometimestwo.moxie.Utils.Constants;
 
 import java.lang.ref.WeakReference;
 
-/*
-        TODOS:
-            - double tap to upvote
-            - view pager
-            - exoplayer releases
-            - crash after token expires
-            settings options:
-            - browse mode (no comments, upvoting , etc) for lurkers
-            - hide progress bar on exoplayer
-            -NSFW icon
-            - play gif icon
-            - When large previewer fails to load, loads previously successful image instead
-            -remove item from recycler
-            - progress bar time out when load fails
 
-            layout issues:
-            - centering very tall image in large hover
-            - can open drawer layout while large hover previewing
-            - exo player not reloading when tabbing back into app
-            - create truncated title for long titles. To be useful in previewers
-            - Go to Subreddit edit text box is too short (height wise) for small screen
-
-            names:
-            Unfold
-
-            Explore blue color code: 33B5E5
- */
 public class ActivityMain extends AppCompatActivity {
 
     private final String TAG = this.getClass().getSimpleName();
@@ -51,7 +25,7 @@ public class ActivityMain extends AppCompatActivity {
     private SharedPreferences.Editor prefs_settings_editor;
     public static final int MULTIPLE_PERMISSIONS = 10; // code you want.
 
-    String[] permissions= new String[]{
+    String[] permissions = new String[]{
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.INTERNET};
 
@@ -75,39 +49,43 @@ public class ActivityMain extends AppCompatActivity {
             prefs_settings_editor.putString(Constants.PREFS_PREVIEW_SIZE, Constants.PREFS_PREVIEW_SIZE_LARGE);
         }
 
+        // Optimize filter
+        if (prefs_settings.getBoolean(Constants.PREFS_FILTER_OPTIMIZE, true)) {
+            prefs_settings_editor.putBoolean(Constants.PREFS_FILTER_OPTIMIZE, true);
+        }
 
         // Allow NSFW
-        if (prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW, true) == true) {
+        if (prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW, true)) {
             prefs_settings_editor.putBoolean(Constants.PREFS_HIDE_NSFW, true);
         }
 
         // Hide NSFW thumbs
-        if (prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW_THUMBS, false) == false) {
+        if (prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW_THUMBS, false)) {
             prefs_settings_editor.putBoolean(Constants.PREFS_HIDE_NSFW_THUMBS, false);
         }
 
         // Allow hover previewer - default to yes
-        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_HOVER_PREVIEW, true) == true) {
+        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_HOVER_PREVIEW, true)) {
             prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_HOVER_PREVIEW, true);
         }
 
         // Allow tap-to-close big display
-        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, true) == true) {
+        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, true)) {
             prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_CLOSE_CLICK, true);
         }
 
         // Allow domain icons - defaults to false
-        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_DOMAIN_ICON, false) == false) {
+        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_DOMAIN_ICON, false)) {
             prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_DOMAIN_ICON, false);
         }
 
         // Allow filetype icons - defaults to false
-        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_FILETYPE_ICON, false) == false) {
+        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_FILETYPE_ICON, false)) {
             prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_FILETYPE_ICON, false);
         }
 
         // Show NSFW icon on NSFW submissions
-        if (prefs_settings.getBoolean(Constants.PREFS_SHOW_NSFW_ICON, false) == false) {
+        if (prefs_settings.getBoolean(Constants.PREFS_SHOW_NSFW_ICON, false)) {
             prefs_settings_editor.putBoolean(Constants.PREFS_SHOW_NSFW_ICON, false);
         }
 
@@ -116,31 +94,8 @@ public class ActivityMain extends AppCompatActivity {
         new FetchRedditUser(this).execute();
     }
 
-
-    private  boolean checkPermissions() {
-      /*  int result;
-        List<String> listPermissionsNeeded = new ArrayList<>();
-        for (String p: permissions) {
-            result = ContextCompat.checkSelfPermission(this,p);
-            if (result != PackageManager.PERMISSION_GRANTED) {
-                listPermissionsNeeded.add(p);
-            }
-        }
-        if (!listPermissionsNeeded.isEmpty()) {
-            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]),MULTIPLE_PERMISSIONS );
-            return false;
-        }*/
-        return true;
-    }
-
     @Override
     protected void onResume() {
-        // Example of how to check for internet. Not using now as we are
-        // leaving SubmissionsDataSource to handle 404 page
-/*        new Utils.InternetCheck(internet -> {
-            boolean a = internet;
-            System.out.println(a);
-        });*/
         super.onResume();
     }
 
@@ -175,17 +130,16 @@ public class ActivityMain extends AppCompatActivity {
         protected Boolean doInBackground(Void... voids) {
             try {
                 // Load most recently logged in user
-                String mostRecentUser = prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
+                String mostRecentUser =
+                        prefs_settings.getString(Constants.MOST_RECENT_USER, Constants.USERNAME_USERLESS);
 
                 if (!Constants.USERNAME_USERLESS.equalsIgnoreCase(mostRecentUser)) {
                     App.getAccountHelper().switchToUser(mostRecentUser);
                 } else {
                     App.getAccountHelper().switchToUserless();
                 }
-
-            }
-            catch (Exception e){
-                Log.e(TAG,"Failed to switch to most recent user. Defaulting to Guest");
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to switch to most recent user. Defaulting to Guest");
                 App.getAccountHelper().switchToUserless();
                 return true;
             }
@@ -196,9 +150,7 @@ public class ActivityMain extends AppCompatActivity {
         protected void onPostExecute(Boolean b) {
             Activity activity = this.activity.get();
             if (activity != null) {
-                if(checkPermissions()) {
-                    activity.startActivity(new Intent(activity, ActivityHome.class));
-                }
+                activity.startActivity(new Intent(activity, ActivityHome.class));
             }
         }
     }

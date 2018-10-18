@@ -1247,7 +1247,7 @@ public class FragmentHome extends Fragment {
             vg.addView(mHoverPreviewContainerLarge);
 
             mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
-            mHoverPreviewContainerSmall.setVisibility(View.GONE);
+           // mHoverPreviewContainerSmall.setVisibility(View.GONE);
             mHoverPreviewMediaContainerLarge.setVisibility(View.VISIBLE);
 
             //v.redd.it links will always be non-image. Display in video view.

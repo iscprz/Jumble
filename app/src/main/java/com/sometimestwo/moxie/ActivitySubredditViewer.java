@@ -51,6 +51,9 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
         if (resultCode == Constants.RESULT_OK_START_OVER) {
             startOver();
         }
+        else if(resultCode ==Constants.REQUESTCODE_SETTINGS){
+            // do nothing
+        }
     }
 
     @Override
@@ -169,7 +172,7 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
     public void openSettings() {
         Intent settingsIntent = new Intent(this, ActivitySettings.class);
         //settingsIntent.putExtra()
-        startActivityForResult(settingsIntent, Constants.INTENT_SETTINGS);
+        startActivityForResult(settingsIntent, Constants.REQUESTCODE_SETTINGS);
     }
 
     // Called on refresh swipe

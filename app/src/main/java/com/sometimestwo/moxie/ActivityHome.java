@@ -177,10 +177,9 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.INTENT_SETTINGS) {
+        if (requestCode == Constants.REQUESTCODE_SETTINGS) {
             if (resultCode == RESULT_OK) {
-                //refreshFragment(Constants.TAG_FRAG_HOME, false);
-                //Log.e(TAG, "Returned from settings activity");
+                //do nothing
             }
         }
     }
@@ -201,8 +200,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     @Override
     public void openSettings() {
         Intent settingsIntent = new Intent(this, ActivitySettings.class);
-        //settingsIntent.putExtra()
-        startActivityForResult(settingsIntent, Constants.INTENT_SETTINGS);
+        startActivityForResult(settingsIntent, Constants.REQUESTCODE_SETTINGS);
     }
 
     @Override

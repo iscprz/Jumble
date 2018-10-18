@@ -18,8 +18,6 @@ public class Constants {
     public final static String TEST_SUBREDDIT_PICS = "pics";
     public final static String TEST_SUBREDDIT_GIFS = "gifs";
 
-    /* Intents */
-    public final static int INTENT_SETTINGS = 1;
 
     /* Fragment tags */
     public final static String TAG_FRAG_HOME = "TAG_FRAG_HOME";
@@ -29,8 +27,6 @@ public class Constants {
     public final static String TAG_FRAG_SIMPLE_DISPLAYER = "TAG_FRAG_SIMPLE_DISPLAYER";
 
     /* Arguments, Extras and Result codes*/
-    public final static String ARGS_NUM_DISPLAY_COLS = "ARGS_NUM_DISPLAY_COLS";
-    public final static String ARGS_REDDIT_STATE_OBJ = "ARGS_REDDIT_STATE_OBJ";
     public final static String ARGS_SUBMISSION_OBJ = "ARGS_SUBMISSION_OBJ";
     public final static String ARGS_INVALIDATE_DATASOURCE = "ARGS_INVALIDATE_DATASOURCE";
     public final static String ARGS_CURR_SUBREDDIT = "ARGS_CURR_SUBREDDIT";
@@ -39,14 +35,14 @@ public class Constants {
     public final static String EXTRA_GOTO_SUBREDDIT = "EXTRA_GOTO_SUBREDDIT";
     public final static String EXTRA_GOTO_WEB_URL = "EXTRA_GOTO_WEB_URL";
 
+    public final static int REQUESTCODE_SETTINGS = 150;
     public final static int REQUESTCODE_GOTO_SUBREDDIT_VIEWER = 200;
     public final static int REQUESTCODE_GOTO_LOG_IN = 300;
     public final static int REQUESTCODE_GOTO_BIG_DISPLAY = 400;
     public final static int RESULT_OK_START_OVER = 201;
-    public final static int RESULT_OK_INVALIDATE_DATA = 101;
+
 
     /* Default values*/
-    public final static String DEFAULT_SUBREDDIT = "pics";
     public final static int DEFAULT_NUM_DISPLAY_COLS = 3;
     public final static String DEFAULT_DOWNLOAD_FILENAME = APP_NAME + "." + "download";
 
@@ -80,7 +76,7 @@ public class Constants {
     public final static String URI_404 = "android.resource://com.sometimestwo.moxie/"
             + R.drawable.reddit_404_transparent;
     public final static String URI_404_thumbnail = "android.resource://com.sometimestwo.moxie/"
-            + R.drawable.reddit_404_thumb_black;
+            + R.drawable.reddit_404_thumb_new;
     public final static String[] VALID_MEDIA_EXTENSION
             = {"jpg","JPG", "jpeg","JPEG", "png", "PNG","gifv", "GIFV", "gif","GIF", "mp4", "MP4"};
     public final static String[] VALID_IMAGE_EXTENSION = {"jpg", "jpeg", "png"};

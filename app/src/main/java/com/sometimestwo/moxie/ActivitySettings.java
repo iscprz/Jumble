@@ -66,9 +66,6 @@ public class ActivitySettings extends Activity {
 
     // tracks whether anything was clicked on
     private boolean mModified = false;
-    // True when a "restart required" setting has been changed
-    private boolean mNeedsRefresh = false;
-    private boolean mLogoutEvent = false;
 
     SharedPreferences prefs_settings;
     SharedPreferences.Editor prefs_settings_editor;
@@ -112,7 +109,6 @@ public class ActivitySettings extends Activity {
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 prefs_settings_editor.putBoolean(Constants.PREFS_HIDE_NSFW, b);
                 mModified = true;
-                mNeedsRefresh = true;
                 mHideNSFW = b;
 
                 // depend on the state of NSFW submissions being allowed
@@ -354,55 +350,15 @@ public class ActivitySettings extends Activity {
     public void onBackPressed() {
         super.onBackPressed();
 
-        // Technically we can modify changes AND log out but logout will take precedence here
-        if (mLogoutEvent) {
+        if (mModified) {
             Toast.makeText(this, getResources()
-                    .getString(R.string.toast_settings_logout_success), Toast.LENGTH_SHORT).show();
-        }else if(mNeedsRefresh){
-            Toast.makeText(this, getResources()
-                    .getString(R.string.toast_settings_saved_refresh), Toast.LENGTH_LONG).show();
-        }
-        else if (mModified) {
-            Toast.makeText(this, getResources()
-                    .getString(R.string.toast_settings_saved), Toast.LENGTH_SHORT).show();
+                    .getString(R.string.toast_settings_saved_refresh), Toast.LENGTH_SHORT).show();
         }
 
         prefs_settings_editor.commit();
         Intent intent = getIntent();
-        //TODO: Need to inform ActivityMain of any changes that may require reload i.e. allowing NSFW
-        //intent.putExtra(Constants.NUM_GALLERIE_DIRS_CHOSEN, chosenDirectories.size());
-        if (mModified && mNeedsRefresh) {
-            setResult(Constants.RESULT_OK_INVALIDATE_DATA, intent);
-        } else if (mModified) {
-            setResult(RESULT_OK, intent);
-        }
+        setResult(RESULT_OK, intent);
         finish();
     }
-
-    // preview size radio buttons
-/*
-    public void onRadioButtonClicked(View view) {
-        boolean checked = ((RadioButton) view).isChecked();
-        switch (view.getId()) {
-            case R.id.radio_preview_size_option_large:
-                if (checked) {
-                    prefs_settings_editor.putString(Constants.PREFS_PREVIEW_SIZE, Constants.PREFS_PREVIEW_SIZE_LARGE);
-                    mModified = true;
-                }
-                break;
-            case R.id.radio_preview_size_option_small:
-                if (checked) {
-                    prefs_settings_editor.putString(Constants.PREFS_PREVIEW_SIZE, Constants.SETTINGS_PREVIEW_SIZE_SMALL);
-                    mModified = true;
-                }
-                break;
-        }
-    }
-*/
-
-    public String getRadioOption() {
-        return "";
-    }
-
 }
 

@@ -182,7 +182,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
     /* Async tasks which might need cancelling */
     AsyncTask<Void, Void, Void> FetchCommentsTask;
-    AsyncTask<Void,Void,Boolean> ReauthUserTask;
+    AsyncTask<Void, Void, Boolean> ReauthUserTask;
 
 
     public interface OnCommentsEventListener {
@@ -196,7 +196,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-       // setRetainInstance(true);
+        // setRetainInstance(true);
         unpackArgs();
 
         // Read relevant permission settings
@@ -267,14 +267,14 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mYoutubeIconsOverlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!mCommentsOpen) {
+                if (mCommentsOpen)
+                    closeComments();
+                else {
                     Intent youTubeIntent = new Intent(getContext(), ActivityYouTubePlayer.class);
                     Bundle args = new Bundle();
                     args.putSerializable(Constants.ARGS_SUBMISSION_OBJ, mCurrSubmission);
                     youTubeIntent.putExtras(args);
                     startActivity(youTubeIntent);
-                } else {
-                    closeComments();
                 }
             }
         });
@@ -291,25 +291,15 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mExoplayerContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!mCommentsOpen) {
-                    if (mAllowCloseOnClick) {
-                        closeFullDisplay();
-                    }
-                } else {
-                    closeComments();
-                }
+                if (mCommentsOpen) closeComments();
+                else if (mAllowCloseOnClick) closeFullDisplay();
             }
         });
         mVideoviewContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!mCommentsOpen) {
-                    if (mAllowCloseOnClick) {
-                        closeFullDisplay();
-                    }
-                } else {
-                    closeComments();
-                }
+                if (mCommentsOpen) closeComments();
+                else if (mAllowCloseOnClick) closeFullDisplay();
             }
         });
 
@@ -374,8 +364,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     }
 
     private void cancelRunning() {
-        if(FetchCommentsTask != null) FetchCommentsTask.cancel(true);
-        if(ReauthUserTask != null) ReauthUserTask.cancel(true);
+        if (FetchCommentsTask != null) FetchCommentsTask.cancel(true);
+        if (ReauthUserTask != null) ReauthUserTask.cancel(true);
 
     }
 
@@ -445,7 +435,25 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                                             focusView(mZoomView, null);
                                             Zoomy.Builder builder = new Zoomy.Builder(getActivity())
                                                     .target(mZoomView)
-                                                    .interpolator(new OvershootInterpolator());
+                                                    .interpolator(new OvershootInterpolator())
+                                                    .tapListener(new TapListener() {
+                                                        @Override
+                                                        public void onTap(View v) {
+                                                            if (mCommentsOpen) closeComments();
+                                                            else if (mAllowCloseOnClick)
+                                                                closeFullDisplay();
+                                                        }
+                                                    })
+                                                    .longPressListener(new LongPressListener() {
+                                                        @Override
+                                                        public void onLongPress(View v) {
+
+                                                        }
+                                                    }).doubleTapListener(new DoubleTapListener() {
+                                                        @Override
+                                                        public void onDoubleTap(View v) {
+                                                        }
+                                                    });
                                             builder.register();
                                             GlideApp.load(mCurrSubmission.getCleanedUrl())
                                                     .apply(new RequestOptions().diskCacheStrategy(DiskCacheStrategy.ALL))
@@ -473,9 +481,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                         .tapListener(new TapListener() {
                             @Override
                             public void onTap(View v) {
-                                if (mAllowCloseOnClick) {
-                                    closeFullDisplay();
-                                }
+                                if (mCommentsOpen) closeComments();
+                                else if (mAllowCloseOnClick) closeFullDisplay();
                             }
                         })
                         .longPressListener(new LongPressListener() {
@@ -633,9 +640,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                         .tapListener(new TapListener() {
                             @Override
                             public void onTap(View v) {
-                                if (mAllowCloseOnClick) {
-                                    closeFullDisplay();
-                                }
+                                if (mCommentsOpen) closeComments();
+                                else if (mAllowCloseOnClick) closeFullDisplay();
                             }
                         })
                         .longPressListener(new LongPressListener() {
@@ -694,9 +700,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                     .tapListener(new TapListener() {
                         @Override
                         public void onTap(View v) {
-                            if (mAllowCloseOnClick) {
-                                closeFullDisplay();
-                            }
+                            if (mCommentsOpen) closeComments();
+                            else if (mAllowCloseOnClick) closeFullDisplay();
                         }
                     })
                     .longPressListener(new LongPressListener() {
@@ -842,8 +847,12 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
 
 
                 // Display the submission's URL inside the option "go to {URL}..."
-                String truncatedURL = mCurrSubmission.getUrl().substring(0, Constants.MAX_LENGTH_URL_DISPLAY);
-                String gotoString = getResources().getString(R.string.goto_web_url, truncatedURL);
+                String displayUrl;
+                if (mCurrSubmission.getUrl().length() > Constants.MAX_LENGTH_URL_DISPLAY)
+                    displayUrl = mCurrSubmission.getUrl().substring(0, Constants.MAX_LENGTH_URL_DISPLAY);
+                else
+                    displayUrl = mCurrSubmission.getUrl();
+                String gotoString = getResources().getString(R.string.goto_web_url, displayUrl);
                 m.findItem(R.id.menu_full_display_overflow_open_web).setTitle(gotoString);
 
                 overflowPopup.show();
@@ -977,10 +986,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     }
 
     private void initComments() {
-        if(App.getAccountHelper().isAuthenticated()){
+        if (App.getAccountHelper().isAuthenticated()) {
             FetchCommentsTask = new FetchCommentsTask().execute();
-        }
-        else{
+        } else {
             ReauthUserTask = new Utils.RedditReauthTask(new OnRedditTaskListener() {
                 @Override
                 public void onSuccess() {

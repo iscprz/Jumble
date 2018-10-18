@@ -60,7 +60,7 @@ public class ActivityMain extends AppCompatActivity {
         }
 
         // Hide NSFW thumbs
-        if (prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW_THUMBS, false)) {
+        if (!prefs_settings.getBoolean(Constants.PREFS_HIDE_NSFW_THUMBS, false)) {
             prefs_settings_editor.putBoolean(Constants.PREFS_HIDE_NSFW_THUMBS, false);
         }
 
@@ -75,17 +75,17 @@ public class ActivityMain extends AppCompatActivity {
         }
 
         // Allow domain icons - defaults to false
-        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_DOMAIN_ICON, false)) {
+        if (!prefs_settings.getBoolean(Constants.PREFS_ALLOW_DOMAIN_ICON, false)) {
             prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_DOMAIN_ICON, false);
         }
 
         // Allow filetype icons - defaults to false
-        if (prefs_settings.getBoolean(Constants.PREFS_ALLOW_FILETYPE_ICON, false)) {
+        if (!prefs_settings.getBoolean(Constants.PREFS_ALLOW_FILETYPE_ICON, false)) {
             prefs_settings_editor.putBoolean(Constants.PREFS_ALLOW_FILETYPE_ICON, false);
         }
 
         // Show NSFW icon on NSFW submissions
-        if (prefs_settings.getBoolean(Constants.PREFS_SHOW_NSFW_ICON, false)) {
+        if (!prefs_settings.getBoolean(Constants.PREFS_SHOW_NSFW_ICON, false)) {
             prefs_settings_editor.putBoolean(Constants.PREFS_SHOW_NSFW_ICON, false);
         }
 

@@ -2,8 +2,11 @@ package com.sometimestwo.moxie;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -17,6 +20,7 @@ import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
@@ -879,6 +883,22 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                                 startActivity(intent);
                                 return true;
                             case R.id.menu_full_display_overflow_share:
+                                String[] shareOptions = {"Copy media url", "Copy reddit url"};
+
+                                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());//new AlertDialog.Builder(new ContextThemeWrapper(getContext(),R.style.AlertDialogDark));
+                                builder.setItems(shareOptions, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        ClipboardManager clipboard = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                                        String copiedUrl = "";
+                                        if(which == 0) copiedUrl = mCurrSubmission.getUrl();
+                                        else copiedUrl = "www.reddit.com" + mCurrSubmission.getPermalink();
+
+                                        ClipData clip = ClipData.newPlainText("share_url", copiedUrl);
+                                        clipboard.setPrimaryClip(clip);
+                                    }
+                                });
+                                builder.show();
                                 return true;
                         }
                         return false;

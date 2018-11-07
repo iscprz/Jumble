@@ -55,7 +55,17 @@
         <item name="colorControlActivated">@color/colorWhite</item>
     </style>
 
-    <style name="RippleTheme">
-        <item name="android:background">?android:selectableItemBackgroundBorderless</item>
+    <style name="AlertDialogDark" parent="@android:style/Theme.Dialog">
+        <item name="android:background">@color/colorDarkerGray</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:textColorPrimary">#ffffff</item>
+        <item name="android:textColorSecondary">#ffffff</item>
+        <item name="android:textColorTertiary">#ffffff</item>
+        <item name="android:textColorAlertDialogListItem">#ffffff</item>
+        <item name="android:colorPrimary">#ffffff</item>
+        <item name="android:colorForeground">#ffffff</item>
+        <item name="android:color">#ffffff</item>
     </style>
+
 </resources>

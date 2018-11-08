@@ -40,13 +40,13 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
     public void loadInitial(@NonNull LoadInitialParams<String> params,
                             @NonNull final LoadInitialCallback<SubmissionObj> callback) {
         if (App.getAccountHelper().isAuthenticated()) {
-            App.setPaginator(buildNewPaginator());
+            App.getStackRedditPaginator().push(buildNewPaginator());
             new FetchInitialSubmissionsTask(callback).execute();
         } else {
             new Utils.RedditReauthTask(new OnRedditTaskListener() {
                 @Override
                 public void onSuccess() {
-                    App.setPaginator(buildNewPaginator());
+                    App.getStackRedditPaginator().push(buildNewPaginator());
                     new FetchInitialSubmissionsTask(callback).execute();
                 }
 
@@ -149,7 +149,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             Listing<?> submissions;
             List<SubmissionObj> submissionObjs;
             try {
-                submissions = App.getRedditPaginator().next();
+                submissions = App.getStackRedditPaginator().peek().next();
                 /*  If we've retrieved an amount of pages less than our page size limit,
                  *  it's because the subreddit(s) in question are out of submissions to return.
                  *
@@ -207,7 +207,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             List<SubmissionObj> submissionObjs = null;
             try {
                 // get the next few submissions
-                submissions = App.getRedditPaginator().next();
+                submissions = App.getStackRedditPaginator().peek().next();
                 submissionObjs = mapSubmissions(submissions);
             } catch (Exception e) {
                 // todo: catch network error such as timeout using similar techniques as above

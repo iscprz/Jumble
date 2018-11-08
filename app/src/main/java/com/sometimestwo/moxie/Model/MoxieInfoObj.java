@@ -18,7 +18,7 @@ public class MoxieInfoObj {
     private TimePeriod mTimePeriod;
     private boolean hideNSFW = true;
     private List<String> defaultSubreddits =
-            new ArrayList<String>(Arrays.asList(
+            new ArrayList<>(Arrays.asList(
                     "funny",
                     "gifs",
                     "pics",

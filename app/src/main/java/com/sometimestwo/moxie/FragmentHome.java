@@ -594,6 +594,10 @@ public class FragmentHome extends Fragment {
                 while (!App.getMoxieInfoObj().getmSubredditStack().isEmpty()) {
                     App.getMoxieInfoObj().getmSubredditStack().pop();
                 }
+                // empty subreddit paginator as well
+                while(!App.getStackRedditPaginator().isEmpty()){
+                    App.getStackRedditPaginator().pop();
+                }
 
                 // update shared prefernces with a list of this user's subscriptions
                 if (!Utils.isUserSubscriptionsStored(newUsername)) {
@@ -1930,6 +1934,10 @@ public class FragmentHome extends Fragment {
         // start our subreddit stack over cause we're starting over again
         while (!App.getMoxieInfoObj().getmSubredditStack().isEmpty()) {
             App.getMoxieInfoObj().getmSubredditStack().pop();
+        }
+        // empty subreddit paginator as well
+        while(!App.getStackRedditPaginator().isEmpty()){
+            App.getStackRedditPaginator().pop();
         }
 
         //remove any sorting we had...null is ok :^)

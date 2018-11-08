@@ -24,6 +24,7 @@ import net.dean.jraw.http.SimpleHttpLogger;
 import net.dean.jraw.oauth.AccountHelper;
 import net.dean.jraw.pagination.DefaultPaginator;
 
+import java.util.Stack;
 import java.util.UUID;
 
 public final class App extends Application {
@@ -36,10 +37,10 @@ public final class App extends Application {
     private static Gson GsonApp;
     private static Resources AppResources;
 
-    // Reference to the submissions paginator we'll be using to fetch submissions.
-    // We need this here so that we can access it from everywhere to verify its
-    // authentication status.
-    private static DefaultPaginator<?> RedditPaginator;
+    // Paginator is what we use to page through reddit submissions given a subreddit.
+    // Since each subreddit will need its own paginator, we use this stack concurrently with
+    // the MoxieInfoObj subreddit stack to track which paginator to use.
+    private static Stack<DefaultPaginator<?>> StackRedditPaginator  = new Stack<>();;
 
     @Override
     public void onCreate() {
@@ -100,11 +101,12 @@ public final class App extends Application {
     public static Gson getGsonApp() {return GsonApp;}
     public static Resources getAppResources() {return AppResources;}
 
-    public static DefaultPaginator<?> getRedditPaginator() {
-        return RedditPaginator;
+    public static Stack<DefaultPaginator<?>> getStackRedditPaginator() {
+        return StackRedditPaginator;
     }
-    public static void setPaginator(DefaultPaginator<?> paginator) {
-        RedditPaginator = paginator;
+
+    public static void setStackRedditPaginator(Stack<DefaultPaginator<?>> stackRedditPaginator) {
+        StackRedditPaginator = stackRedditPaginator;
     }
 
     // Video cache

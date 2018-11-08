@@ -60,7 +60,7 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
         }
     }
 
-    // Actually removes current fragment and creates new one
+    // Removes current fragment and creates new one
     protected void refreshFragment(String fragmentTag, boolean invalidateData) {
         Fragment fragment = getSupportFragmentManager().findFragmentByTag(fragmentTag);
         final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -206,6 +206,8 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     @Override
     public void refreshFeed(boolean invalidateData) {
         refreshFragment(Constants.TAG_FRAG_HOME, invalidateData);
+        // Pop the current subreddit paginator since we're about to create a new one by refreshing
+        App.getStackRedditPaginator().pop();
     }
 
 

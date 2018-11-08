@@ -107,7 +107,9 @@
             android:paddingBottom="5dp"
             android:paddingStart="5dp"
             android:textColor="@color/colorLightGray"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:autoLink="web"
+            />
 
     </RelativeLayout>
 

@@ -96,6 +96,8 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
         // Bookkeeping
         if (!App.getMoxieInfoObj().getmSubredditStack().isEmpty()) {
             App.getMoxieInfoObj().getmSubredditStack().pop();
+        }
+        if(!App.getStackRedditPaginator().isEmpty()){
             App.getStackRedditPaginator().pop();
         }
         super.finish();
@@ -181,7 +183,9 @@ public class ActivitySubredditViewer extends AppCompatActivity implements HomeEv
     public void refreshFeed(boolean invalidateData) {
         retrySubredditLoad(Constants.TAG_FRAG_SUBREDDIT_VIEWER, invalidateData);
         // Pop the current subreddit paginator since we're about to create a new one by refreshing
-        App.getStackRedditPaginator().pop();
+        if(!App.getStackRedditPaginator().isEmpty()){
+            App.getStackRedditPaginator().pop();
+        }
     }
 
 

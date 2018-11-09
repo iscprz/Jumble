@@ -206,8 +206,10 @@ public class ActivityHome extends AppCompatActivity implements HomeEventListener
     @Override
     public void refreshFeed(boolean invalidateData) {
         refreshFragment(Constants.TAG_FRAG_HOME, invalidateData);
-        // Pop the current subreddit paginator since we're about to create a new one by refreshing
-        App.getStackRedditPaginator().pop();
+        // Pop the current subreddit paginator since we're about to create a new one by refreshing.
+        if(!App.getStackRedditPaginator().isEmpty()){
+            App.getStackRedditPaginator().pop();
+        }
     }
 
 

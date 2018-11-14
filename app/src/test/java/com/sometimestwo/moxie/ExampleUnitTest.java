@@ -1,4 +1,4 @@
-package com.sometimestwo.moxie;
+package com.sometimestwo.jumble;
 
 import org.junit.Test;
 

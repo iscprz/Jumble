@@ -16,7 +16,7 @@
         android:visibility="visible" />
 
     <!-- Recyclerview -->
-    <com.sometimestwo.moxie.MultiClickRecyclerView
+    <com.sometimestwo.jumble.MultiClickRecyclerView
         android:id="@+id/recycler_submissions"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

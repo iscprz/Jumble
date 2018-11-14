@@ -68,7 +68,7 @@
         android:id="@+id/full_displayer_exoplayer_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/full_display_snack_bar_container"
+        android:layout_above="@id/full_display_ad_banner"
         android:layout_below="@id/big_display_title_container"
         android:background="@color/transparent"
         android:clickable="true">
@@ -91,7 +91,7 @@
         android:id="@+id/full_displayer_videoview_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/full_display_snack_bar_container"
+        android:layout_above="@id/full_display_ad_banner"
         android:layout_below="@id/big_display_title_container"
         android:background="@color/transparent"
         android:clickable="true">

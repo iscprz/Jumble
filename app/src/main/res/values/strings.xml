@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Moxie</string>
+    <string name="app_name">Jumble</string>
     <string name="menu_accounts">Accounts</string>
     <string name="menu_log_in">Log in</string>
     <string name="menu_goto_subreddit">Go to subreddit...</string>

@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
+import com.google.android.gms.ads.MobileAds;
 import com.google.gson.Gson;
 import com.sometimestwo.moxie.Model.MoxieInfoObj;
 import com.sometimestwo.moxie.Utils.Constants;
@@ -91,6 +92,9 @@ public final class App extends Application {
         Shared_prefs = this.getSharedPreferences(Constants.KEY_SHARED_PREFS, Context.MODE_PRIVATE);
 
         AppResources = this.getResources();
+
+        // admob
+        MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
     }
 
     public static AccountHelper getAccountHelper() { return accountHelper; }

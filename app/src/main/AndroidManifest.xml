@@ -25,6 +25,10 @@
             android:name="net.dean.jraw.android.REDIRECT_URL"
             android:value="https://github.com/izikperz" />
 
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713"/>
+
         <activity
             android:name=".ActivitySplash"
             android:theme="@style/SplashTheme">

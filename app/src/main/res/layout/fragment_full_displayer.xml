@@ -110,7 +110,7 @@
         android:id="@+id/full_displayer_zoomie_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/full_display_snack_bar_container"
+        android:layout_above="@id/full_display_ad_banner"
         android:layout_below="@id/big_display_title_container" />
 
     <!-- Loading progress bar-->
@@ -122,8 +122,6 @@
         android:visibility="visible" />
 
     <!-- Submission header -->
-
-
     <RelativeLayout
         android:id="@+id/big_display_title_container"
         android:layout_width="match_parent"
@@ -159,27 +157,41 @@
             android:textStyle="normal" />
 
         <ImageView
+            android:id="@+id/full_display_gold_star"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:id="@+id/full_display_gold_star"
+            android:layout_below="@id/full_display_title"
             android:layout_marginTop="5dp"
-            android:background="@drawable/ic_yellow_star_filled_2"
-            android:visibility="gone"
             android:layout_toEndOf="@id/full_display_submission_info"
-            android:layout_below="@id/full_display_title" />
+            android:background="@drawable/ic_yellow_star_filled_2"
+            android:visibility="gone" />
+
         <TextView
             android:id="@+id/full_display_gold_text"
             android:layout_width="wrap_content"
             android:layout_height="30dp"
+            android:layout_below="@id/full_display_title"
             android:layout_marginEnd="5dp"
             android:layout_toEndOf="@id/full_display_gold_star"
-            android:layout_below="@id/full_display_title"
             android:gravity="center_vertical"
             android:textColor="@color/colorLightGray"
             android:textSize="@dimen/full_display_header_info_text_size"
             android:textStyle="normal" />
 
     </RelativeLayout>
+
+    <!-- Ad -->
+    <com.google.android.gms.ads.AdView
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/full_display_ad_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/full_display_snack_bar_container"
+        ads:adSize="BANNER"
+        ads:adUnitId="ca-app-pub-3940256099942544/6300978111">
+    </com.google.android.gms.ads.AdView>
+
     <!-- Snack bar-->
     <LinearLayout
         android:id="@+id/full_display_snack_bar_container"
@@ -243,12 +255,12 @@
         </RelativeLayout>
 
         <FrameLayout
+            android:id="@+id/full_display_downvote_container"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight=".20"
-            android:id="@+id/full_display_downvote_container">
-          <!--  android:background="@drawable/ripple_effect"
-            android:theme="@style/RippleTheme"-->
+            android:layout_weight=".20">
+            <!--  android:background="@drawable/ripple_effect"
+              android:theme="@style/RippleTheme"-->
             <ImageView
                 android:id="@+id/full_display_snack_bar_downvote"
                 android:layout_width="@dimen/snackbar_icon_size"
@@ -260,10 +272,10 @@
 
         <!-- Save -->
         <FrameLayout
+            android:id="@+id/full_display_save_container"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight=".15"
-            android:id="@+id/full_display_save_container">
+            android:layout_weight=".15">
 
             <ImageView
                 android:id="@+id/full_display_snack_bar_save"

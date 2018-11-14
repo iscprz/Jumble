@@ -107,5 +107,7 @@ dependencies {
     // photo view
     implementation 'com.github.chrisbanes:PhotoView:2.1.4'
 
+    // admob
+    implementation 'com.google.android.gms:play-services-ads:17.1.1'
 
 }

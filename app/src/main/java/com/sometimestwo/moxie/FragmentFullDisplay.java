@@ -75,6 +75,8 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.TransferListener;
 import com.google.android.exoplayer2.util.Util;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
@@ -141,6 +143,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
     private VoteDirection mVoteDirection;
     private boolean mIsSaved;
     private int mUpvoteCount;
+
+    /* Ad */
+    private AdView mAdViewBanner;
 
     /* Comments */
     boolean mCommentsOpen = false;
@@ -236,6 +241,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         mButtonOverflow = (ImageView) v.findViewById(R.id.full_display_snack_bar_overflow);
         mSnackbarContainer = (LinearLayout) v.findViewById(R.id.full_display_snack_bar_container);
 
+        /* Ad banner*/
+        mAdViewBanner = v.findViewById(R.id.full_display_ad_banner);
+
         /* Comments */
         mCommentsContainer = (LinearLayout) v.findViewById(R.id.full_displayer_comments_container);
         mCommentsDummyTopView = (RelativeLayout) v.findViewById(R.id.full_displayer_comments_dummy_top);
@@ -289,6 +297,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
         setupMedia();
         setupSnackBar();
         setupComments();
+        setupAdBanner();
         startAndBindDownloadService();
 
         /* Click listeners that listen for click-to-close functionality*/
@@ -955,6 +964,11 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                 return commentsGestureDetector.onTouchEvent(motionEvent);
             }
         });
+    }
+
+    public void setupAdBanner(){
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdViewBanner.loadAd(adRequest);
     }
 
     public void openComments() {

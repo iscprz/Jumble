@@ -56,7 +56,7 @@ public class Fragment404 extends Fragment {
             m404EventListener = (Fragment404.Fragment404EventListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
-                    + " must implement listener inferfaces!");
+                    + " must implement listener interfaces!");
         }
     }
 

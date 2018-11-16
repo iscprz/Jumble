@@ -139,7 +139,7 @@ public class ActivityMain extends AppCompatActivity {
                     App.getAccountHelper().switchToUserless();
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Failed to switch to most recent user. Defaulting to Guest");
+               // Log.e(TAG, "Failed to switch to most recent user. Defaulting to Guest");
                 App.getAccountHelper().switchToUserless();
                 return true;
             }

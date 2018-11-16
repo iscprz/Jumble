@@ -61,7 +61,7 @@ public class DownloadUtil {
             }
         }catch(Exception ex)
         {
-            Log.e(TAG_DOWNLOAD_MANAGER, ex.getMessage(), ex);
+          //  Log.e(TAG_DOWNLOAD_MANAGER, ex.getMessage(), ex);
         }finally {
             return ret;
         }
@@ -134,7 +134,7 @@ public class DownloadUtil {
 
         }catch(Exception ex)
         {
-            Log.e(TAG_DOWNLOAD_MANAGER, ex.getMessage(), ex);
+            //Log.e(TAG_DOWNLOAD_MANAGER, ex.getMessage(), ex);
         }finally
         {
             return ret;

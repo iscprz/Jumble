@@ -371,7 +371,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             // Submission to be viewed
             mCurrSubmission = (SubmissionObj) this.getArguments().get(Constants.ARGS_SUBMISSION_OBJ);
         } catch (Exception e) {
-            Log.e("FRAG_FULL_DISPLAY", "Error unpacking args: ");
+           // Log.e("FRAG_FULL_DISPLAY", "Error unpacking args: ");
             e.printStackTrace();
         }
     }
@@ -474,9 +474,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                                         }
                                     });
                                 } else {
-                                    Log.e(TAG,
+                              /*      Log.e(TAG,
                                             "getActivity() null when trying to fixIndirectImgurUrl for URL "
-                                                    + mCurrSubmission.getUrl());
+                                                    + mCurrSubmission.getUrl());*/
                                 }
                             }
 
@@ -542,9 +542,9 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                                         }
                                     });
                                 } else {
-                                    Log.e(TAG,
+                                   /* Log.e(TAG,
                                             "getActivity null when trying to getMp4LinkImgur for url "
-                                                    + mCurrSubmission.getUrl());
+                                                    + mCurrSubmission.getUrl());*/
                                 }
                             }
 
@@ -573,7 +573,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                             public void onThumbnailError(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader.ErrorReason errorReason) {
                                 mProgressBar.setVisibility(View.GONE);
                                 mFailedLoadText.setVisibility(View.VISIBLE);
-                                Log.e("YOUTUBE_THUMBNAIL", "Could not load Youtube thumbnail for url: " + mCurrSubmission.getUrl());
+                                //Log.e("YOUTUBE_THUMBNAIL", "Could not load Youtube thumbnail for url: " + mCurrSubmission.getUrl());
                                 youTubeThumbnailLoader.release();
                             }
                         });
@@ -596,17 +596,17 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                     @Override
                     public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {
                         //Log.d(TAG, "onResponse: feed: " + response.body().toString());
-                        Log.d("GFYCAT_RESPONSE",
-                                "getGyfCatObjToEnqueue onResponse: Server Response: " + response.toString());
+                        /*Log.d("GFYCAT_RESPONSE",
+                                "getGyfCatObjToEnqueue onResponse: Server Response: " + response.toString());*/
 
                         GfyItem gfyItem = new GfyItem();
                         try {
                             gfyItem = response.body().getGfyItem();
                         } catch (Exception e) {
-                            Log.e("GFYCAT_RESPONSE_ERROR",
+                            /*Log.e("GFYCAT_RESPONSE_ERROR",
                                     "Failed in attempt to retrieve gfycat object for hash "
                                             + gfycatHash + ". "
-                                            + e.getMessage());
+                                            + e.getMessage());*/
                             call.cancel();
                         }
                         if (gfyItem != null) {
@@ -623,8 +623,8 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                     @Override
                     public void onFailure(Call<GfycatWrapper> call, Throwable t) {
                         call.cancel();
-                        Log.e("GETGFYCAT_ERROR",
-                                "getGyfCatObjToEnqueue onFailure: Unable to retrieve Gfycat: " + t.getMessage());
+                       /* Log.e("GETGFYCAT_ERROR",
+                                "getGyfCatObjToEnqueue onFailure: Unable to retrieve Gfycat: " + t.getMessage());*/
                     }
 
                 });
@@ -1074,7 +1074,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
             getActivity().startService(downloadIntent);
             getActivity().getApplicationContext().bindService(downloadIntent, serviceConnection, BIND_AUTO_CREATE);
         } else {
-            Log.e(TAG, "getActivity() null on attempting to startAndBindDownloadService()");
+            //Log.e(TAG, "getActivity() null on attempting to startAndBindDownloadService()");
         }
     }
 
@@ -1263,7 +1263,7 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                         if (!mCommentsOpen) {
                             openComments();
                         }
-                        Log.e("SWIPE_TEST", "SWIPED UP!");
+                     //   Log.e("SWIPE_TEST", "SWIPED UP!");
                     } else {
                         if (mCommentsOpen) {
                             closeComments();

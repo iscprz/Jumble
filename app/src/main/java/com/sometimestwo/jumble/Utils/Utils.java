@@ -231,8 +231,8 @@ public class Utils {
                         //      imply IMAGE (not gif/video)
                         else {
                             item.setCleanedUrl(imgurSubmissionData.getMp4());
-                            Log.e("IMGUR_GIF_WTF",
-                                    "Found a gif/mp4 file when fetching an indirect url fix!");
+                           /* Log.e("IMGUR_GIF_WTF",
+                                    "Found a gif/mp4 file when fetching an indirect url fix!");*/
                         }
                     }
 
@@ -275,7 +275,7 @@ public class Utils {
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.e("ERROR_IMGUR_FETCH", "Failed to retrieve imgur hash: " + imgurHash);
+                       // Log.e("ERROR_IMGUR_FETCH", "Failed to retrieve imgur hash: " + imgurHash);
                         e.printStackTrace();
                         listener.downloadFailure();
                     }
@@ -369,7 +369,7 @@ public class Utils {
             byteBufferByteChannel.close();
             fos.close();
         } catch (IOException e) {
-            Log.e("Utils.mux()", "Error! Missed close()!");
+          //  Log.e("Utils.mux()", "Error! Missed close()!");
             e.printStackTrace();
             return false;
         }
@@ -723,7 +723,7 @@ public class Utils {
                         //setMuteVisibility(false);
                     }
                 } catch (Exception e) {
-                    Log.e("FetchVRedditGifTask", "Error! Missed close()!");
+                   // Log.e("FetchVRedditGifTask", "Error! Missed close()!");
                     e.printStackTrace();
                 }
 
@@ -749,7 +749,6 @@ public class Utils {
     public static class RedditReauthTask extends AsyncTask<Void,Void, Boolean>{
         OnRedditTaskListener listener;
         String errorMessage;
-        boolean didsomething;
         public RedditReauthTask(OnRedditTaskListener listener){
             this.listener = listener;
         }
@@ -757,7 +756,6 @@ public class Utils {
         @Override
         protected Boolean doInBackground(Void... voids) {
             try {
-                didsomething = true;
                 if (isUserlessSafe()) {
                     App.getAccountHelper().switchToUserless();
                 } else {
@@ -776,7 +774,6 @@ public class Utils {
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             if(aBoolean) listener.onSuccess();
-            if(didsomething) Log.e("REAUTH TASK", " 99999999999999999999999999999999 REAUTH SUCCESS!!!!");
             super.onPostExecute(aBoolean);
         }
     }
@@ -798,8 +795,8 @@ public class Utils {
                 boolean isSaved = App.getAccountHelper().getReddit().submission(submissionId).inspect().isSaved();
                 App.getAccountHelper().getReddit().submission(submissionId).setSaved(!isSaved);
             } catch (Exception e) {
-                Log.e("SAVE_SUBMISSION_ERROR",
-                        "Could not save submission " + currSubmission.getId());
+                /*Log.e("SAVE_SUBMISSION_ERROR",
+                        "Could not save submission " + currSubmission.getId());*/
             }
             return null;
         }
@@ -830,7 +827,7 @@ public class Utils {
                 App.getAccountHelper().getReddit().submission(submissionID).setVote(voteDirection);
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e("VOTE FAILURE", "Failed to set vote for submission: " + submissionID);
+                //Log.e("VOTE FAILURE", "Failed to set vote for submission: " + submissionID);
             }
             return null;
         }

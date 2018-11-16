@@ -189,7 +189,8 @@
         android:layout_centerHorizontal="true"
         android:layout_above="@id/full_display_snack_bar_container"
         ads:adSize="BANNER"
-        ads:adUnitId="ca-app-pub-3940256099942544/6300978111">
+        android:visibility="gone"
+        ads:adUnitId="ca-app-pub-2111931849262691/7339687447">
     </com.google.android.gms.ads.AdView>
 
     <!-- Snack bar-->

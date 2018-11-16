@@ -63,7 +63,7 @@ final class StorageUtils {
         }
         if (appCacheDir == null) {
             String cacheDirPath = "/data/data/" + context.getPackageName() + "/cache/";
-            LOG.warn("Can't define system cache directory! '" + cacheDirPath + "%s' will be used.");
+           // LOG.warn("Can't define system cache directory! '" + cacheDirPath + "%s' will be used.");
             appCacheDir = new File(cacheDirPath);
         }
         return appCacheDir;
@@ -74,7 +74,7 @@ final class StorageUtils {
         File appCacheDir = new File(new File(dataDir, context.getPackageName()), "cache");
         if (!appCacheDir.exists()) {
             if (!appCacheDir.mkdirs()) {
-                LOG.warn("Unable to create external cache directory");
+               // LOG.warn("Unable to create external cache directory");
                 return null;
             }
         }

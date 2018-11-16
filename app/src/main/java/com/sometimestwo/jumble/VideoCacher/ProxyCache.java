@@ -62,7 +62,7 @@ class ProxyCache {
 
     public void shutdown() {
         synchronized (stopLock) {
-            LOG.debug("Shutdown proxy for " + source);
+           // LOG.debug("Shutdown proxy for " + source);
             try {
                 stopped = true;
                 if (sourceReaderThread != null) {
@@ -174,9 +174,9 @@ class ProxyCache {
     protected final void onError(final Throwable e) {
         boolean interruption = e instanceof InterruptedProxyCacheException;
         if (interruption) {
-            LOG.debug("ProxyCache is interrupted");
+          //  LOG.debug("ProxyCache is interrupted");
         } else {
-            LOG.error("ProxyCache error", e);
+           // LOG.error("ProxyCache error", e);
         }
     }
 

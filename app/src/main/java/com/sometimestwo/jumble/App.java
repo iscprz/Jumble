@@ -94,7 +94,7 @@ public final class App extends Application {
         AppResources = this.getResources();
 
         // admob
-        MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
+        MobileAds.initialize(this, "ca-app-pub-2111931849262691~8038950629");
     }
 
     public static AccountHelper getAccountHelper() { return accountHelper; }

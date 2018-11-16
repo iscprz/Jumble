@@ -33,7 +33,7 @@ public class DownloadBinder extends Binder {
     public void startDownload(String downloadUrl,String newFilename,int progress )
     {
         /* Because downloadManager is a subclass of AsyncTask, and AsyncTask can only be executed once,
-         * So each download need a new downloadManager. */
+         * So each download needs a new downloadManager. */
         downloadManager = new DownloadManager(downloadListener,newFilename);
 
         /* Because DownloadUtil has a static variable of downloadManger, so each download need to use new downloadManager. */

@@ -110,6 +110,7 @@ public class DownloadManager extends AsyncTask<String, Integer, Integer> {
      * */
     private File createDownloadLocalFile(String downloadFileUrl)
     {
+        File dir = null;
         File ret = null;
 
         try {
@@ -117,23 +118,27 @@ public class DownloadManager extends AsyncTask<String, Integer, Integer> {
                 int lastIndex = downloadFileUrl.lastIndexOf("/");
                 if (lastIndex > -1) {
                     String downloadFileName = newFilename;
-                    //String downloadDirectoryName = Environment.DIRECTORY_PICTURES;
                     File downloadDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
                     String downloadDirectoryPath =
                             downloadDirectory.getPath()
                             + File.separator
                             + Constants.APP_NAME;
 
+                    dir = new File(downloadDirectoryPath);
+                    if(!dir.exists()){
+                        dir.mkdirs();
+                    }
+
                     ret = new File(downloadDirectoryPath + "/" + downloadFileName);
 
                     if (!ret.exists()) {
-                        ret.createNewFile();
+                      ret.createNewFile();
                     }
                 }
             }
         }catch(IOException ex)
         {
-            Log.e("Download Manager", ex.getMessage(), ex);
+            //Log.e("Download Manager", ex.getMessage(), ex);
         }finally {
             return ret;
         }

@@ -70,7 +70,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
             // make sure we're authenticated
             if (!App.getAccountHelper().isAuthenticated()) {
                 mEndOfSubreddit = true;
-                Log.e("LOAD_AFTER_TEST", "----------Client not authenticated! Marked end of subreddit!");
+               // Log.e("LOAD_AFTER_TEST", "----------Client not authenticated! Marked end of subreddit!");
             } else {
                 new FetchSubmissionsTask(callback).execute();
             }
@@ -171,8 +171,8 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 //  }
                 //java.net.UnknownHostException: Unable to resolve host "www.reddit.com": No address associated with hostname
 
-                Log.e(SubmissionsDataSource.class.getSimpleName(),
-                        " Failed to request initial submissions from reddit: " + e.getMessage());
+              /*  Log.e(SubmissionsDataSource.class.getSimpleName(),
+                        " Failed to request initial submissions from reddit: " + e.getMessage());*/
                 // Probably a network issue. Let's give user 404 page...
 
                 // mapSubmissions will handle null as a 404 page
@@ -211,8 +211,8 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
                 submissionObjs = mapSubmissions(submissions);
             } catch (Exception e) {
                 // todo: catch network error such as timeout using similar techniques as above
-                Log.e(SubmissionsDataSource.class.getSimpleName(),
-                        " Failed to request non-initial submissions from reddit: " + e.getMessage());
+               /* Log.e(SubmissionsDataSource.class.getSimpleName(),
+                        " Failed to request non-initial submissions from reddit: " + e.getMessage());*/
             }
             return submissionObjs;
         }
@@ -239,7 +239,7 @@ public class SubmissionsDataSource extends ItemKeyedDataSource<String, Submissio
         for (Submission submission : submissionsList) {
             // filter some submissions out here
             if (isFilteredSubmission(submission)) {
-                Log.e("FILTER_TEST", "filtering submission with url: " + submission.getUrl());
+               // Log.e("FILTER_TEST", "filtering submission with url: " + submission.getUrl());
                 continue;
             }
 

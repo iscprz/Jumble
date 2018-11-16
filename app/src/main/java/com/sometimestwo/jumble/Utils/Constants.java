@@ -13,18 +13,12 @@ public class Constants {
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
                     + File.separator
                     + APP_NAME;
-    /* Test vals*/
-    public final static String TEST_SUBREDDIT_EARTHPORN = "earthporn";
-    public final static String TEST_SUBREDDIT_PICS = "pics";
-    public final static String TEST_SUBREDDIT_GIFS = "gifs";
-
 
     /* Fragment tags */
     public final static String TAG_FRAG_HOME = "TAG_FRAG_HOME";
     public final static String TAG_FRAG_SUBREDDIT_VIEWER = "TAG_FRAG_SUBREDDIT_VIEWER";
     public final static String TAG_FRAG_404 = "TAG_FRAG_404";
     public final static String TAG_FRAG_FULL_DISPLAYER = "TAG_FRAG_FULL_DISPLAYER";
-    public final static String TAG_FRAG_SIMPLE_DISPLAYER = "TAG_FRAG_SIMPLE_DISPLAYER";
 
     /* Arguments, Extras and Result codes*/
     public final static String ARGS_SUBMISSION_OBJ = "ARGS_SUBMISSION_OBJ";
@@ -43,14 +37,10 @@ public class Constants {
 
 
     /* Default values*/
-    public final static int DEFAULT_NUM_DISPLAY_COLS = 3;
     public final static String DEFAULT_DOWNLOAD_FILENAME = APP_NAME + "." + "download";
 
     /* Query values */
-    //the size of a page that we want
     public static final int QUERY_PAGE_SIZE = 50;
-    //public static final int QUERY_LOAD_LIMIT = 50;
-
 
     /*SharedPrefs */
     public final static String KEY_SHARED_PREFS = "KEY_SHARED_PREFS";
@@ -99,8 +89,6 @@ public class Constants {
     public final static int COMMENTS_INDENTATION_PADDING = 50 + COMMENTS_INDENTATION_PADDING_ROOT;
     public final static int COMMENTS_MIN_SCORE = 1;
     public final static String REQUEST_SAVED = "REQUEST_SAVED";
-
-    // public final static int KEY_INTENT_GOTO_SUBMISSIONVIEWER = 1;
 
 
     /* Enums*/

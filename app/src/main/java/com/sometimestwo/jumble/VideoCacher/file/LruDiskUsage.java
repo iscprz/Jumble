@@ -44,9 +44,9 @@ public abstract class LruDiskUsage implements DiskUsage {
                 if (deleted) {
                     totalCount--;
                     totalSize -= fileSize;
-                    LOG.info("Cache file " + file + " is deleted because it exceeds cache limit");
+                  //  LOG.info("Cache file " + file + " is deleted because it exceeds cache limit");
                 } else {
-                    LOG.error("Error deleting file " + file + " for trimming cache");
+                    //LOG.error("Error deleting file " + file + " for trimming cache");
                 }
             }
         }

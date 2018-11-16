@@ -72,7 +72,7 @@ public class ProxyCacheUtils {
             try {
                 closeable.close();
             } catch (IOException e) {
-                LOG.error("Error closing resource", e);
+               // LOG.error("Error closing resource", e);
             }
         }
     }

@@ -110,9 +110,9 @@ public class HttpUrlSource implements Source {
                         "https://github.com/danikula/AndroidVideoCache/issues.";
                 throw new RuntimeException(message, e);
             } catch (ArrayIndexOutOfBoundsException e) {
-                LOG.error("Error closing connection correctly. Should happen only on Android L. " +
+                /*LOG.error("Error closing connection correctly. Should happen only on Android L. " +
                         "If anybody know how to fix it, please visit https://github.com/danikula/AndroidVideoCache/issues/88. " +
-                        "Until good solution is not know, just ignore this issue :(", e);
+                        "Until good solution is not know, just ignore this issue :(", e);*/
             }
         }
     }
@@ -132,7 +132,7 @@ public class HttpUrlSource implements Source {
     }
 
     private void fetchContentInfo() throws ProxyCacheException {
-        LOG.debug("Read content info from " + sourceInfo.url);
+       // LOG.debug("Read content info from " + sourceInfo.url);
         HttpURLConnection urlConnection = null;
         InputStream inputStream = null;
         try {
@@ -142,9 +142,9 @@ public class HttpUrlSource implements Source {
             inputStream = urlConnection.getInputStream();
             this.sourceInfo = new SourceInfo(sourceInfo.url, length, mime);
             this.sourceInfoStorage.put(sourceInfo.url, sourceInfo);
-            LOG.debug("Source info fetched: " + sourceInfo);
+           // LOG.debug("Source info fetched: " + sourceInfo);
         } catch (IOException e) {
-            LOG.error("Error fetching info from " + sourceInfo.url, e);
+            //LOG.error("Error fetching info from " + sourceInfo.url, e);
         } finally {
             ProxyCacheUtils.close(inputStream);
             if (urlConnection != null) {
@@ -159,7 +159,7 @@ public class HttpUrlSource implements Source {
         int redirectCount = 0;
         String url = this.sourceInfo.url;
         do {
-            LOG.debug("Open connection " + (offset > 0 ? " with offset " + offset : "") + " to " + url);
+           // LOG.debug("Open connection " + (offset > 0 ? " with offset " + offset : "") + " to " + url);
             connection = (HttpURLConnection) new URL(url).openConnection();
             injectCustomHeaders(connection, url);
             if (offset > 0) {

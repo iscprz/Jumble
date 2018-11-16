@@ -1521,9 +1521,9 @@ public class FragmentHome extends Fragment {
                                                         }
                                                     });
                                                 } else {
-                                                    Log.e(TAG,
+                                                   /* Log.e(TAG,
                                                             "getActivity() null when trying to fixIndirectImgurUrl for url "
-                                                                    + item.getUrl());
+                                                                    + item.getUrl());*/
                                                 }
                                             }
 
@@ -1563,9 +1563,9 @@ public class FragmentHome extends Fragment {
                                                 }
                                             });
                                         } else {
-                                            Log.e(TAG,
+                                          /*  Log.e(TAG,
                                                     "getActivity() null when trying getMp4LinkImgur for url "
-                                                            + item.getUrl());
+                                                            + item.getUrl());*/
                                         }
                                     }
 
@@ -1593,17 +1593,17 @@ public class FragmentHome extends Fragment {
                                     @Override
                                     public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {
                                         //Log.d(TAG, "onResponse: feed: " + response.body().toString());
-                                        Log.d("GFYCAT_RESPONSE",
-                                                "getGyfCatObjToEnqueue onResponse: Server Response: " + response.toString());
+                                       /* Log.d("GFYCAT_RESPONSE",
+                                                "getGyfCatObjToEnqueue onResponse: Server Response: " + response.toString());*/
 
                                         GfyItem gfyItem = new GfyItem();
                                         try {
                                             gfyItem = response.body().getGfyItem();
                                         } catch (Exception e) {
-                                            Log.e("GFYCAT_RESPONSE_ERROR",
+                                           /* Log.e("GFYCAT_RESPONSE_ERROR",
                                                     "Failed in attempt to retrieve gfycat object for hash "
                                                             + gfycatHash + ". "
-                                                            + e.getMessage());
+                                                            + e.getMessage());*/
                                             call.cancel();
                                         }
                                         if (gfyItem != null) {
@@ -1620,8 +1620,8 @@ public class FragmentHome extends Fragment {
                                     @Override
                                     public void onFailure(Call<GfycatWrapper> call, Throwable t) {
                                         call.cancel();
-                                        Log.e("GETGFYCAT_ERROR",
-                                                "getGyfCatObjToEnqueue onFailure: Unable to retrieve Gfycat: " + t.getMessage());
+                                        /*Log.e("GETGFYCAT_ERROR",
+                                                "getGyfCatObjToEnqueue onFailure: Unable to retrieve Gfycat: " + t.getMessage());*/
                                     }
 
                                 });
@@ -1952,7 +1952,7 @@ public class FragmentHome extends Fragment {
         try {
             App.getAccountHelper().switchToUser(newUsername);
         } catch (Exception e) {
-            Log.e(TAG, "Failed to switch to user while in updateCurrentUser() for username: " + newUsername);
+           // Log.e(TAG, "Failed to switch to user while in updateCurrentUser() for username: " + newUsername);
         }
         // update the most recent logged in user in sharedprefs
         prefs_settings.edit().putString(Constants.MOST_RECENT_USER, newUsername).commit();

@@ -107,9 +107,9 @@ public class DownloadService extends Service implements OnVRedditTaskCompletedLi
             // finally, scan video so that our gallery app recognizes it
             scanFile(mNewDownloadedFilename);
         } catch (MalformedURLException badurle) {
-            Log.e("DOWNLOAD_VREDDIT",
+           /* Log.e("DOWNLOAD_VREDDIT",
                     "MalformedURLException: Could not convert Uri to URI. Uri was: "
-                            + uriToLoad.toString());
+                            + uriToLoad.toString());*/
         } catch (Exception e) {
             e.printStackTrace();
         }

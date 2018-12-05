@@ -12,14 +12,15 @@ import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
 import com.coremedia.iso.boxes.Container;
 import com.google.gson.reflect.TypeToken;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 import com.googlecode.mp4parser.authoring.tracks.CroppedTrack;
+import com.sometimestwo.jumble.API.GfyCatTokenRequest;
 import com.sometimestwo.jumble.API.GfycatAPI;
+import com.sometimestwo.jumble.API.GfycatAuthResponseWrapper;
 import com.sometimestwo.jumble.App;
 import com.sometimestwo.jumble.Imgur.client.ImgurClient;
 import com.sometimestwo.jumble.Imgur.response.images.ImgurSubmission;
@@ -60,6 +61,8 @@ import java.util.regex.Pattern;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -302,7 +305,7 @@ public class Utils {
 
     // Gets the gfycat object required to make an API call to Gfycat.
     // Must call .enqueue on this result to actually start api call
-    public static Call<GfycatWrapper> getGyfCatObjToEnqueue(String gfycatHash, SubmissionObj item) {
+    public static Call<GfycatWrapper> getGyfCatObjToEnqueue(String gfycatHash) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(Constants.BASE_URL_GFYCAT)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -311,6 +314,35 @@ public class Utils {
         GfycatAPI gfycatAPI = retrofit.create(GfycatAPI.class);
         gfycatAPI.getGfycat(gfycatHash);
         return gfycatAPI.getGfycat(gfycatHash);
+    }
+
+    public static Call<GfycatAuthResponseWrapper> getGfyCatAuthToken(){
+        Retrofit retroAuthRequest = new Retrofit.Builder()
+                .baseUrl(Constants.BASE_URL_GFYCAT)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        GfycatAPI gfycatAPI = retroAuthRequest.create(GfycatAPI.class);
+        Call<GfycatAuthResponseWrapper> accessTokenCall =
+                gfycatAPI.getGfycatAccessToken(
+                        new GfyCatTokenRequest("client_credentials", Constants.GFYCAT_CLIENT_ID, Constants.GFYCAT_CLIENT_SECRET));
+        accessTokenCall.enqueue(new Callback<GfycatAuthResponseWrapper>() {
+            @Override
+            public void onResponse(Call<GfycatAuthResponseWrapper> call, Response<GfycatAuthResponseWrapper> response) {
+                String accessToken = response.body().getAccessToken();
+            }
+
+            @Override
+            public void onFailure(Call<GfycatAuthResponseWrapper> call, Throwable t) {
+
+            }
+        });
+        return accessTokenCall;
+        /*retroAuthRequest = new Retrofit.Builder()
+                .baseUrl(Constants.BASE_URL_GFYCAT + )
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();*/
+        //return gfycatAPI.getGfycat(gfycatHash);
     }
 
     public static String getYouTubeID(String url) {

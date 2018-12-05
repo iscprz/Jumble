@@ -59,7 +59,10 @@ public class Constants {
     public final static String MOST_RECENT_USER = "MOST_RECENT_USER";
 
     /* API */
-    public final static String BASE_URL_GFYCAT = "https://gfycat.com/cajax/get/";
+    public final static String BASE_URL_GFYCAT = "https://api.gfycat.com/v1/";
+   // public final static String BASE_URL_GFYCAT_AUTH = "https://api.gfycat.com/v1/oauth/";
+    public final static String GFYCAT_CLIENT_ID = "2_ZWbjKG";
+    public final static String GFYCAT_CLIENT_SECRET = "JGjygXUsogVkHuok4GCRgZfTObSIbf-kGnI70JHCb5ePJNYMeGU0Ay_kSjz6zGga";
     public final static String YOUTUBE_API_KEY = "AIzaSyASn4HW4p60zBsAuaiejx5jU_rxjqhUNbA";
 
     /* Misc*/

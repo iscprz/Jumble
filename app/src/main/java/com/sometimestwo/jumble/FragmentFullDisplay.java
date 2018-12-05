@@ -590,15 +590,14 @@ public class FragmentFullDisplay extends Fragment implements OnVRedditTaskComple
                 // We're given a URL in this format: //https://gfycat.com/SpitefulGoldenAracari
                 // extract gfycat ID (looks like:SpitefulGoldenAracari)
                 String gfycatHash = Utils.getGfycatHash(mCurrSubmission.getUrl());
-                // get Gfycat .mp4 "clean url"
-                Call<GfycatWrapper> gfycatObj = Utils.getGyfCatObjToEnqueue(gfycatHash, mCurrSubmission);
+
+                // Get Gfycat auth token
+                //Call<GfycatAuthResponseWrapper> gfycatAuthResponse = Utils.getGfyCatAuthToken();
+
+                Call<GfycatWrapper> gfycatObj = Utils.getGyfCatObjToEnqueue(gfycatHash);
                 gfycatObj.enqueue(new Callback<GfycatWrapper>() {
                     @Override
                     public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {
-                        //Log.d(TAG, "onResponse: feed: " + response.body().toString());
-                        /*Log.d("GFYCAT_RESPONSE",
-                                "getGyfCatObjToEnqueue onResponse: Server Response: " + response.toString());*/
-
                         GfyItem gfyItem = new GfyItem();
                         try {
                             gfyItem = response.body().getGfyItem();

@@ -2,20 +2,20 @@ package com.sometimestwo.jumble.API;
 import com.sometimestwo.jumble.Model.GfycatWrapper;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface GfycatAPI {
 
-    String BASE_URL = "https://gfycat.com/cajax/get";
+    @POST("oauth/token/")
+    Call<GfycatAuthResponseWrapper> getGfycatAccessToken(@Body GfyCatTokenRequest tokenRequest);
 
-    //Non-static feed name
-    @GET("{hash}")
+    @GET("gfycats/{hash}")
     Call<GfycatWrapper> getGfycat(@Path("hash") String hash);
 
-    //static feed name
-//    @GET("earthporn/.rss")
-//    Call<Feed> getGyfCatObjToEnqueue();
 
 /*    @POST("{user}")
     Call<CheckLogin> signIn(

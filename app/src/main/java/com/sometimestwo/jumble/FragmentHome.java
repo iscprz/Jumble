@@ -220,7 +220,6 @@ public class FragmentHome extends Fragment {
         try {
             validatePreferences();
         } catch (Exception e) {
-            //TODO: What to do when preferences aren't found? Will this ever happen? (prob not)
             e.printStackTrace();
         }
 
@@ -1299,7 +1298,6 @@ public class FragmentHome extends Fragment {
             mDisplayNSFWIcon = prefs_settings.getBoolean(Constants.PREFS_SHOW_NSFW_ICON, false);
 
             App.getJumbleInfoObj().setHideNSFW(mHideNSFW);
-            //App.getJumbleInfoObj().setSubreddit("pics");
         } else {
             throw new Exception("Failed to retrieve SharedPreferences on validatePreferences(). "
                     + "Could not find prefs_settings KEY_SHARED_PREFS.");
@@ -1588,7 +1586,7 @@ public class FragmentHome extends Fragment {
                                 // extract gfycat ID (looks like:SpitefulGoldenAracari)
                                 String gfycatHash = Utils.getGfycatHash(item.getUrl());
                                 // get Gfycat .mp4 "clean url"
-                                Call<GfycatWrapper> gfycatObj = Utils.getGyfCatObjToEnqueue(gfycatHash, item);
+                                Call<GfycatWrapper> gfycatObj = Utils.getGyfCatObjToEnqueue(gfycatHash);
                                 gfycatObj.enqueue(new Callback<GfycatWrapper>() {
                                     @Override
                                     public void onResponse(Call<GfycatWrapper> call, Response<GfycatWrapper> response) {

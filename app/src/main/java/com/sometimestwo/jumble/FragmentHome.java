@@ -195,7 +195,7 @@ public class FragmentHome extends Fragment {
     // Async tasks that may need cancelling
     private AsyncTask<Void, Void, Void> FetchUserSubscriptionsTask;
     private AsyncTask<Void, Void, Void> SubscribeSubredditTask;
-    private AsyncTask<Void,Void,Boolean> UnsubscribeSubredditTask;
+    private AsyncTask<Void, Void, Boolean> UnsubscribeSubredditTask;
 
     public static FragmentHome newInstance() {
         return new FragmentHome();
@@ -461,23 +461,23 @@ public class FragmentHome extends Fragment {
             case R.id.menu_submissions_overflow_unsub:
                 UnsubscribeSubredditTask =
                         new Utils.UnsubscribeSubredditTask(mCurrSubreddit, new OnRedditTaskListener() {
-                    @Override
-                    public void onSuccess() {
-                        Utils.removeFromLocalUserSubscriptions(currUser, mCurrSubreddit);
-                        Toast.makeText(FragmentHome.this.getContext(),
-                                "Unsubscribed",
-                                Toast.LENGTH_SHORT)
-                                .show();
-                    }
+                            @Override
+                            public void onSuccess() {
+                                Utils.removeFromLocalUserSubscriptions(currUser, mCurrSubreddit);
+                                Toast.makeText(FragmentHome.this.getContext(),
+                                        "Unsubscribed",
+                                        Toast.LENGTH_SHORT)
+                                        .show();
+                            }
 
-                    @Override
-                    public void onFailure(String exceptionMessage) {
-                        Toast.makeText(FragmentHome.this.getContext(),
-                                getResources().getString(R.string.toast_unsubscribe_failed),
-                                Toast.LENGTH_LONG)
-                                .show();
-                    }
-                }).execute();
+                            @Override
+                            public void onFailure(String exceptionMessage) {
+                                Toast.makeText(FragmentHome.this.getContext(),
+                                        getResources().getString(R.string.toast_unsubscribe_failed),
+                                        Toast.LENGTH_LONG)
+                                        .show();
+                            }
+                        }).execute();
                 return true;
             /* Sort by*/
             case R.id.menu_submissions_sortby_BEST:
@@ -594,7 +594,7 @@ public class FragmentHome extends Fragment {
                     App.getJumbleInfoObj().getmSubredditStack().pop();
                 }
                 // empty subreddit paginator as well
-                while(!App.getStackRedditPaginator().isEmpty()){
+                while (!App.getStackRedditPaginator().isEmpty()) {
                     App.getStackRedditPaginator().pop();
                 }
 
@@ -624,9 +624,9 @@ public class FragmentHome extends Fragment {
     }
 
     public void cancelRunning() {
-        if(FetchUserSubscriptionsTask != null) FetchUserSubscriptionsTask.cancel(true);
-        if(UnsubscribeSubredditTask != null) UnsubscribeSubredditTask.cancel(true);
-        if(SubscribeSubredditTask != null) SubscribeSubredditTask.cancel(true);
+        if (FetchUserSubscriptionsTask != null) FetchUserSubscriptionsTask.cancel(true);
+        if (UnsubscribeSubredditTask != null) UnsubscribeSubredditTask.cancel(true);
+        if (SubscribeSubredditTask != null) SubscribeSubredditTask.cancel(true);
     }
 
     private void setupToolbar() {
@@ -1250,7 +1250,7 @@ public class FragmentHome extends Fragment {
             vg.addView(mHoverPreviewContainerLarge);
 
             mHoverPreviewContainerLarge.setVisibility(View.VISIBLE);
-           // mHoverPreviewContainerSmall.setVisibility(View.GONE);
+            // mHoverPreviewContainerSmall.setVisibility(View.GONE);
             mHoverPreviewMediaContainerLarge.setVisibility(View.VISIBLE);
 
             //v.redd.it links will always be non-image. Display in video view.
@@ -1758,7 +1758,7 @@ public class FragmentHome extends Fragment {
                                            Target<Drawable> target,
                                            com.bumptech.glide.load.DataSource dataSource,
                                            boolean isFirstResource) {
-                if(getContext() !=null) {
+                if (getContext() != null) {
                     configureRecyclerThumbOverlay(item, holder);
                 }
                 return false;
@@ -1935,7 +1935,7 @@ public class FragmentHome extends Fragment {
             App.getJumbleInfoObj().getmSubredditStack().pop();
         }
         // empty subreddit paginator as well
-        while(!App.getStackRedditPaginator().isEmpty()){
+        while (!App.getStackRedditPaginator().isEmpty()) {
             App.getStackRedditPaginator().pop();
         }
 
@@ -1950,7 +1950,7 @@ public class FragmentHome extends Fragment {
         try {
             App.getAccountHelper().switchToUser(newUsername);
         } catch (Exception e) {
-           // Log.e(TAG, "Failed to switch to user while in updateCurrentUser() for username: " + newUsername);
+            // Log.e(TAG, "Failed to switch to user while in updateCurrentUser() for username: " + newUsername);
         }
         // update the most recent logged in user in sharedprefs
         prefs_settings.edit().putString(Constants.MOST_RECENT_USER, newUsername).commit();
